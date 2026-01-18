@@ -1,0 +1,246 @@
+const notificationService = require('../service/notification.service');
+
+/**
+ * Create Notification (Tạo thông báo) - Admin only
+ */
+exports.createNotification = async (req, res, next) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const userRole = req.user.role.toLowerCase();
+        
+        const notification = await notificationService.createNotification(req.body, userId, userRole);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Notification created successfully',
+            data: notification
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * 81. View Notification List (Xem danh sách thông báo) - Admin/User
+ */
+exports.listNotifications = async (req, res, next) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const userRole = req.user.role.toLowerCase();
+        
+        const result = await notificationService.getAllNotifications(req.query, userRole, userId);
+        
+        res.status(200).json({
+            success: true,
+            message: 'Notifications retrieved successfully',
+            data: result
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * 81b. Get Homepage Notifications (Lấy thông báo cho homepage) - User context
+ */
+exports.getHomepageNotifications = async (req, res, next) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const userRole = req.user.role.toLowerCase();
+        
+        // For homepage, always use user context (not admin dashboard context)
+        const result = await notificationService.getHomepageNotifications(req.query, userRole, userId);
+        
+        res.status(200).json({
+            success: true,
+            message: 'Homepage notifications retrieved successfully',
+            data: result
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * 82. View Notification Detail (Xem chi tiết thông báo) - Admin/User
+ */
+exports.getNotification = async (req, res, next) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const userRole = req.user.role.toLowerCase();
+        
+        const notification = await notificationService.getNotificationById(req.params.id, userRole, userId);
+        
+        res.status(200).json({
+            success: true,
+            message: 'Notification retrieved successfully',
+            data: notification
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * 83. Edit Notification (Chỉnh sửa thông báo) - Admin only
+ */
+exports.updateNotification = async (req, res, next) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const userRole = req.user.role.toLowerCase();
+        
+        const notification = await notificationService.updateNotification(
+            req.params.id, 
+            req.body, 
+            userId, 
+            userRole
+        );
+        
+        res.status(200).json({
+            success: true,
+            message: 'Notification updated successfully',
+            data: notification
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Mark as read
+ */
+exports.markAsRead = async (req, res, next) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const result = await notificationService.setReadStatus(req.params.id, userId, true);
+        res.status(200).json({ success: true, message: 'Marked as read', data: result });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Mark as unread
+ */
+exports.markAsUnread = async (req, res, next) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const result = await notificationService.setReadStatus(req.params.id, userId, false);
+        res.status(200).json({ success: true, message: 'Marked as unread', data: result });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * 84. Delete Notification (Xóa thông báo) - Admin only
+ */
+exports.deleteNotification = async (req, res, next) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const userRole = req.user.role.toLowerCase();
+        
+        const notification = await notificationService.deleteNotification(
+            req.params.id, 
+            userId, 
+            userRole
+        );
+        
+        res.status(200).json({
+            success: true,
+            message: 'Notification deleted successfully',
+            data: notification
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * 85. Search Notifications (Tìm kiếm thông báo) - Admin/User
+ */
+exports.searchNotifications = async (req, res, next) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const userRole = req.user.role.toLowerCase();
+        const searchQuery = req.query.q;
+        
+        const result = await notificationService.searchNotifications(
+            searchQuery, 
+            req.query, 
+            userRole,
+            userId
+        );
+        
+        res.status(200).json({
+            success: true,
+            message: 'Search completed successfully',
+            data: result
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Send Notification (Gửi thông báo) - Admin only
+ */
+exports.sendNotification = async (req, res, next) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const userRole = req.user.role.toLowerCase();
+        
+        const notification = await notificationService.sendNotification(
+            req.params.id, 
+            userId, 
+            userRole
+        );
+        
+        res.status(200).json({
+            success: true,
+            message: 'Notification sent successfully',
+            data: notification
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Get unread count - Get count of unread notifications for the authenticated user
+ */
+exports.getUnreadCount = async (req, res, next) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const userRole = req.user.role.toLowerCase();
+        
+        const count = await notificationService.getUnreadCount(userId, userRole);
+        
+        res.status(200).json({
+            success: true,
+            count: count
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Mark all as read - Mark all notifications as read for the authenticated user
+ */
+exports.markAllAsRead = async (req, res, next) => {
+    try {
+        const userId = req.user.id || req.user._id;
+        const userRole = req.user.role.toLowerCase();
+        
+        const result = await notificationService.markAllAsRead(userId, userRole);
+        
+        res.status(200).json({
+            success: true,
+            message: 'All notifications marked as read',
+            data: result
+        });
+    } catch (error) {
+        next(error);
+    }
+};
