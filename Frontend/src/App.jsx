@@ -51,6 +51,11 @@ import SellerProductForm from './pages/Seller/SellerProductForm';
 import SellerOrders from './pages/Seller/SellerOrders';
 import SellerStockManagement from './pages/Seller/SellerStockManagement';
 import UniversalLogin from './pages/Auth/UniversalLogin';
+import ForgotPassword from './pages/Auth/ForgotPassword';
+import SellerRegister from './pages/Seller/SellerRegister';
+import ResetPassword from './pages/Auth/ResetPassword';
+
+
 
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
@@ -58,6 +63,7 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Customer Routes */}
+      
       <Route path="/" element={<HomePage />} />
       <Route path="/san-pham" element={<ProductsPage />} />
       <Route path="/san-pham/:id" element={<ProductDetailPage />} />
@@ -79,16 +85,24 @@ function AppRoutes() {
       <Route path="/da-thich" element={<FavoritesPage />} />
       <Route path="/notifications" element={<NotificationList />} />
       <Route path="/notifications/:id" element={<NotificationDetail />} />
+      
 
       {/* UNIVERSAL LOGIN - Chung cho tất cả */}
       <Route path="/login" element={<UniversalLogin />} />
 
+      {/* 🔑 FORGOT PASSWORD */}
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
+      
+
       {/* Seller Routes */}
       <Route path="/seller/login" element={<SellerLogin />} />
+      <Route path="/seller/register" element={<SellerRegister />} />
       <Route
         path="/seller/dashboard"
         element={
-          <SellerProtectedRoute>
+          <SellerProtectedRoute> 
             <SellerDashboard />
           </SellerProtectedRoute>
         }
@@ -306,6 +320,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      
       <Route
         path="/admin/notifications/:id"
         element={

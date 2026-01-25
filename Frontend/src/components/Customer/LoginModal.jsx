@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiX, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { useAuth } from '../../context/AuthContext';
+import{ Link } from 'react-router-dom';
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
@@ -327,12 +328,16 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                {error && <span className="text-red-500 text-sm">{error}</span>}
-                <button type="button" className="text-blue-600 text-sm hover:underline ml-auto">
-                  Quên mật khẩu
-                </button>
-              </div>
+             <div className="flex items-center justify-between">
+  {error && <span className="text-red-500 text-sm">{error}</span>}
+
+  <Link
+    to="/forgot-password"
+    className="text-blue-600 text-sm hover:underline ml-auto"
+  >
+    Quên mật khẩu
+  </Link>
+</div>
 
               <button
                 type="submit"
