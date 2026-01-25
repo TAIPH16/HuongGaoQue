@@ -28,7 +28,17 @@ const userSchema = new mongoose.Schema(
         return !this.google_id;
       },
     },
-    phoneNumber: { type: String, default: "" },
+    phoneNumber: {
+      type: String,
+      default: "",
+      validate: {
+        validator: function (v) {
+          if (!v) return true; // cho phép rỗng
+          return /^0\d{9}$/.test(v);
+        },
+        message: "Số điện thoại không hợp lệ (10 số, bắt đầu bằng 0)",
+      },
+    },
     // 2. Thêm trường Khu vực (Thành phố/Tỉnh)
     region: { type: String, default: "" },
     // Farm information for sellers
