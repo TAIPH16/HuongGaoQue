@@ -5,13 +5,9 @@ import { FiX, FiEye, FiEyeOff } from 'react-icons/fi';
 import axios from 'axios';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { useAuth } from '../../context/AuthContext';
-<<<<<<< HEAD
-import{ Link } from 'react-router-dom';
-=======
 import { useSellerAuth } from '../../context/SellerAuthContext';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
->>>>>>> bb854b4 (Upload files)
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
@@ -344,25 +340,12 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
                 </div>
               </div>
 
-<<<<<<< HEAD
-             <div className="flex items-center justify-between">
-  {error && <span className="text-red-500 text-sm">{error}</span>}
-
-  <Link
-    to="/forgot-password"
-    className="text-blue-600 text-sm hover:underline ml-auto"
-  >
-    Quên mật khẩu
-  </Link>
-</div>
-=======
               <div className="flex items-center justify-between">
                 {error && <span className="text-red-500 text-sm">{error}</span>}
                 <button type="button" onClick={() => setShowForgot(true)} className="text-blue-600 text-sm hover:underline ml-auto">
                   Quên mật khẩu
                 </button>
               </div>
->>>>>>> bb854b4 (Upload files)
 
               <button
                 type="submit"

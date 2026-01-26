@@ -27,51 +27,6 @@ const ProfilePage = () => {
   const [phoneError, setPhoneError] = useState("");
 
   // Form data states
-<<<<<<< HEAD
-  const [formData, setFormData] = useState({
-    fullName: currentUser?.fullName || "",
-    email: currentUser?.email || "",
-    phoneNumber: currentUser?.phoneNumber || "",
-    dateOfBirth: currentUser?.dateOfBirth
-      ? new Date(currentUser.dateOfBirth).toISOString().split("T")[0]
-      : "",
-    address: {
-      street: currentUser?.address?.street || "",
-      ward: currentUser?.address?.ward || "",
-      district: currentUser?.address?.district || "",
-      city: currentUser?.address?.city || "",
-      country: currentUser?.address?.country || "Việt Nam",
-    },
-    bankInfo: {
-      accountHolder:
-        currentUser?.settlementAccount?.accountHolder ||
-        currentUser?.bankInfo?.accountHolder ||
-        "",
-      bankName:
-        currentUser?.settlementAccount?.bankName ||
-        currentUser?.bankInfo?.bankName ||
-        "",
-      accountNumber:
-        currentUser?.settlementAccount?.accountNumber ||
-        currentUser?.bankInfo?.accountNumber ||
-        "",
-      password:
-        currentUser?.settlementAccount?.password ||
-        currentUser?.bankInfo?.password ||
-        "",
-    },
-    notifications: {
-      general: currentUser?.accountSettings?.notifications?.general !== false,
-      orders: currentUser?.accountSettings?.notifications?.orders !== false,
-      promotions:
-        currentUser?.accountSettings?.notifications?.promotions !== false,
-      system: currentUser?.accountSettings?.notifications?.system !== false,
-    },
-    security: {
-      sms: currentUser?.securitySettings?.sms !== false,
-      email: currentUser?.securitySettings?.email !== false,
-    },
-=======
   const [formData, setFormData] = useState(() => {
     // Normalize address if backend sent string
     let addr = currentUser?.address || {};
@@ -111,7 +66,6 @@ const ProfilePage = () => {
         email: currentUser?.securitySettings?.email !== false,
       },
     };
->>>>>>> bb854b4 (Upload files)
   });
 
   // Update form data when user changes
@@ -127,20 +81,6 @@ const ProfilePage = () => {
         }
       }
       setFormData({
-<<<<<<< HEAD
-        fullName: currentUser.fullName || "",
-        email: currentUser.email || "",
-        phoneNumber: currentUser.phoneNumber || "",
-        dateOfBirth: currentUser.dateOfBirth
-          ? new Date(currentUser.dateOfBirth).toISOString().split("T")[0]
-          : "",
-        address: {
-          street: currentUser.address?.street || "",
-          ward: currentUser.address?.ward || "",
-          district: currentUser.address?.district || "",
-          city: currentUser.address?.city || "",
-          country: currentUser.address?.country || "Việt Nam",
-=======
         fullName: currentUser.fullName || currentUser.name || '',
         email: currentUser.email || '',
         phoneNumber: currentUser.phoneNumber || '',
@@ -151,7 +91,6 @@ const ProfilePage = () => {
           district: addr?.district || '',
           city: addr?.city || '',
           country: addr?.country || 'Việt Nam',
->>>>>>> bb854b4 (Upload files)
         },
         bankInfo: {
           accountHolder:
@@ -287,19 +226,11 @@ const ProfilePage = () => {
       // Update context
       const updated = response.data.data;
       if (isAdmin) {
-<<<<<<< HEAD
-        setUser(response.data.data);
-        localStorage.setItem("user", JSON.stringify(response.data.data));
-      } else {
-        setCustomer(response.data.data);
-        localStorage.setItem("customer", JSON.stringify(response.data.data));
-=======
         setUser(updated);
         localStorage.setItem('user', JSON.stringify(updated));
       } else {
         setCustomer(updated);
         localStorage.setItem('customer', JSON.stringify(updated));
->>>>>>> bb854b4 (Upload files)
       }
       // Update local form data immediately for display
       setFormData({
@@ -433,17 +364,8 @@ const ProfilePage = () => {
 
             <div className="bg-white rounded-lg shadow-md p-6 mb-6">
               <div className="ml-40 mb-4">
-<<<<<<< HEAD
-                <h2 className="text-2xl font-bold">
-                  {currentUser?.fullName || "Nguyen Hoang"}
-                </h2>
-                <p className="text-gray-600">
-                  {currentUser?.email || "Example@gmail.com"}
-                </p>
-=======
                 <h2 className="text-2xl font-bold">{currentUser?.fullName || currentUser?.name || 'Người dùng'}</h2>
                 <p className="text-gray-600">{currentUser?.email || 'Example@gmail.com'}</p>
->>>>>>> bb854b4 (Upload files)
               </div>
             </div>
 
@@ -588,20 +510,6 @@ const ProfilePage = () => {
                 <div className="col-span-2">
                   <p className="text-sm text-gray-600 mb-1">Địa chỉ</p>
                   {editingPersonal ? (
-<<<<<<< HEAD
-                    <input
-                      type="text"
-                      value={formData.address?.street || ""}
-                      onChange={(e) =>
-                        handleInputChange("address.street", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="Địa chỉ chi tiết"
-                    />
-                  ) : (
-                    <p className="font-semibold">
-                      {formData.address?.street || ""}
-=======
                     <div className="space-y-3">
                       <input
                         type="text"
@@ -646,7 +554,6 @@ const ProfilePage = () => {
                       {[formData.address?.street, formData.address?.ward, formData.address?.district, formData.address?.city, formData.address?.country]
                         .filter(Boolean)
                         .join(', ') || ''}
->>>>>>> bb854b4 (Upload files)
                     </p>
                   )}
                 </div>

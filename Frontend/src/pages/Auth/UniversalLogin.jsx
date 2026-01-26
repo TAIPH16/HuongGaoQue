@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -8,43 +7,19 @@ import { FaFacebook } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { useCustomerAuth } from "../../context/CustomerAuthContext";
 import { useSellerAuth } from "../../context/SellerAuthContext";
-=======
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import ForgotPasswordModal from '../../components/Auth/ForgotPasswordModal';
-import axios from 'axios';
-import { FiX, FiEye, FiEyeOff } from 'react-icons/fi';
-import { FcGoogle } from 'react-icons/fc';
-import { FaFacebook } from 'react-icons/fa';
-import { useAuth } from '../../context/AuthContext';
-import { useCustomerAuth } from '../../context/CustomerAuthContext';
-import { useSellerAuth } from '../../context/SellerAuthContext';
->>>>>>> bb854b4 (Upload files)
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
 const UniversalLogin = ({ onClose }) => {
-<<<<<<< HEAD
   const navigate = useNavigate();
-  const { login: adminLogin } = useAuth();
+  const { setUser: setAdminUser } = useAuth();
   const { setCustomer: updateCustomer } = useCustomerAuth();
   const { updateProfile: updateSeller } = useSellerAuth();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-=======
-    const navigate = useNavigate();
-    const { setUser: setAdminUser } = useAuth();
-    const { updateProfile: updateCustomer } = useCustomerAuth();
-    const { updateProfile: updateSeller } = useSellerAuth();
-
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [showForgot, setShowForgot] = useState(false);
->>>>>>> bb854b4 (Upload files)
 
   const [formData, setFormData] = useState({
     email: "",
@@ -83,7 +58,7 @@ const UniversalLogin = ({ onClose }) => {
           // Admin login
           localStorage.setItem("token", token);
           localStorage.setItem("user", JSON.stringify(user));
-          adminLogin(user, token);
+          setAdminUser(user);
           navigate("/admin/dashboard");
           break;
 
@@ -106,8 +81,6 @@ const UniversalLogin = ({ onClose }) => {
           throw new Error(`Role không được hỗ trợ: ${user.role}`);
       }
       console.log();
-
-<<<<<<< HEAD
       if (onClose) onClose();
     } catch (err) {
       console.error("LOGIN ERROR:", err);
@@ -116,16 +89,6 @@ const UniversalLogin = ({ onClose }) => {
       setLoading(false);
     }
   };
-=======
-            // Redirect dựa vào role
-            switch (user.role) {
-                case 'admin':
-                    localStorage.setItem('token', token);
-                    localStorage.setItem('user', JSON.stringify(user));
-                    setAdminUser(user);
-                    navigate('/admin/dashboard');
-                    break;
->>>>>>> bb854b4 (Upload files)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -139,8 +102,6 @@ const UniversalLogin = ({ onClose }) => {
             <FiX size={24} />
           </button>
         )}
-
-<<<<<<< HEAD
         <div className="p-8">
           {/* Logo */}
           <div className="flex items-center justify-center mb-6">
@@ -155,17 +116,7 @@ const UniversalLogin = ({ onClose }) => {
               </div>
             </div>
           </div>
-=======
-                case 'user':
-                default:
-                    // Customer login
-                    localStorage.setItem('customer_token', token);
-                    localStorage.setItem('customer', JSON.stringify(user));
-                    updateCustomer(user);
-                    navigate('/');
-                    break;
-            }
->>>>>>> bb854b4 (Upload files)
+
 
           {/* Title */}
           <h2 className="text-3xl font-bold text-gray-800 mb-2 text-center">
@@ -275,69 +226,16 @@ const UniversalLogin = ({ onClose }) => {
             </button>
           </div>
 
-<<<<<<< HEAD
           {/* Register Links */}
           <div className="mt-6 text-center space-y-2">
             <p className="text-sm text-gray-600">
               Chưa có tài khoản?
-              {/* <Link to="/seller/register" className="text-green-600 font-semibold ml-1 hover:text-green-700">
-=======
-                        {/* Forgot Password */}
-                        <div className="flex items-center justify-end">
-                            <button type="button" onClick={() => setShowForgot(true)} className="text-sm text-green-600 hover:text-green-700">
-                                Quên mật khẩu?
-                            </button>
-                        </div>
-
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-[#2d5016] text-white py-3 rounded-lg font-semibold hover:bg-[#1f350d] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {loading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
-                        </button>
-                    </form>
-
-                    {/* Divider */}
-                    <div className="relative my-6">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-gray-200"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-4 bg-white text-gray-500">Hoặc đăng nhập bằng</span>
-                        </div>
-                    </div>
-
-                    {/* Social Login */}
-                    <div className="grid grid-cols-2 gap-3">
-                        <button
-                            type="button"
-                            className="flex items-center justify-center space-x-2 px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
-                        >
-                            <FcGoogle size={20} />
-                            <span className="text-gray-700 font-medium">Google</span>
-                        </button>
-                        <button
-                            type="button"
-                            className="flex items-center justify-center space-x-2 px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
-                        >
-                            <FaFacebook size={20} className="text-blue-600" />
-                            <span className="text-gray-700 font-medium">Facebook</span>
-                        </button>
-                    </div>
-
-                    {/* Register Links */}
-                    <div className="mt-6 text-center space-y-2">
-                        <p className="text-sm text-gray-600">
-                            Chưa có tài khoản?
-                            <Link to="/seller/register" className="text-green-600 font-semibold ml-1 hover:text-green-700">
->>>>>>> bb854b4 (Upload files)
-                                Đăng ký Seller
-                            </Link>
-                        </p>
-                        <p className="text-sm text-gray-600">
-                            Hoặc */}
+              <Link to="/seller/register" className="text-green-600 font-semibold ml-1 hover:text-green-700">
+                Đăng ký Seller
+              </Link>
+            </p>
+            <p className="text-sm text-gray-600">
+              Hoặc
               <Link
                 to="/register"
                 className="text-green-600 font-semibold ml-1 hover:text-green-700"
@@ -347,7 +245,6 @@ const UniversalLogin = ({ onClose }) => {
             </p>
           </div>
 
-<<<<<<< HEAD
           {/* Info */}
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <p className="text-xs text-blue-800 text-center">
@@ -355,18 +252,7 @@ const UniversalLogin = ({ onClose }) => {
               Hệ thống tự động nhận diện bạn là Admin, Seller hay Customer!
             </p>
           </div>
-=======
-                    {/* Info */}
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                        <p className="text-xs text-blue-800 text-center">
-                            💡 <strong>Tip:</strong> Dùng cùng 1 email/password cho mọi role.
-                            Hệ thống tự động nhận diện bạn là Admin, Seller hay Customer!
-                        </p>
-                    </div>
-                </div>
-        </div>
-        <ForgotPasswordModal isOpen={showForgot} onClose={() => setShowForgot(false)} />
->>>>>>> bb854b4 (Upload files)
+
         </div>
       </div>
     </div>

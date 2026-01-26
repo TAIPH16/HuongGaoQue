@@ -53,14 +53,8 @@ import SellerStockManagement from './pages/Seller/SellerStockManagement';
 import SellerFarm from './pages/Seller/SellerFarm';
 import UniversalLogin from './pages/Auth/UniversalLogin';
 import ForgotPassword from './pages/Auth/ForgotPassword';
-<<<<<<< HEAD
 import SellerRegister from './pages/Seller/SellerRegister';
 import ResetPassword from './pages/Auth/ResetPassword';
-
-
-=======
-import ResetPassword from './pages/Auth/ResetPassword';
->>>>>>> bb854b4 (Upload files)
 
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
