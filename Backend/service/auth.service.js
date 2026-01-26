@@ -43,12 +43,21 @@ const generateOTP = () => {
     return Math.floor(1000 + Math.random() * 9000).toString();
 };
 
-const sendOTP = async (email, otp) => {
+const sendOTP = async (email, otp, subject = "Your OTP", purpose = "OTP") => {
+    const emailUser = process.env.EMAIL_USER;
+    const emailPass = process.env.EMAIL_PASS;
+    const mailSubject = subject || "Your OTP";
+    const text = `Your ${purpose} is ${otp}. It is valid for 5 minutes.`;
+
+    if (!emailUser || !emailPass) {
+        console.warn(`[DEV ONLY] Email credentials missing. ${purpose}:`, otp, 'to:', email);
+        return;
+    }
     const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: emailUser,
         to: email,
-        subject: "Your OTP for Registration",
-        text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
+        subject: mailSubject,
+        text,
     };
 
     await transporter.sendMail(mailOptions);
@@ -56,14 +65,29 @@ const sendOTP = async (email, otp) => {
 
 const sendResetLink = async (email, token) => {
     const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
+    const emailUser = process.env.EMAIL_USER;
+    const emailPass = process.env.EMAIL_PASS;
+
+    // If email credentials are missing, log the link for development instead of failing
+    if (!emailUser || !emailPass) {
+        console.warn('Email credentials are missing. Skipping email send. Reset link (dev only):', resetLink);
+        return;
+    }
+
     const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: emailUser,
         to: email,
         subject: "Password Reset Request",
         text: `Click the following link to reset your password: ${resetLink}\nThis link is valid for 15 minutes.`,
     };
 
-    await transporter.sendMail(mailOptions);
+    try {
+        await transporter.sendMail(mailOptions);
+    } catch (err) {
+        // As a fallback, log the link to allow manual testing
+        console.error('Failed to send reset email. Reset link (dev only):', resetLink);
+        throw err;
+    }
 };
 
 const loginService = async (email, password) => {
@@ -107,7 +131,11 @@ const loginService = async (email, password) => {
         user: {
             id: user._id,
             name: user.name,
+            fullName: user.fullName,
             email: user.email,
+            phoneNumber: user.phoneNumber,
+            address: user.address,
+            region: user.region,
             profile_image: user.profile_image,
             role: user.role,
             created_at: user.created_at,
@@ -177,7 +205,7 @@ const resendOTP = async (email) => {
 
     cooldownCache.set(email, true);
 
-    await sendOTP(email, newOTP);
+    await sendOTP(email, newOTP, "Your OTP for Registration", "registration OTP");
 
     return { success: true, message: "New OTP sent to your email!" };
 };
@@ -205,6 +233,72 @@ const verifyOTP = async (email, otp) => {
     otpCache.del(email);
 
     return { success: true, message: "Registration successful!" };
+};
+
+// ===== Forgot password with OTP =====
+const requestPasswordOtpService = async (email) => {
+    if (!email) {
+        throw new Error("Email is required!");
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+        throw new Error("No user found with this email!");
+    }
+    if (!user.password && user.google_id) {
+        throw new Error("This account uses Google login. Please sign in with Google.");
+    }
+    const key = `pwdreset:${email}`;
+    if (cooldownCache.get(key)) {
+        throw new Error("Please wait 30 seconds before resending OTP!");
+    }
+    const otp = (Math.floor(100000 + Math.random() * 900000)).toString(); // 6 digits
+    otpCache.set(key, { otp }, 300); // 5 minutes
+    cooldownCache.set(key, true);
+    await sendOTP(email, otp, "Password Reset OTP", "password reset OTP");
+    return { success: true, message: "OTP has been sent to your email." };
+};
+
+const verifyPasswordOtpService = async (email, otp) => {
+    if (!email || !otp) {
+        throw new Error("Email and OTP are required!");
+    }
+    const key = `pwdreset:${email}`;
+    const data = otpCache.get(key);
+    if (!data) {
+        throw new Error("OTP expired or invalid!");
+    }
+    if (data.otp !== otp) {
+        throw new Error("Invalid OTP!");
+    }
+    return { success: true, message: "OTP is valid." };
+};
+
+const resetPasswordWithOtpService = async (email, otp, newPassword, confirmPassword) => {
+    if (!email || !otp || !newPassword || !confirmPassword) {
+        throw new Error("All fields are required!");
+    }
+    if (newPassword !== confirmPassword) {
+        throw new Error("Passwords do not match!");
+    }
+    if (newPassword.length < 6) {
+        throw new Error("Password should be at least 6 characters long!");
+    }
+    const key = `pwdreset:${email}`;
+    const data = otpCache.get(key);
+    if (!data) {
+        throw new Error("OTP expired or invalid!");
+    }
+    if (data.otp !== otp) {
+        throw new Error("Invalid OTP!");
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+        throw new Error("User not found!");
+    }
+    user.password = newPassword;
+    await user.save();
+    otpCache.del(key);
+    return { success: true, message: "Password reset successful!" };
 };
 
 const forgotPasswordService = async (email) => {
@@ -480,6 +574,9 @@ module.exports = {
     verifyOTP,
     forgotPasswordService,
     resetPasswordService,
+    requestPasswordOtpService,
+    verifyPasswordOtpService,
+    resetPasswordWithOtpService,
     googleLoginService,
     facebookLoginService,
     logoutService

@@ -87,7 +87,7 @@ exports.getSellerDashboard = async (req, res) => {
         // Calculate total revenue from orders
         const orders = await Order.find({
             'items.product': { $in: productIds },
-            status: { $in: ['Completed', 'Delivered'] }
+            status: { $in: ['completed', 'shipping'] }
         });
 
         let totalRevenue = 0;
@@ -125,6 +125,65 @@ exports.getSellerDashboard = async (req, res) => {
                 products: sellerProducts
             }
         });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// Update order status by seller (only if all items belong to this seller)
+exports.updateSellerOrderStatus = async (req, res) => {
+    try {
+        const orderId = req.params.id;
+        const { status, cancelledReason } = req.body;
+        if (!status) {
+            return res.status(400).json({ success: false, message: 'Thiếu trạng thái cần cập nhật' });
+        }
+
+        const order = await Order.findById(orderId).populate('items.product');
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
+        }
+
+        // Ensure ALL items belong to this seller
+        const notOwned = order.items.find(it => String(it.product?.seller || '') !== String(req.userId));
+        if (notOwned) {
+            return res.status(403).json({
+                success: false,
+                message: 'Đơn hàng chứa sản phẩm không thuộc bạn. Vui lòng liên hệ Admin để xử lý.'
+            });
+        }
+
+        const current = order.status;
+        const allowedTransitions = new Set([
+            `${'Pending'}->${'WaitingConfirm'}`,
+            `${'WaitingPayment'}->${'WaitingConfirm'}`,
+            `${'WaitingConfirm'}->${'shipping'}`,
+            `${'processing'}->${'shipping'}`,
+            `${'shipping'}->${'completed'}`,
+            `${'Pending'}->${'Cancelled'}`,
+            `${'WaitingPayment'}->${'Cancelled'}`,
+            `${'WaitingConfirm'}->${'Cancelled'}`
+        ]);
+
+        const key = `${current}->${status}`;
+        if (!allowedTransitions.has(key)) {
+            return res.status(400).json({
+                success: false,
+                message: `Không thể chuyển trạng thái từ ${current} sang ${status}`
+            });
+        }
+
+        order.status = status;
+        if (status === 'Cancelled' && cancelledReason) {
+            order.cancelledReason = cancelledReason;
+        }
+        await order.save();
+
+        const saved = await Order.findById(order._id)
+            .populate('customer', 'name email phoneNumber')
+            .populate('items.product');
+
+        res.json({ success: true, message: 'Cập nhật trạng thái thành công', data: saved });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

@@ -18,39 +18,62 @@ const SellerProfile = () => {
     const [avatar, setAvatar] = useState(null);
     const [avatarPreview, setAvatarPreview] = useState('');
 
-    const [formData, setFormData] = useState({
-        fullName: seller?.fullName || seller?.name || '',
-        email: seller?.email || '',
-        phoneNumber: seller?.phoneNumber || '',
-        address: {
-            street: seller?.address?.street || '',
-            ward: seller?.address?.ward || '',
-            district: seller?.address?.district || '',
-            city: seller?.address?.city || '',
-            country: seller?.address?.country || 'Việt Nam',
-        },
-        farmName: seller?.farmName || '',
-        farmAddress: seller?.farmAddress || seller?.address?.street || '',
+    const [formData, setFormData] = useState(() => {
+        // Normalize address if backend returned string
+        let addr = seller?.address || {};
+        if (addr && typeof addr === 'string') {
+            try {
+                addr = JSON.parse(addr);
+            } catch {
+                addr = { street: addr };
+            }
+        }
+        return {
+            fullName: seller?.fullName || seller?.name || '',
+            email: seller?.email || '',
+            phoneNumber: seller?.phoneNumber || '',
+            address: {
+                street: addr?.street || '',
+                ward: addr?.ward || '',
+                district: addr?.district || '',
+                city: addr?.city || '',
+                country: addr?.country || 'Việt Nam',
+            },
+            farmName: seller?.farmName || '',
+            farmAddress: seller?.farmAddress || (typeof seller?.address === 'string' ? (addr?.street || '') : (seller?.address?.street || '')),
+        };
     });
 
     useEffect(() => {
         if (seller) {
+            // Normalize address if string
+            let addr = seller.address || {};
+            if (addr && typeof addr === 'string') {
+                try {
+                    addr = JSON.parse(addr);
+                } catch {
+                    addr = { street: addr };
+                }
+            }
             setFormData({
                 fullName: seller.fullName || seller.name || '',
                 email: seller.email || '',
                 phoneNumber: seller.phoneNumber || '',
                 address: {
-                    street: seller.address?.street || '',
-                    ward: seller.address?.ward || '',
-                    district: seller.address?.district || '',
-                    city: seller.address?.city || '',
-                    country: seller.address?.country || 'Việt Nam',
+                    street: addr?.street || '',
+                    ward: addr?.ward || '',
+                    district: addr?.district || '',
+                    city: addr?.city || '',
+                    country: addr?.country || 'Việt Nam',
                 },
                 farmName: seller.farmName || '',
-                farmAddress: seller.farmAddress || seller.address?.street || '',
+                farmAddress: seller.farmAddress || addr?.street || '',
             });
             if (seller.profile_image) {
-                setAvatarPreview(seller.profile_image);
+                const img = seller.profile_image.startsWith('http') || seller.profile_image.startsWith('data:')
+                    ? seller.profile_image
+                    : `${API_BASE_URL.replace('/api','')}${seller.profile_image}`;
+                setAvatarPreview(img);
             }
         }
     }, [seller]);
@@ -299,15 +322,51 @@ const SellerProfile = () => {
                                 Địa chỉ
                             </label>
                             {editing ? (
-                                <input
-                                    type="text"
-                                    value={formData.address.street}
-                                    onChange={(e) => handleInputChange('address.street', e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="Nhập địa chỉ"
-                                />
+                                <div className="space-y-3">
+                                    <input
+                                        type="text"
+                                        value={formData.address.street}
+                                        onChange={(e) => handleInputChange('address.street', e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="Số nhà, đường"
+                                    />
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <input
+                                            type="text"
+                                            value={formData.address.ward}
+                                            onChange={(e) => handleInputChange('address.ward', e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                            placeholder="Phường/Xã"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={formData.address.district}
+                                            onChange={(e) => handleInputChange('address.district', e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                            placeholder="Quận/Huyện"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={formData.address.city}
+                                            onChange={(e) => handleInputChange('address.city', e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                            placeholder="Tỉnh/Thành phố"
+                                        />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={formData.address.country}
+                                        onChange={(e) => handleInputChange('address.country', e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        placeholder="Quốc gia"
+                                    />
+                                </div>
                             ) : (
-                                <p className="text-gray-800 font-semibold">{formData.address.street || '-'}</p>
+                                <p className="text-gray-800 font-semibold">
+                                    {[formData.address.street, formData.address.ward, formData.address.district, formData.address.city, formData.address.country]
+                                        .filter(Boolean)
+                                        .join(', ') || '-'}
+                                </p>
                             )}
                         </div>
 

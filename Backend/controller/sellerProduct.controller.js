@@ -37,6 +37,77 @@ exports.getSellerProducts = async (req, res) => {
     }
 };
 
+// Create new product by seller
+exports.createSellerProduct = async (req, res) => {
+    try {
+        const {
+            name,
+            category,
+            listedPrice,
+            discountPercent,
+            description,
+            initialQuantity,
+            unit,
+            status,
+            allowComments,
+            details
+        } = req.body;
+
+        if (!name || !category || !listedPrice || !initialQuantity) {
+            return res.status(400).json({
+                success: false,
+                message: 'Vui lòng nhập đủ tên, danh mục, giá niêm yết và số lượng đầu vào'
+            });
+        }
+
+        // Handle images from multer
+        let images = [];
+        if (req.files && req.files.length > 0) {
+            images = req.files.map(file => `/images/products/${file.filename}`);
+        }
+
+        // Parse details if provided as JSON string
+        let parsedDetails = [];
+        if (details) {
+            try {
+                parsedDetails = typeof details === 'string' ? JSON.parse(details) : details;
+                if (!Array.isArray(parsedDetails)) parsedDetails = [];
+            } catch (e) {
+                parsedDetails = [];
+            }
+        }
+
+        // Generate productId like admin flow
+        const productId = 'PRD' + Date.now().toString().slice(-8);
+
+        const product = await Product.create({
+            productId,
+            name: name.trim(),
+            category,
+            listedPrice: Number(listedPrice),
+            discountPercent: discountPercent ? Number(discountPercent) : 0,
+            description: description || '',
+            images,
+            initialQuantity: Number(initialQuantity),
+            remainingQuantity: Number(initialQuantity),
+            unit: unit || 'kg',
+            status: status || 'Còn hàng',
+            allowComments: allowComments === 'false' ? false : true,
+            details: parsedDetails,
+            seller: req.userId,
+            is_approved: false // require admin approval
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'Tạo sản phẩm thành công! Vui lòng đợi admin duyệt.',
+            data: product
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 // Get single product (only if owned by seller)
 exports.getSellerProductById = async (req, res) => {
     try {

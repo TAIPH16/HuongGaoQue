@@ -51,6 +51,7 @@ const uploadMiddleware = (req, res, next) => {
 
 // All routes require seller authentication
 router.get('/', protectRoute(['seller']), sellerProductController.getSellerProducts);
+router.post('/', protectRoute(['seller']), uploadMiddleware, sellerProductController.createSellerProduct);
 router.get('/:id', protectRoute(['seller']), sellerProductController.getSellerProductById);
 router.put('/:id', protectRoute(['seller']), uploadMiddleware, sellerProductController.updateSellerProduct);
 router.delete('/:id', protectRoute(['seller']), sellerProductController.deleteSellerProduct);

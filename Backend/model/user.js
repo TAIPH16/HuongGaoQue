@@ -2,10 +2,114 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema(
+<<<<<<< HEAD
   {
     name: {
       type: String,
       required: true,
+=======
+    {
+        name: {
+            type: String,
+            required: true,
+        },
+        fullName: {
+            type: String,
+            default: '',
+        },
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+        },
+        password: {
+            type: String,
+            minlength: 6,
+            required: function () {
+                // Password is only required if a google_id is NOT present
+                return !this.google_id;
+            },
+        },
+        phoneNumber: { type: String, default: '' },
+        // 2. Thêm trường Khu vực (Thành phố/Tỉnh)
+        region: { type: String, default: '' },
+        // Farm information for sellers
+        farmName: { type: String, default: '' },
+        farmAddress: { type: String, default: '' },
+        farmArea: { type: String, default: '' }, // diện tích (ha/m2)
+        farmType: { type: String, default: '' }, // loại hình (trồng trọt, chăn nuôi, ...)
+        farmOwnerName: { type: String, default: '' }, // chủ trang trại / người quản lý
+        farmContactPhone: { type: String, default: '' }, // số điện thoại liên hệ
+        farmDescription: { type: String, default: '' },
+        farmCreatedAt: { type: Date, default: null },
+        farmUpdatedAt: { type: Date, default: null },
+        // Address object - lưu thông tin địa chỉ chi tiết
+        address: {
+            street: { type: String, default: '' },
+            ward: { type: String, default: '' },
+            district: { type: String, default: '' },
+            city: { type: String, default: '' },
+            country: { type: String, default: 'Việt Nam' },
+        },
+        google_id: {
+            type: String,
+            unique: true,
+            sparse: true,
+        },
+        facebook_id: {
+            type: String,
+            unique: true,
+            sparse: true,
+        },
+        profile_image: {
+            type: String,
+            default: "",
+        },
+        role: {
+            type: String,
+            enum: ["user", "admin", "guest", "seller"],
+            default: "user",
+        },
+        // Total membership points (number) used for membership rank calculation
+        membership_points: {
+            type: Number,
+            default: 0,
+        },
+        // Whether the user is banned (separate boolean flag)
+        is_banned: {
+            type: Boolean,
+            default: false,
+        },
+        // Whether the user is hidden from admin list
+        is_hidden: {
+            type: Boolean,
+            default: false,
+        },
+        is_deleted: {
+            type: Boolean,
+            default: false,
+        },
+        // Whether the seller is approved (for seller role)
+        is_approved: {
+            type: Boolean,
+            default: function () {
+                return this.role !== 'seller'; // Auto-approve non-sellers
+            }
+        },
+        login_history: [
+            {
+                login_time: {
+                    type: Date,
+                    default: Date.now,
+                },
+                login_type: {
+                    type: String,
+                    enum: ["email", "google"],
+                    required: true,
+                },
+            },
+        ],
+>>>>>>> bb854b4 (Upload files)
     },
     fullName: {
       type: String,

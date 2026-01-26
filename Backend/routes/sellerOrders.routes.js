@@ -7,5 +7,6 @@ const protectRoute = require('../middleware/auth.middleware');
 router.get('/', protectRoute(['seller']), sellerOrderController.getSellerOrders);
 router.get('/dashboard', protectRoute(['seller']), sellerOrderController.getSellerDashboard);
 router.get('/:id', protectRoute(['seller']), sellerOrderController.getSellerOrderById);
+router.patch('/:id/status', protectRoute(['seller']), sellerOrderController.updateSellerOrderStatus);
 
 module.exports = router;

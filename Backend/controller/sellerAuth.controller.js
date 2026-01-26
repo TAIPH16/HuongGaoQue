@@ -125,7 +125,20 @@ exports.loginSeller = async (req, res) => {
                     email: seller.email,
                     phoneNumber: seller.phoneNumber,
                     role: seller.role,
-                    profile_image: seller.profile_image
+                    profile_image: seller.profile_image,
+                    address: seller.address,
+                    farmName: seller.farmName,
+                    farmAddress: seller.farmAddress,
+                    farmArea: seller.farmArea,
+                    farmType: seller.farmType,
+                    farmOwnerName: seller.farmOwnerName,
+                    farmContactPhone: seller.farmContactPhone,
+                    farmDescription: seller.farmDescription,
+                    farmCreatedAt: seller.farmCreatedAt,
+                    farmUpdatedAt: seller.farmUpdatedAt,
+                    region: seller.region,
+                    is_approved: seller.is_approved,
+                    is_banned: seller.is_banned
                 }
             }
         });
@@ -165,7 +178,7 @@ exports.getSellerProfile = async (req, res) => {
 // Update Seller Profile
 exports.updateSellerProfile = async (req, res) => {
     try {
-        const { fullName, phoneNumber, address, region, farmName, farmAddress } = req.body;
+        const { fullName, phoneNumber, address, region, farmName, farmAddress, farmArea, farmType, farmOwnerName, farmContactPhone, farmDescription } = req.body;
 
         const seller = await User.findById(req.userId);
         if (!seller || seller.role !== 'seller') {
@@ -181,16 +194,42 @@ exports.updateSellerProfile = async (req, res) => {
         if (region) seller.region = region;
         if (farmName) seller.farmName = farmName;
         if (farmAddress) seller.farmAddress = farmAddress;
+        if (farmArea !== undefined) seller.farmArea = farmArea;
+        if (farmType !== undefined) seller.farmType = farmType;
+        if (farmOwnerName !== undefined) seller.farmOwnerName = farmOwnerName;
+        if (farmContactPhone !== undefined) seller.farmContactPhone = farmContactPhone;
+        if (farmDescription !== undefined) seller.farmDescription = farmDescription;
         if (address) {
-            seller.address = typeof address === 'string' ?
-                { street: address } :
-                { ...seller.address, ...address };
+            try {
+                let parsed = typeof address === 'string' ? JSON.parse(address) : address;
+                if (parsed && typeof parsed === 'object') {
+                    seller.address = {
+                        street: parsed.street || seller.address?.street || '',
+                        ward: parsed.ward || seller.address?.ward || '',
+                        district: parsed.district || seller.address?.district || '',
+                        city: parsed.city || seller.address?.city || '',
+                        country: parsed.country || seller.address?.country || 'Việt Nam',
+                    };
+                } else {
+                    // fallback: treat as plain street string
+                    seller.address = { street: String(address) };
+                }
+            } catch (e) {
+                // fallback when not JSON
+                seller.address = { street: String(address) };
+            }
         }
 
         // Handle avatar upload if present
         if (req.file) {
             seller.profile_image = `/images/sellers/${req.file.filename}`;
         }
+
+        // set/update farm dates
+        if (!seller.farmCreatedAt && (farmName || farmAddress || farmArea || farmType || farmOwnerName || farmContactPhone || farmDescription || address)) {
+            seller.farmCreatedAt = new Date();
+        }
+        seller.farmUpdatedAt = new Date();
 
         await seller.save();
 

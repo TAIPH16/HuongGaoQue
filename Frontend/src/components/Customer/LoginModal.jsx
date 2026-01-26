@@ -1,9 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ForgotPasswordModal from '../Auth/ForgotPasswordModal';
 import { FiX, FiEye, FiEyeOff } from 'react-icons/fi';
+import axios from 'axios';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { useAuth } from '../../context/AuthContext';
+<<<<<<< HEAD
 import{ Link } from 'react-router-dom';
+=======
+import { useSellerAuth } from '../../context/SellerAuthContext';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+>>>>>>> bb854b4 (Upload files)
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
@@ -11,9 +19,11 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login: customerLogin, loginWithGoogle, loginWithFacebook } = useCustomerAuth();
-  const { login: adminLogin } = useAuth();
+  const { updateProfile: updateCustomer, loginWithGoogle, loginWithFacebook } = useCustomerAuth();
+  const { setUser: setAdminUser } = useAuth();
+  const { updateProfile: updateSeller } = useSellerAuth();
   const navigate = useNavigate();
+  const [showForgot, setShowForgot] = useState(false);
 
   // Load Google OAuth script
   useEffect(() => {
@@ -215,37 +225,43 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
     setLoading(true);
 
     try {
-      // BƯỚC 1: Thử đăng nhập như là Customer trước
-      // Nếu là Customer và đúng pass -> hàm này chạy xong -> xuống onClose()
-      // Nếu là Admin -> Context sẽ throw lỗi "Vui lòng đăng nhập trang quản trị" -> nhảy xuống catch
-      // Nếu sai pass -> throw lỗi -> nhảy xuống catch
-      await customerLogin(email, password);
-      
-      onClose(); // Đóng modal, giữ nguyên ở trang hiện tại (cho Customer)
+      // Unified login - tự nhận diện role
+      const response = await axios.post(`${API_BASE_URL}/unified/auth/login`, {
+        email,
+        password,
+      });
+      const { token, user } = response.data.data;
 
-    } catch (customerError) {
-      
-      // BƯỚC 2: Nếu Customer thất bại, ta âm thầm thử đăng nhập với tư cách Admin
-      // (Bởi vì có thể user vừa nhập đúng email/pass của Admin)
-      try {
-        const adminResult = await adminLogin(email, password);
+      // Lưu token/user theo role và chuyển trang
+      localStorage.setItem('unifiedToken', token);
+      localStorage.setItem('unifiedUser', JSON.stringify(user));
 
-        // Kiểm tra xem adminLogin có trả về success: true không
-        if (adminResult && adminResult.success) {
+      switch (user.role) {
+        case 'admin':
+          localStorage.setItem('token', token);
+          localStorage.setItem('user', JSON.stringify(user));
+          setAdminUser(user);
           onClose();
-          navigate('/admin/dashboard'); // Chuyển hướng ngay lập tức
-          return; // Dừng hàm tại đây
-        }
-      } catch (adminError) {
-        // Nếu adminLogin cũng lỗi (hoặc throw lỗi), nghĩa là tài khoản này
-        // không phải Customer đúng, cũng không phải Admin đúng.
-        // Ta không cần làm gì ở đây, để code chạy xuống dưới hiển thị lỗi Customer.
+          navigate('/admin/dashboard');
+          break;
+        case 'seller':
+          localStorage.setItem('sellerToken', token);
+          localStorage.setItem('seller', JSON.stringify(user));
+          updateSeller(user);
+          onClose();
+          navigate('/seller/dashboard');
+          break;
+        case 'user':
+        default:
+          localStorage.setItem('customer_token', token);
+          localStorage.setItem('customer', JSON.stringify(user));
+          updateCustomer(user);
+          onClose();
+          // Ở trang Customer thì giữ nguyên trang hiện tại
+          break;
       }
-
-      // BƯỚC 3: Hiển thị lỗi
-      // Nếu chạy đến đây nghĩa là cả 2 cách đăng nhập đều thất bại.
-      // Ta ưu tiên hiển thị lỗi ban đầu (thường là "Sai mật khẩu" hoặc "Tài khoản không tồn tại")
-      setError(customerError.message || 'Email hoặc mật khẩu không đúng');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Email hoặc mật khẩu không đúng');
     } finally {
       setLoading(false);
     }
@@ -328,6 +344,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
                 </div>
               </div>
 
+<<<<<<< HEAD
              <div className="flex items-center justify-between">
   {error && <span className="text-red-500 text-sm">{error}</span>}
 
@@ -338,6 +355,14 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
     Quên mật khẩu
   </Link>
 </div>
+=======
+              <div className="flex items-center justify-between">
+                {error && <span className="text-red-500 text-sm">{error}</span>}
+                <button type="button" onClick={() => setShowForgot(true)} className="text-blue-600 text-sm hover:underline ml-auto">
+                  Quên mật khẩu
+                </button>
+              </div>
+>>>>>>> bb854b4 (Upload files)
 
               <button
                 type="submit"
@@ -401,6 +426,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
           </div>
         </div>
       </div>
+      <ForgotPasswordModal isOpen={showForgot} onClose={() => setShowForgot(false)} />
     </div>
   );
 };

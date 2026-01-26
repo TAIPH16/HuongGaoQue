@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FiBarChart2, FiPackage, FiShoppingCart, FiUser, FiLogOut, FiBox } from 'react-icons/fi';
+import { FiBarChart2, FiPackage, FiShoppingCart, FiUser, FiLogOut, FiBox, FiHome } from 'react-icons/fi';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 
 const SellerLayout = ({ children }) => {
@@ -12,6 +12,7 @@ const SellerLayout = ({ children }) => {
         { path: '/seller/products', icon: FiPackage, label: 'Sản phẩm của tôi' },
         { path: '/seller/stock', icon: FiBox, label: 'Quản lý kho' },
         { path: '/seller/orders', icon: FiShoppingCart, label: 'Đơn hàng' },
+        { path: '/seller/farm', icon: FiHome, label: 'Quản lý nông trại' },
         { path: '/seller/profile', icon: FiUser, label: 'Hồ sơ' },
     ];
 

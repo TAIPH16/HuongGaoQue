@@ -5,6 +5,8 @@ import { sellerStockAPI } from '../../utils/sellerApi';
 import { FiPackage, FiEdit, FiEye, FiPlus, FiSearch, FiFilter } from 'react-icons/fi';
 
 const SellerStockManagement = () => {
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+  const ORIGIN = API_BASE_URL.replace('/api', '');
   const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -96,6 +98,12 @@ const SellerStockManagement = () => {
     return new Intl.NumberFormat('vi-VN').format(price);
   };
 
+  const resolveImageUrl = (src) => {
+    if (!src) return '';
+    if (src.startsWith('http') || src.startsWith('data:')) return src;
+    return `${ORIGIN}${src}`;
+  };
+
   return (
     <SellerLayout>
       <div className="space-y-6">
@@ -184,7 +192,7 @@ const SellerStockManagement = () => {
                         <div className="flex items-center gap-3">
                           {stock.images && stock.images[0] && (
                             <img
-                              src={stock.images[0]}
+                              src={resolveImageUrl(stock.images[0])}
                               alt={stock.name}
                               className="w-10 h-10 object-cover rounded"
                             />

@@ -50,12 +50,17 @@ import SellerProducts from './pages/Seller/SellerProducts';
 import SellerProductForm from './pages/Seller/SellerProductForm';
 import SellerOrders from './pages/Seller/SellerOrders';
 import SellerStockManagement from './pages/Seller/SellerStockManagement';
+import SellerFarm from './pages/Seller/SellerFarm';
 import UniversalLogin from './pages/Auth/UniversalLogin';
 import ForgotPassword from './pages/Auth/ForgotPassword';
+<<<<<<< HEAD
 import SellerRegister from './pages/Seller/SellerRegister';
 import ResetPassword from './pages/Auth/ResetPassword';
 
 
+=======
+import ResetPassword from './pages/Auth/ResetPassword';
+>>>>>>> bb854b4 (Upload files)
 
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
@@ -89,6 +94,8 @@ function AppRoutes() {
 
       {/* UNIVERSAL LOGIN - Chung cho tất cả */}
       <Route path="/login" element={<UniversalLogin />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* 🔑 FORGOT PASSWORD */}
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -124,6 +131,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/seller/products/add"
+        element={
+          <SellerProtectedRoute>
+            <SellerProductForm />
+          </SellerProtectedRoute>
+        }
+      />
+      <Route
         path="/seller/products/edit/:id"
         element={
           <SellerProtectedRoute>
@@ -144,6 +159,14 @@ function AppRoutes() {
         element={
           <SellerProtectedRoute>
             <SellerStockManagement />
+          </SellerProtectedRoute>
+        }
+      />
+      <Route
+        path="/seller/farm"
+        element={
+          <SellerProtectedRoute>
+            <SellerFarm />
           </SellerProtectedRoute>
         }
       />

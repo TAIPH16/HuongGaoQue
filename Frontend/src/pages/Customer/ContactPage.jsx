@@ -75,9 +75,7 @@ const ContactPage = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-1">Địa chỉ</h3>
-                  <p className="text-gray-600">
-                    Khoa Công nghệ phần mềm, Trường Công nghệ Thông tin & Truyền thông, Trường Đại học Cần Thơ
-                  </p>
+                  <p className="text-gray-600">FPT, NINH KIỀU , CẦN THƠ</p>
                 </div>
               </div>
 
@@ -87,7 +85,7 @@ const ContactPage = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-1">Điện thoại</h3>
-                  <p className="text-gray-600">0123 456 789</p>
+                  <p className="text-gray-600">0369304545</p>
                 </div>
               </div>
 
@@ -97,7 +95,7 @@ const ContactPage = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-1">Email</h3>
-                  <p className="text-gray-600">info@huonggaoque.com.vn</p>
+                  <p className="text-gray-600">g1@gmail.com</p>
                 </div>
               </div>
 

@@ -47,6 +47,41 @@ export const authAPI = {
     });
     return authApi.post('/api/auth/login', credentials);
   },
+  requestPasswordOtp: (email) => {
+    const authApi = axios.create({
+      baseURL: API_BASE_URL.replace('/api', ''),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return authApi.post('/api/auth/forgot-password/request-otp', { email });
+  },
+  verifyPasswordOtp: (email, otp) => {
+    const authApi = axios.create({
+      baseURL: API_BASE_URL.replace('/api', ''),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return authApi.post('/api/auth/forgot-password/verify-otp', { email, otp });
+  },
+  resetPasswordWithOtp: (payload) => {
+    const authApi = axios.create({
+      baseURL: API_BASE_URL.replace('/api', ''),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return authApi.post('/api/auth/forgot-password/reset-with-otp', payload);
+  },
+  forgotPassword: (email) => {
+    const authApi = axios.create({
+      baseURL: API_BASE_URL.replace('/api', ''),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return authApi.post('/api/auth/forgot-password', { email });
+  },
+  resetPassword: (payload) => {
+    const authApi = axios.create({
+      baseURL: API_BASE_URL.replace('/api', ''),
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return authApi.post('/api/auth/reset-password', payload);
+  },
   logout: () => {
     const token = localStorage.getItem('token');
     const authApi = axios.create({

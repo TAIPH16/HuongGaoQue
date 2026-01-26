@@ -56,6 +56,8 @@ export const sellerOrdersAPI = {
     getAll: (params) => sellerApi.get('/seller/orders', { params }),
     getById: (id) => sellerApi.get(`/seller/orders/${id}`),
     getDashboard: () => sellerApi.get('/seller/orders/dashboard'),
+    updateStatus: (id, status, cancelledReason) =>
+        sellerApi.patch(`/seller/orders/${id}/status`, { status, cancelledReason }),
 };
 
 // Seller Profile API

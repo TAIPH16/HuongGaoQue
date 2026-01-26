@@ -1,4 +1,5 @@
 require("dotenv").config();
+const fs = require("fs");
 const createError = require("http-errors");
 const express = require("express");
 const path = require("path");
@@ -7,6 +8,15 @@ const logger = require("morgan");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+// Optionally load local environment overrides if present (useful in development)
+try {
+  const localEnvPath = path.join(__dirname, "env.local");
+  if (fs.existsSync(localEnvPath)) {
+    require("dotenv").config({ path: localEnvPath });
+  }
+} catch (e) {
+  // no-op
+}
 
 const app = express();
 

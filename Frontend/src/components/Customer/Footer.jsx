@@ -15,10 +15,10 @@ const Footer = () => {
               <span className="text-xl font-bold text-white">HƯƠNG GẠO QUÊ</span>
             </div>
             <p className="text-sm mb-2">
-              Địa chỉ: Khoa Công nghệ phần mềm, Trường Công nghệ Thông tin & Truyền thông, Trường Đại học Cần Thơ
+              Địa chỉ: FPT, NINH KIỀU , CẦN THƠ
             </p>
-            <p className="text-sm mb-2">Điện thoại: (+84) 123 456 789</p>
-            <p className="text-sm mb-4">Email: hello-hoang.vercel.app</p>
+            <p className="text-sm mb-2">Điện thoại: 0369304545</p>
+            <p className="text-sm mb-4">Email: g1@gmail.com</p>
             <div className="flex space-x-4">
               <a href="#" className="hover:text-white transition"><FiFacebook className="w-5 h-5" /></a>
               <a href="#" className="hover:text-white transition"><FiInstagram className="w-5 h-5" /></a>
@@ -55,7 +55,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm">Copyright 2023 © Huonggaoque. All right reserved</p>
+          <p className="text-sm">Copyright 2026 © Huonggaoque. All right reserved</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <Link to="/privacy" className="text-sm hover:text-white transition">Privacy Policy</Link>
             <Link to="/terms" className="text-sm hover:text-white transition">Terms of Use</Link>
