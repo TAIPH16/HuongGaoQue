@@ -15,7 +15,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { updateProfile: updateCustomer, loginWithGoogle, loginWithFacebook } = useCustomerAuth();
+  const { setCustomer: updateCustomer, loginWithGoogle, loginWithFacebook } = useCustomerAuth();
   const { setUser: setAdminUser } = useAuth();
   const { updateProfile: updateSeller } = useSellerAuth();
   const navigate = useNavigate();
@@ -226,13 +226,34 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
         email,
         password,
       });
-      const { token, user } = response.data.data;
+      
+      console.log("Login response:", response);
+      console.log("Response data:", response.data);
+      console.log("Response data.data:", response.data?.data);
+
+      // Check if response has the expected structure
+      if (!response.data) {
+        throw new Error("Phản hồi từ server không hợp lệ");
+      }
+
+      // Handle both response formats: { data: { token, user } } or { success: true, data: { token, user } }
+      const responseData = response.data.data || response.data;
+      const { token, user } = responseData || {};
+
+      if (!token || !user) {
+        console.error("Missing token or user in response:", { token, user, fullResponse: response.data });
+        throw new Error("Dữ liệu đăng nhập không hợp lệ");
+      }
+
+      console.log("Login successful, user role:", user.role);
 
       // Lưu token/user theo role và chuyển trang
       localStorage.setItem('unifiedToken', token);
       localStorage.setItem('unifiedUser', JSON.stringify(user));
 
-      switch (user.role) {
+      const role = user.role?.toLowerCase().trim();
+
+      switch (role) {
         case 'admin':
           localStorage.setItem('token', token);
           localStorage.setItem('user', JSON.stringify(user));
@@ -257,7 +278,18 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
           break;
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Email hoặc mật khẩu không đúng');
+      console.error("LOGIN ERROR:", err);
+      console.error("Error response:", err.response);
+      console.error("Error message:", err.message);
+      
+      // Better error handling
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError('Email hoặc mật khẩu không đúng');
+      }
     } finally {
       setLoading(false);
     }

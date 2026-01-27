@@ -207,21 +207,29 @@ const updateProduct = async (productId, productData, files) => {
         try {
             let parsedDetails = [];
             if (typeof details === 'string') {
-                // Nếu là string rỗng hoặc chỉ có whitespace, dùng empty array
-                if (details.trim() === '' || details.trim() === '[]') {
+                // Nếu là string rỗng hoặc chỉ có whitespace hoặc "[]", dùng empty array
+                const trimmed = details.trim();
+                if (trimmed === '' || trimmed === '[]' || trimmed === 'null') {
                     parsedDetails = [];
                 } else {
                     parsedDetails = JSON.parse(details);
+                    // Đảm bảo là array
+                    if (!Array.isArray(parsedDetails)) {
+                        parsedDetails = [];
+                    }
                 }
             } else if (Array.isArray(details)) {
                 parsedDetails = details;
+            } else if (details === null) {
+                parsedDetails = [];
             }
             console.log('Updating product details - Parsed:', parsedDetails);
             console.log('Updating product details - Count:', parsedDetails.length);
             product.details = parsedDetails;
         } catch (error) {
             console.error('Error parsing details:', error, 'Raw details:', details);
-            // Nếu parse lỗi, giữ nguyên details cũ (không cập nhật)
+            // Nếu parse lỗi, dùng empty array thay vì giữ nguyên (tránh lỗi validation)
+            product.details = [];
         }
     } else {
         // Nếu details không có trong request, giữ nguyên details cũ

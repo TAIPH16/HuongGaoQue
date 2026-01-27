@@ -95,8 +95,13 @@ const loginService = async (email, password) => {
         throw new Error("All fields are required!");
     }
 
+    // Normalize email to lowercase (same as registration)
+    const normalizedEmail = email.trim().toLowerCase();
+    // Trim password to remove any accidental whitespace
+    const trimmedPassword = password.trim();
+
     // check if user exists
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
         throw new Error("Invalid email or password!");
     }
@@ -111,8 +116,13 @@ const loginService = async (email, password) => {
         throw new Error("This account has been deleted!");
     }
 
+    // Check if user has password (not Google/Facebook only account)
+    if (!user.password) {
+        throw new Error("This account uses Google/Facebook login. Please sign in with Google/Facebook.");
+    }
+
     // check if password is correct
-    const isPasswordCorrect = await user.comparePassword(password);
+    const isPasswordCorrect = await user.comparePassword(trimmedPassword);
     if (!isPasswordCorrect) {
         throw new Error("Invalid email or password!");
     }
@@ -156,17 +166,19 @@ const registerService = async (name, email, password, role = 'user') => {
         throw new Error("Name should be at least 3 characters long!");
     }
 
-    const existingEmail = await User.findOne({ email });
+    // Normalize email to lowercase for checking (same as when saving)
+    const normalizedEmail = email.trim().toLowerCase();
+    const existingEmail = await User.findOne({ email: normalizedEmail });
     if (existingEmail) {
         throw new Error("Email already exists!");
     }
 
     // Tạo user trực tiếp thay vì gửi OTP
-    const profile_image = `https://api.dicebear.com/9.x/avataaars/svg?seed=${email}`;
+    const profile_image = `https://api.dicebear.com/9.x/avataaars/svg?seed=${normalizedEmail}`;
     const newUser = new User({
         name: name.trim(),
-        email: email.trim().toLowerCase(),
-        password: password,
+        email: normalizedEmail,
+        password: password.trim(), // Trim password to remove accidental whitespace
         role: role || 'user',
         profile_image,
     });

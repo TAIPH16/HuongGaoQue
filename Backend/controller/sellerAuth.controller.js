@@ -61,8 +61,21 @@ exports.loginSeller = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        // Validate input
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email và mật khẩu là bắt buộc'
+            });
+        }
+
+        // Normalize email to lowercase (same as registration)
+        const normalizedEmail = email.trim().toLowerCase();
+        // Trim password to remove any accidental whitespace
+        const trimmedPassword = password.trim();
+        
         // Find seller
-        const seller = await User.findOne({ email, role: 'seller' });
+        const seller = await User.findOne({ email: normalizedEmail, role: 'seller' });
         if (!seller) {
             return res.status(401).json({
                 success: false,
@@ -86,8 +99,16 @@ exports.loginSeller = async (req, res) => {
             });
         }
 
+        // Check if seller has password (not OAuth only account)
+        if (!seller.password) {
+            return res.status(401).json({
+                success: false,
+                message: 'Tài khoản này sử dụng đăng nhập bằng Google/Facebook'
+            });
+        }
+
         // Check password
-        const isPasswordValid = await seller.comparePassword(password);
+        const isPasswordValid = await seller.comparePassword(trimmedPassword);
         if (!isPasswordValid) {
             return res.status(401).json({
                 success: false,
