@@ -1,5 +1,7 @@
 const Product = require('../model/product');
 const Category = require('../model/category');
+const path = require('path');
+const fs = require('fs');
 
 // Get seller's own products
 exports.getSellerProducts = async (req, res) => {
@@ -71,7 +73,16 @@ exports.createSellerProduct = async (req, res) => {
         let parsedDetails = [];
         if (details) {
             try {
-                parsedDetails = typeof details === 'string' ? JSON.parse(details) : details;
+                if (typeof details === 'string') {
+                    const trimmed = details.trim();
+                    if (trimmed === '' || trimmed === '[]' || trimmed === 'null') {
+                        parsedDetails = [];
+                    } else {
+                        parsedDetails = JSON.parse(details);
+                    }
+                } else {
+                    parsedDetails = details;
+                }
                 if (!Array.isArray(parsedDetails)) parsedDetails = [];
             } catch (e) {
                 parsedDetails = [];
@@ -231,6 +242,17 @@ exports.updateSellerProduct = async (req, res) => {
                 if (typeof imagesToDelete === 'string') imagesToDeleteArray = [imagesToDelete];
             }
             if (Array.isArray(imagesToDeleteArray)) {
+                // Delete files from filesystem
+                imagesToDeleteArray.forEach(imagePath => {
+                    try {
+                        const filePath = path.join(__dirname, '..', 'public', imagePath);
+                        if (fs.existsSync(filePath)) {
+                            fs.unlinkSync(filePath);
+                        }
+                    } catch (err) {
+                        console.error('Error deleting image file:', err);
+                    }
+                });
                 product.images = product.images.filter(img => !imagesToDeleteArray.includes(img));
             }
         }
@@ -263,7 +285,7 @@ exports.updateSellerProduct = async (req, res) => {
 // Delete product (only if owned by seller)
 exports.deleteSellerProduct = async (req, res) => {
     try {
-        const product = await Product.findOneAndDelete({
+        const product = await Product.findOne({
             _id: req.params.id,
             seller: req.userId
         });
@@ -274,6 +296,18 @@ exports.deleteSellerProduct = async (req, res) => {
                 message: 'Không tìm thấy sản phẩm'
             });
         }
+
+        // Delete images
+        if (product.images && product.images.length > 0) {
+            product.images.forEach(imagePath => {
+                const filePath = path.join(__dirname, '..', 'public', imagePath);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            });
+        }
+
+        await Product.findByIdAndDelete(product._id);
 
         res.status(200).json({
             success: true,

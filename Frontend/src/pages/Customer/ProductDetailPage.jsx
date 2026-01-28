@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiHeart, FiMinus, FiPlus, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
+import { FiHeart, FiMinus, FiPlus, FiArrowLeft, FiArrowRight, FiShoppingCart } from 'react-icons/fi';
 import CustomerLayout from '../../components/Customer/CustomerLayout';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -219,12 +219,12 @@ const ProductDetailPage = () => {
               </span>
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-4">{product.name}</h1>
-            <div className="mb-6">
-              <span className="text-2xl font-bold text-[#2d5016]">
+            <div className="mb-6 flex items-baseline">
+              <span className="text-3xl font-extrabold text-green-600">
                 {formatPrice(finalPrice)}
               </span>
               {originalPrice && (
-                <span className="ml-4 text-lg text-gray-500 line-through">
+                <span className="ml-6 text-lg text-gray-400 line-through">
                   {formatPrice(originalPrice)}/kg
                 </span>
               )}
@@ -238,12 +238,12 @@ const ProductDetailPage = () => {
             />
 
             {/* Quantity */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Số lượng</label>
-              <div className="flex items-center space-x-3">
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-700 mb-3">Số lượng</label>
+              <div className="flex items-center border border-gray-300 rounded-lg w-fit">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="w-10 h-10 border rounded flex items-center justify-center hover:bg-gray-100"
+                  className="w-12 h-12 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-l-lg transition"
                 >
                   <FiMinus />
                 </button>
@@ -251,11 +251,11 @@ const ProductDetailPage = () => {
                   type="number"
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-16 text-center border rounded"
+                  className="w-16 text-center border-none focus:ring-0 font-semibold text-lg h-12 appearance-none m-0"
                 />
                 <button
                   onClick={() => setQuantity((q) => q + 1)}
-                  className="w-10 h-10 border rounded flex items-center justify-center hover:bg-gray-100"
+                  className="w-12 h-12 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-r-lg transition"
                 >
                   <FiPlus />
                 </button>
@@ -269,8 +269,9 @@ const ProductDetailPage = () => {
                   addToCart({ ...product, price: finalPrice, originalPrice }, quantity);
                   setShowToast(true);
                 }}
-                className="flex-1 bg-[#2d5016] text-white py-3 rounded-lg font-semibold hover:bg-[#1f350d] transition"
+                className="flex-1 bg-[#2d5016] text-white py-4 rounded-lg font-bold hover:bg-[#1a3c0b] transition flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
               >
+                <FiShoppingCart className="w-5 h-5" />
                 Thêm Vào Giỏ Hàng
               </button>
               <button
@@ -362,33 +363,42 @@ const ProductDetailPage = () => {
 
           {activeTab === 'details' && (
             <div>
-              <h3 className="text-xl font-bold mb-4">Thông tin sản phẩm</h3>
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                  <span className="font-semibold">Tên sản phẩm:</span> {product.name}
-                </div>
-                <div>
-                  <span className="font-semibold">Danh mục:</span> {product.category?.name || 'Combo'}
-                </div>
-                <div>
-                  <span className="font-semibold">Giá:</span> {formatPrice(finalPrice)}
-                </div>
-                <div>
-                  <span className="font-semibold">Đơn vị:</span> {product.unit || 'kg'}
-                </div>
+              <h3 className="text-xl font-bold mb-6">Thông tin sản phẩm</h3>
+              
+              <div className="overflow-hidden border border-gray-200 rounded-lg mb-8">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50 w-1/3">Tên sản phẩm</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{product.name}</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50">Danh mục</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{product.category?.name || 'Combo'}</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50">Đơn vị tính</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{product.unit || 'kg'}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
               
               {/* Product Details from details array */}
               {product.details && product.details.length > 0 && (
-                <div className="mt-6">
-                  <h4 className="text-lg font-semibold mb-4">Thông tin chi tiết</h4>
-                  <div className="grid grid-cols-2 gap-4">
+                <div className="mt-8">
+                  <h4 className="text-lg font-bold mb-4">Thông số kỹ thuật</h4>
+                  <div className="overflow-hidden border border-gray-200 rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <tbody className="bg-white divide-y divide-gray-200">
                     {product.details.map((detail, index) => (
-                      <div key={index} className="border-b pb-2">
-                        <span className="font-semibold text-gray-700">{detail.indexName}:</span>
-                        <span className="ml-2 text-gray-600">{detail.value || 'N/A'}</span>
-                      </div>
+                          <tr key={index}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50 w-1/3">{detail.indexName}</td>
+                            <td className="px-6 py-4 text-sm text-gray-700">{detail.value || 'N/A'}</td>
+                          </tr>
                     ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}
@@ -482,4 +492,3 @@ const ProductDetailPage = () => {
 };
 
 export default ProductDetailPage;
-
