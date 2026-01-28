@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { FiHeart, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiHeart, FiChevronLeft, FiChevronRight, FiSearch } from 'react-icons/fi';
 import CustomerLayout from '../../components/Customer/CustomerLayout';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { publicProductsAPI, publicCategoriesAPI } from '../../utils/publicApi';
 import { customerWishlistAPI } from '../../utils/customerApi';
+import Toast from '../../components/Customer/Toast';
 
 const ProductsPage = () => {
   const [searchParams] = useSearchParams();
@@ -20,6 +21,7 @@ const ProductsPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [wishlistItems, setWishlistItems] = useState([]);
   const [wishlistLoading, setWishlistLoading] = useState({});
+  const [showToast, setShowToast] = useState(false);
   const { addToCart } = useCart();
   const { customer } = useCustomerAuth();
 
@@ -167,70 +169,100 @@ const ProductsPage = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 gap-8">
-          {/* Main Content */}
-          <div className="col-span-1">
-            {/* Filters and Title */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <h1 className="text-3xl font-bold text-gray-800">
-                  {selectedCategory === 'Tất cả' ? 'Tất cả sản phẩm' : selectedCategory}
-                </h1>
-                {/* Search */}
-                <form onSubmit={handleSearch} className="flex-grow md:max-w-md flex gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Left Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
+              {/* Search */}
+              <div>
+                <h3 className="font-bold text-gray-800 mb-4">Tìm kiếm</h3>
+                <form onSubmit={handleSearch} className="relative">
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Tìm kiếm sản phẩm..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                    placeholder="Tìm kiếm loại gạo bạn cần..."
+                    className="w-full pl-4 pr-12 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d5016] focus:border-transparent outline-none transition-all text-sm"
                   />
                   <button
                     type="submit"
-                    className="bg-[#2d5016] text-white px-4 py-2 rounded-lg hover:bg-[#1f350d] transition"
+                    className="absolute right-1.5 top-1.5 bottom-1.5 bg-[#2d5016] text-white px-3 rounded-md hover:bg-[#1f350d] transition flex items-center justify-center"
                   >
-                    🔍
+                    <FiSearch className="w-4 h-4" />
                   </button>
                 </form>
               </div>
-              
-              {/* Category Filters */}
-              <div className="mt-6 flex flex-wrap items-center gap-2">
-                <button
-                  onClick={() => {
-                    setSelectedCategory('Tất cả');
-                    setSelectedCategoryId(null);
-                    setCurrentPage(1);
-                  }}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
-                    selectedCategoryId === null
-                      ? 'bg-[#2d5016] text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  Tất cả
-                </button>
-                {categories.map((category) => (
-                  <button
-                    key={category._id}
-                    onClick={() => {
-                      setSelectedCategory(category.name);
-                      setSelectedCategoryId(category._id);
-                      setCurrentPage(1);
-                    }}
-                    className={`px-4 py-2 rounded-full text-sm font-semibold transition ${
-                      selectedCategoryId === category._id
-                        ? 'bg-[#2d5016] text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+
+              {/* Categories */}
+              <div>
+                <h3 className="font-bold text-gray-800 mb-4">Loại sản phẩm</h3>
+                <div className="space-y-1">
+                  <label 
+                    className={`flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all border ${
+                      selectedCategory === 'Tất cả' 
+                        ? 'bg-green-50 border-[#2d5016] text-[#2d5016]' 
+                        : 'border-transparent hover:bg-green-50 hover:text-[#2d5016] text-gray-600'
                     }`}
                   >
-                    {category.name}
-                  </button>
-                ))}
+                    <span className="font-medium text-sm">Tất cả</span>
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                      selectedCategory === 'Tất cả' ? 'border-[#2d5016]' : 'border-gray-300'
+                    }`}>
+                      {selectedCategory === 'Tất cả' && <div className="w-2 h-2 rounded-full bg-[#2d5016]" />}
+                    </div>
+                    <input
+                      type="radio"
+                      name="category"
+                      value="all"
+                      checked={selectedCategory === 'Tất cả'}
+                      onChange={() => {
+                        setSelectedCategory('Tất cả');
+                        setSelectedCategoryId(null);
+                        setCurrentPage(1);
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                  {categories.map((category) => (
+                    <label 
+                      key={category._id}
+                      className={`flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all border ${
+                        selectedCategoryId === category._id 
+                          ? 'bg-green-50 border-[#2d5016] text-[#2d5016]' 
+                          : 'border-transparent hover:bg-green-50 hover:text-[#2d5016] text-gray-600'
+                      }`}
+                    >
+                      <span className="font-medium text-sm">{category.name}</span>
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        selectedCategoryId === category._id ? 'border-[#2d5016]' : 'border-gray-300'
+                      }`}>
+                        {selectedCategoryId === category._id && <div className="w-2 h-2 rounded-full bg-[#2d5016]" />}
+                      </div>
+                      <input
+                        type="radio"
+                        name="category"
+                        value={category._id}
+                        checked={selectedCategoryId === category._id}
+                        onChange={() => {
+                          setSelectedCategory(category.name);
+                          setSelectedCategoryId(category._id);
+                          setCurrentPage(1);
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
+          </div>
 
-            <div className="flex items-center justify-end mb-6">
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-3xl font-bold text-gray-800">
+                {selectedCategory === 'Tất cả' ? 'Tất cả sản phẩm' : selectedCategory}
+              </h1>
               <select 
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
                 value={sortBy}
@@ -258,13 +290,16 @@ const ProductsPage = () => {
                     const originalPrice = discountPercent > 0 ? price : null;
 
                     return (
-                      <div key={product._id} className="bg-white rounded-lg shadow-md hover:shadow-xl transition overflow-hidden">
-                        <div className="relative">
-                          <img
-                            src={getImageUrl(product.images?.[0] || product.image)}
-                            alt={product.name}
-                            className="w-full h-48 object-cover"
-                          />
+                      <div key={product._id} className="bg-white rounded-lg shadow-md hover:shadow-xl transition overflow-hidden flex flex-col h-full group">
+                        <div className="relative overflow-hidden">
+                          <Link to={`/san-pham/${product._id}`} className="block">
+                            <img
+                              src={getImageUrl(product.images?.[0] || product.image)}
+                              alt={product.name}
+                              className="w-full h-48 object-cover transition-transform duration-500 transform group-hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                          </Link>
                           {discountPercent > 0 && (
                             <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
                               -{discountPercent}%
@@ -282,8 +317,10 @@ const ProductsPage = () => {
                             <FiHeart className={`w-5 h-5 ${isInWishlist(product._id) ? 'fill-current' : ''}`} />
                           </button>
                         </div>
-                        <div className="p-4">
-                          <h3 className="font-semibold text-gray-800 mb-2">{product.name}</h3>
+                        <div className="p-4 flex flex-col flex-1">
+                          <Link to={`/san-pham/${product._id}`}>
+                            <h3 className="font-semibold text-gray-800 mb-2 hover:text-[#2d5016] transition-colors">{product.name}</h3>
+                          </Link>
                           <div className="mb-3">
                             <span className="text-lg font-bold text-gray-800">
                               Giá: {formatPrice(finalPrice)}/kg
@@ -294,12 +331,15 @@ const ProductsPage = () => {
                               </span>
                             )}
                           </div>
-                          <Link
-                            to={`/san-pham/${product._id}`}
-                            className="block w-full bg-[#2d5016] text-white text-center py-2 rounded-lg hover:bg-[#1f350d] transition"
+                          <button
+                            onClick={() => {
+                              addToCart({ ...product, price: finalPrice, originalPrice }, 1);
+                              setShowToast(true);
+                            }}
+                            className="block w-full bg-[#2d5016] text-white text-center py-2 rounded-lg hover:bg-[#3a661c] hover:shadow-lg transform hover:scale-105 transition-all duration-200 mt-auto"
                           >
                             Mua Ngay
-                          </Link>
+                          </button>
                         </div>
                       </div>
                     );
@@ -355,9 +395,14 @@ const ProductsPage = () => {
           </div>
         </div>
       </div>
+      <Toast
+        message="Đã thêm sản phẩm vào giỏ hàng!"
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+        type="success"
+      />
     </CustomerLayout>
   );
 };
 
 export default ProductsPage;
-

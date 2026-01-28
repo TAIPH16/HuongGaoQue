@@ -1,11 +1,21 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const connectDB = require('./config/database');
 const Category = require('./model/category');
 const Product = require('./model/product');
 const User = require('./model/user');
 
 dotenv.config();
+
+// Hàm kết nối DB trực tiếp (không phụ thuộc file config bên ngoài)
+const connectDB = async () => {
+    try {
+        const conn = await mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost:27017/rice");
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
+    } catch (error) {
+        console.error(`Error connecting to MongoDB: ${error.message}`);
+        process.exit(1);
+    }
+};
 
 const seedData = async () => {
     await connectDB();
@@ -17,9 +27,24 @@ const seedData = async () => {
         console.log('Data cleared...');
 
         // Tìm một user để làm người bán (Seller)
-        const seller = await User.findOne({});
-        const sellerId = seller ? seller._id : null;
-        if (sellerId) console.log('Found seller user:', seller.fullName || seller.email);
+        let seller = await User.findOne({ role: 'admin' });
+        if (!seller) seller = await User.findOne({});
+        
+        // Nếu chưa có user nào, tạo một user mặc định để tránh lỗi validation sản phẩm
+        if (!seller) {
+            console.log('No user found. Creating default admin user...');
+            const defaultUser = new User({
+                name: 'Admin Seeder',
+                email: 'admin@example.com',
+                password: 'password123', // Lưu ý: Model User nên có hook pre-save để hash password này
+                role: 'admin',
+                is_approved: true
+            });
+            seller = await defaultUser.save();
+        }
+
+        const sellerId = seller._id;
+        console.log('Using seller:', seller.fullName || seller.email);
 
         // Create categories (Danh mục gạo)
         const categories = await Category.insertMany([
@@ -50,7 +75,7 @@ const seedData = async () => {
                 description: 'Gạo lứt đỏ Điện Biên dẻo, mềm, dễ ăn, tốt cho người ăn kiêng và tiểu đường.',
                 initialQuantity: 500,
                 unit: 'kg',
-                images: ['/images/products/gao-lut-do.jpg'],
+                images: ['/images/products/gaolutdodienbien.jpg'],
                 is_approved: true,
             },
             {
@@ -61,7 +86,7 @@ const seedData = async () => {
                 description: 'Nếp cái hoa vàng hạt tròn, dẻo thơm đặc trưng, là lựa chọn số một cho các món xôi.',
                 initialQuantity: 800,
                 unit: 'kg',
-                images: ['/images/products/nep-cai-hoa-vang.jpg'],
+                images: ['/images/products/nepcaihoavang.jpg'],
                 is_approved: true,
             },
             {
@@ -72,7 +97,7 @@ const seedData = async () => {
                 description: 'Gạo Tám thơm Hải Hậu hạt nhỏ, cơm thơm, ngọt đậm đà vị truyền thống.',
                 initialQuantity: 1200,
                 unit: 'kg',
-                images: ['/images/products/gao-tam-thom.jpg'],
+                images: ['/images/products/gaotamthom.jpg'],
                 is_approved: true,
             },
             {
@@ -83,7 +108,7 @@ const seedData = async () => {
                 description: 'Gạo lứt tím than chứa nhiều anthocyanin chống oxy hóa, tốt cho sức khỏe.',
                 initialQuantity: 400,
                 unit: 'kg',
-                images: ['/images/products/gao-lut-tim.jpg'],
+                images: ['/images/products/gaoluttimthan.png'],
                 is_approved: true,
             },
              {
@@ -94,7 +119,7 @@ const seedData = async () => {
                 description: 'Nếp nương hạt to, dài, đồ lên dẻo và rất thơm, đặc sản vùng cao.',
                 initialQuantity: 600,
                 unit: 'kg',
-                images: ['/images/products/nep-nuong.jpg'],
+                images: ['/images/products/nepnuongtaybac.jpg'],
                 is_approved: true,
             },
             {
@@ -105,7 +130,7 @@ const seedData = async () => {
                 description: 'Gạo Nàng Hương Chợ Đào nổi tiếng Long An, hương thơm lài đặc trưng.',
                 initialQuantity: 700,
                 unit: 'kg',
-                images: ['/images/products/gao-nang-huong.jpg'],
+                images: ['/images/products/gaonanghuong.jpg'],
                 is_approved: true,
             },
             {
@@ -116,7 +141,7 @@ const seedData = async () => {
                 description: 'Gạo Nhật hạt tròn, dẻo nhiều, thích hợp làm sushi, cơm nắm cho bé.',
                 initialQuantity: 500,
                 unit: 'kg',
-                images: ['/images/products/gao-nhat.jpg'],
+                images: ['/images/products/gaonhatjaponica.jpg'],
                 is_approved: true,
             },
             {
@@ -127,7 +152,7 @@ const seedData = async () => {
                 description: 'Gạo huyết rồng màu đỏ nâu, giàu sắt và vitamin B1, rất tốt cho sức khỏe.',
                 initialQuantity: 300,
                 unit: 'kg',
-                images: ['/images/products/gao-huyet-rong.jpg'],
+                images: ['/images/products/gaohuyetrong.jpeg'],
                 is_approved: true,
             },
             {
@@ -138,7 +163,7 @@ const seedData = async () => {
                 description: 'Gạo Thơm Lài hạt thon dài, cơm dẻo vừa, thơm nhẹ, để nguội vẫn mềm.',
                 initialQuantity: 1500,
                 unit: 'kg',
-                images: ['/images/products/gao-thom-lai.jpg'],
+                images: ['/images/products/gaothomlaimien.jpg'],
                 is_approved: true,
             },
             {
@@ -149,7 +174,7 @@ const seedData = async () => {
                 description: 'Nếp sáp hạt trắng đục, độ dẻo và kết dính cao, thích hợp nấu xôi, chè.',
                 initialQuantity: 600,
                 unit: 'kg',
-                images: ['/images/products/nep-sap.jpg'],
+                images: ['/images/products/gaonepsap.jpg'],
                 is_approved: true,
             },
             {
@@ -160,7 +185,7 @@ const seedData = async () => {
                 description: 'Gạo Tài Nguyên hạt đục, cơm xốp, mềm, ngọt, thích hợp làm cơm chiên.',
                 initialQuantity: 800,
                 unit: 'kg',
-                images: ['/images/products/gao-tai-nguyen.jpg'],
+                images: ['/images/products/gaotainguyen.jpg'],
                 is_approved: true,
             },
             {
@@ -171,7 +196,7 @@ const seedData = async () => {
                 description: 'Gạo Hàm Châu nở xốp, khô, chuyên dùng làm bún, bánh xèo, cơm chiên.',
                 initialQuantity: 2000,
                 unit: 'kg',
-                images: ['/images/products/gao-ham-chau.jpg'],
+                images: ['/images/products/gaohamchau.jpg'],
                 is_approved: true,
             },
             {
@@ -182,7 +207,7 @@ const seedData = async () => {
                 description: 'Gạo Sa Mơ hạt nhỏ, cơm khô xốp, nở nhiều, thích hợp cho bếp ăn công nghiệp.',
                 initialQuantity: 1500,
                 unit: 'kg',
-                images: ['/images/products/gao-sa-mo.jpg'],
+                images: ['/images/products/gaosamo.jpg'],
                 is_approved: true,
             },
             {
@@ -193,7 +218,7 @@ const seedData = async () => {
                 description: 'Gạo lứt đen (huyền mễ) giàu chất chống oxy hóa, hỗ trợ tim mạch.',
                 initialQuantity: 400,
                 unit: 'kg',
-                images: ['/images/products/gao-lut-den.jpg'],
+                images: ['/images/products/gaolutden.jpg'],
                 is_approved: true,
             },
         ];
@@ -201,12 +226,15 @@ const seedData = async () => {
         // Create products with auto-generated productId
         for (const productData of products) {
             const productId = 'PRD' + Date.now().toString().slice(-8) + Math.floor(Math.random() * 100);
-            const product = new Product({
+            
+            const productPayload = {
                 ...productData,
                 productId: productId,
                 remainingQuantity: productData.initialQuantity,
-                seller: sellerId, // Gán người bán
-            });
+                seller: sellerId, // Luôn gán seller để tránh lỗi validation
+            };
+
+            const product = new Product(productPayload);
             await product.save();
         }
         

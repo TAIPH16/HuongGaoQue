@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiHeart, FiMinus, FiPlus, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
+import { FiHeart, FiMinus, FiPlus, FiArrowLeft, FiArrowRight, FiShoppingCart } from 'react-icons/fi';
 import CustomerLayout from '../../components/Customer/CustomerLayout';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -219,12 +219,12 @@ const ProductDetailPage = () => {
               </span>
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-4">{product.name}</h1>
-            <div className="mb-6">
-              <span className="text-2xl font-bold text-[#2d5016]">
+            <div className="mb-8 flex items-end gap-6">
+              <span className="text-4xl font-extrabold text-green-600 tracking-tight">
                 {formatPrice(finalPrice)}
               </span>
               {originalPrice && (
-                <span className="ml-4 text-lg text-gray-500 line-through">
+                <span className="text-xl text-gray-400 line-through mb-1 font-medium">
                   {formatPrice(originalPrice)}/kg
                 </span>
               )}
@@ -240,10 +240,10 @@ const ProductDetailPage = () => {
             {/* Quantity */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Số lượng</label>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center w-max border border-gray-300 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="w-10 h-10 border rounded flex items-center justify-center hover:bg-gray-100"
+                  className="w-12 h-12 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition text-gray-600 active:bg-gray-200"
                 >
                   <FiMinus />
                 </button>
@@ -251,11 +251,11 @@ const ProductDetailPage = () => {
                   type="number"
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-16 text-center border rounded"
+                  className="w-16 h-12 text-center border-x border-gray-300 focus:outline-none font-semibold text-gray-800 text-lg"
                 />
                 <button
                   onClick={() => setQuantity((q) => q + 1)}
-                  className="w-10 h-10 border rounded flex items-center justify-center hover:bg-gray-100"
+                  className="w-12 h-12 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition text-gray-600 active:bg-gray-200"
                 >
                   <FiPlus />
                 </button>
@@ -269,8 +269,9 @@ const ProductDetailPage = () => {
                   addToCart({ ...product, price: finalPrice, originalPrice }, quantity);
                   setShowToast(true);
                 }}
-                className="flex-1 bg-[#2d5016] text-white py-3 rounded-lg font-semibold hover:bg-[#1f350d] transition"
+                className="flex-1 bg-[#2d5016] text-white py-3 rounded-lg font-bold text-lg hover:bg-[#244011] hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
               >
+                <FiShoppingCart className="w-5 h-5" />
                 Thêm Vào Giỏ Hàng
               </button>
               <button
@@ -363,18 +364,22 @@ const ProductDetailPage = () => {
           {activeTab === 'details' && (
             <div>
               <h3 className="text-xl font-bold mb-4">Thông tin sản phẩm</h3>
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                  <span className="font-semibold">Tên sản phẩm:</span> {product.name}
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+                <div className="flex justify-between py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition">
+                  <span className="text-gray-600 font-medium">Tên sản phẩm</span>
+                  <span className="text-gray-900 font-semibold text-right">{product.name}</span>
                 </div>
-                <div>
-                  <span className="font-semibold">Danh mục:</span> {product.category?.name || 'Combo'}
+                <div className="flex justify-between py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition">
+                  <span className="text-gray-600 font-medium">Danh mục</span>
+                  <span className="text-gray-900 font-semibold text-right">{product.category?.name || 'Combo'}</span>
                 </div>
-                <div>
-                  <span className="font-semibold">Giá:</span> {formatPrice(finalPrice)}
+                <div className="flex justify-between py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition">
+                  <span className="text-gray-600 font-medium">Giá niêm yết</span>
+                  <span className="text-gray-900 font-semibold text-right">{formatPrice(finalPrice)}</span>
                 </div>
-                <div>
-                  <span className="font-semibold">Đơn vị:</span> {product.unit || 'kg'}
+                <div className="flex justify-between py-4 px-6 hover:bg-gray-50 transition">
+                  <span className="text-gray-600 font-medium">Đơn vị tính</span>
+                  <span className="text-gray-900 font-semibold text-right">{product.unit || 'kg'}</span>
                 </div>
               </div>
               
@@ -382,11 +387,11 @@ const ProductDetailPage = () => {
               {product.details && product.details.length > 0 && (
                 <div className="mt-6">
                   <h4 className="text-lg font-semibold mb-4">Thông tin chi tiết</h4>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                     {product.details.map((detail, index) => (
-                      <div key={index} className="border-b pb-2">
-                        <span className="font-semibold text-gray-700">{detail.indexName}:</span>
-                        <span className="ml-2 text-gray-600">{detail.value || 'N/A'}</span>
+                      <div key={index} className="flex justify-between py-4 px-6 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition">
+                        <span className="text-gray-600 font-medium">{detail.indexName}</span>
+                        <span className="text-gray-900 font-semibold text-right">{detail.value || 'N/A'}</span>
                       </div>
                     ))}
                   </div>
@@ -482,4 +487,3 @@ const ProductDetailPage = () => {
 };
 
 export default ProductDetailPage;
-
