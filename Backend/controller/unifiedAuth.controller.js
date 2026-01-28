@@ -1,8 +1,5 @@
-const express = require("express");
-const router = express.Router();
 const User = require("../model/user");
 const jwt = require("jsonwebtoken");
-const { log } = require("console");
 
 // UNIFIED LOGIN - Cho tất cả roles: admin, seller, customer
 exports.unifiedLogin = async (req, res) => {

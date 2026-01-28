@@ -85,7 +85,7 @@ const createPostCategory = async (categoryData) => {
         return category;
     } catch (error) {
         // Xử lý lỗi unique constraint từ MongoDB
-        if (error.code === 11000 || error.name === 'MongoServerError' || error.message?.includes('duplicate key')) {
+        if (error.code === 11000 || error.name === 'MongoServerError' || (error.message && error.message.includes('duplicate key'))) {
             throw new Error('Danh mục này đã tồn tại');
         }
         // Nếu đã là Error object với message, throw lại
@@ -124,7 +124,7 @@ const updatePostCategory = async (categoryId, categoryData) => {
         return category;
     } catch (error) {
         // Xử lý lỗi unique constraint từ MongoDB
-        if (error.code === 11000 || error.name === 'MongoServerError') {
+        if (error.code === 11000 || error.name === 'MongoServerError' || (error.message && error.message.includes('duplicate key'))) {
             throw new Error('Danh mục này đã tồn tại');
         }
         throw error;
@@ -157,4 +157,3 @@ module.exports = {
     updatePostCategory,
     deletePostCategory
 };
-

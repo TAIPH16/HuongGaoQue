@@ -93,7 +93,21 @@ const createProduct = async (productData, files) => {
     // Parse details nếu là string
     let parsedDetails = [];
     if (details) {
-        parsedDetails = typeof details === 'string' ? JSON.parse(details) : details;
+        try {
+            parsedDetails = typeof details === 'string' ? JSON.parse(details) : details;
+            if (typeof details === 'string') {
+                const trimmed = details.trim();
+                if (trimmed === '' || trimmed === '[]' || trimmed === 'null') {
+                    parsedDetails = [];
+                } else {
+                    parsedDetails = JSON.parse(details);
+                }
+            } else {
+                parsedDetails = details;
+            }
+        } catch (e) {
+            parsedDetails = [];
+        }
     }
 
     // Tính remainingQuantity từ initialQuantity
@@ -162,17 +176,28 @@ const updateProduct = async (productId, productData, files) => {
 
     // Xóa ảnh được yêu cầu
     if (imagesToDelete) {
-        const imagesToDeleteArray = typeof imagesToDelete === 'string'
-            ? JSON.parse(imagesToDelete)
-            : imagesToDelete;
+        let imagesToDeleteArray = [];
+        try {
+            imagesToDeleteArray = typeof imagesToDelete === 'string'
+                ? JSON.parse(imagesToDelete)
+                : imagesToDelete;
+        } catch (e) {
+            if (typeof imagesToDelete === 'string') imagesToDeleteArray = [imagesToDelete];
+        }
 
-        imagesToDeleteArray.forEach(imagePath => {
-            const filePath = path.join(__dirname, '..', 'public', imagePath);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
-            product.images = product.images.filter(img => img !== imagePath);
-        });
+        if (Array.isArray(imagesToDeleteArray)) {
+            imagesToDeleteArray.forEach(imagePath => {
+                try {
+                    const filePath = path.join(__dirname, '..', 'public', imagePath);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
+                } catch (err) {
+                    console.error('Error deleting image file:', err);
+                }
+                product.images = product.images.filter(img => img !== imagePath);
+            });
+        }
     }
 
     // Cập nhật các trường khác
@@ -336,4 +361,3 @@ module.exports = {
     approveProduct,
     rejectProduct
 };
-

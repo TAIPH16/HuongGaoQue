@@ -151,20 +151,17 @@ const getResponseMessage = (responseCode) => {
     '13': 'Nhập sai mật khẩu xác thực giao dịch (OTP). Xin vui lòng thực hiện lại giao dịch.',
     '32': 'Số tiền giao dịch không hợp lệ. Số tiền hợp lệ từ 5,000 đến dưới 1 tỷ đồng',
     '51': 'Tài khoản không đủ số dư để thực hiện giao dịch.',
-    '72': 'Không tìm thấy website. Vui lòng kiểm tra lại cấu hình return URL. Return URL phải có thể truy cập được từ internet (không thể dùng localhost).',
-    '65': 'Tài khoản đã vượt quá hạn mức giao dịch trong ngày.',
+    '72': 'Không tìm thấy website. Vui lòng kiểm tra lại cấu hình return URL. Return URL không tồn tại trên hệ thống VNPAY.',
     '75': 'Ngân hàng thanh toán đang bảo trì.',
-    '79': 'Nhập sai mật khẩu thanh toán quá số lần quy định. Xin vui lòng thực hiện lại giao dịch.',
-    '99': 'Lỗi không xác định',
+    '79': 'Nhập sai mật khẩu thanh toán quá số lần quy định. Xin vui lòng thực hiện lại giao dịch',
+    '99': 'Lỗi không xác định.',
   };
   
-  return responseMessages[responseCode] || `Lỗi không xác định (Mã: ${responseCode})`;
+  return responseMessages[responseCode] || 'Lỗi không xác định';
 };
 
 module.exports = {
   createPaymentUrl,
   verifySecureHash,
   processPaymentResult,
-  getResponseMessage,
 };
-

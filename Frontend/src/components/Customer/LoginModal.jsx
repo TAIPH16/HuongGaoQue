@@ -447,4 +447,3 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }) => {
 };
 
 export default LoginModal;
-

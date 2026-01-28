@@ -5,12 +5,6 @@ const Product = require('../model/product');
 
 exports.addToCart = async (userId, productId, quantity) => {
     let cart = await Cart.findOne({ user_id: userId });
-    if (cart) { 
-        const listCart = await CartItem.find({ cart_id: cart._id });
-        if (listCart.length >= 5) { 
-            return 0;
-        }
-    }
   
     //Check product status / stock
     const product = await Product.findById(productId);
@@ -34,6 +28,10 @@ exports.addToCart = async (userId, productId, quantity) => {
         cartItem.quantity += quantity;
         await cartItem.save();
     } else {
+        const listCart = await CartItem.find({ cart_id: cart._id });
+        if (listCart.length >= 5) { 
+            return 0;
+        }
         cartItem = await CartItem.create({
             cart_id: cart._id,
             variation_id: productId,
@@ -126,5 +124,3 @@ exports.clearAllCart = async (userId) => {
     await cart.save();
     return cart;
 }
-
-
