@@ -3,16 +3,31 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FiSearch, FiUser } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import NotificationDropdown from '../Notifications/NotificationDropdown';
+import Toast from '../Customer/Toast';
 
 const Header = ({ title, onSearch }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
   const dropdownRef = useRef(null);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      const result = await logout();
+      if (result?.message) {
+        setToastMessage(result.message);
+        setShowToast(true);
+      }
+      // Navigate after a short delay to show toast
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
+    } catch (error) {
+      console.error('Logout error:', error);
+      navigate('/');
+    }
   };
 
   // Close dropdown when clicking outside
@@ -85,6 +100,12 @@ const Header = ({ title, onSearch }) => {
           )}
         </div>
       </div>
+      <Toast
+        message={toastMessage}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+        type="success"
+      />
     </header>
   );
 };

@@ -17,6 +17,7 @@ const SellerProfile = () => {
     const [success, setSuccess] = useState('');
     const [avatar, setAvatar] = useState(null);
     const [avatarPreview, setAvatarPreview] = useState('');
+    const [validationErrors, setValidationErrors] = useState({});
 
     const [formData, setFormData] = useState(() => {
         // Normalize address if backend returned string
@@ -99,6 +100,15 @@ const SellerProfile = () => {
     const handleAvatarChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            // Clear previous validation error
+            if (validationErrors.avatar) {
+                setValidationErrors(prev => {
+                    const newErrors = { ...prev };
+                    delete newErrors.avatar;
+                    return newErrors;
+                });
+            }
+
             setAvatar(file);
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -108,18 +118,89 @@ const SellerProfile = () => {
         }
     };
 
+    const validateForm = () => {
+        const errors = {};
+
+        // Validate fullName
+        if (!formData.fullName || formData.fullName.trim() === '') {
+            errors.fullName = 'Họ và tên là bắt buộc';
+        } else if (formData.fullName.trim().length < 3) {
+            errors.fullName = 'Họ và tên phải có ít nhất 3 ký tự';
+        } else if (formData.fullName.trim().length > 100) {
+            errors.fullName = 'Họ và tên không được vượt quá 100 ký tự';
+        }
+
+        // Validate phoneNumber
+        if (formData.phoneNumber && formData.phoneNumber.trim() !== '') {
+            const phoneRegex = /^0\d{9}$/;
+            if (!phoneRegex.test(formData.phoneNumber.trim())) {
+                errors.phoneNumber = 'Số điện thoại không hợp lệ (10 số, bắt đầu bằng 0)';
+            }
+        }
+
+        // Validate address fields
+        if (formData.address.street && formData.address.street.trim().length > 200) {
+            errors['address.street'] = 'Địa chỉ không được vượt quá 200 ký tự';
+        }
+        if (formData.address.ward && formData.address.ward.trim().length > 100) {
+            errors['address.ward'] = 'Phường/Xã không được vượt quá 100 ký tự';
+        }
+        if (formData.address.district && formData.address.district.trim().length > 100) {
+            errors['address.district'] = 'Quận/Huyện không được vượt quá 100 ký tự';
+        }
+        if (formData.address.city && formData.address.city.trim().length > 100) {
+            errors['address.city'] = 'Tỉnh/Thành phố không được vượt quá 100 ký tự';
+        }
+        if (formData.address.country && formData.address.country.trim().length > 100) {
+            errors['address.country'] = 'Quốc gia không được vượt quá 100 ký tự';
+        }
+
+        // Validate farmName
+        if (formData.farmName && formData.farmName.trim().length > 100) {
+            errors.farmName = 'Tên trang trại không được vượt quá 100 ký tự';
+        }
+
+        // Validate farmAddress
+        if (formData.farmAddress && formData.farmAddress.trim().length > 200) {
+            errors.farmAddress = 'Địa chỉ trang trại không được vượt quá 200 ký tự';
+        }
+
+        // Validate avatar file size and type
+        if (avatar) {
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            
+            if (!allowedTypes.includes(avatar.type)) {
+                errors.avatar = 'Chỉ chấp nhận file ảnh (JPG, PNG, GIF, WEBP)';
+            } else if (avatar.size > maxSize) {
+                errors.avatar = 'Kích thước ảnh không được vượt quá 5MB';
+            }
+        }
+
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     const handleSave = async () => {
-        setLoading(true);
         setError('');
         setSuccess('');
+        setValidationErrors({});
+
+        // Validate form
+        if (!validateForm()) {
+            setError('Vui lòng kiểm tra lại thông tin đã nhập');
+            return;
+        }
+
+        setLoading(true);
 
         try {
             const formDataToSend = new FormData();
-            formDataToSend.append('fullName', formData.fullName);
-            formDataToSend.append('phoneNumber', formData.phoneNumber);
+            formDataToSend.append('fullName', formData.fullName.trim());
+            formDataToSend.append('phoneNumber', formData.phoneNumber.trim() || '');
             formDataToSend.append('address', JSON.stringify(formData.address));
-            formDataToSend.append('farmName', formData.farmName);
-            formDataToSend.append('farmAddress', formData.farmAddress);
+            formDataToSend.append('farmName', formData.farmName.trim() || '');
+            formDataToSend.append('farmAddress', formData.farmAddress.trim() || '');
 
             if (avatar) {
                 formDataToSend.append('avatar', avatar);
@@ -140,6 +221,7 @@ const SellerProfile = () => {
             updateProfile(response.data.data);
             setSuccess('Cập nhật thông tin thành công!');
             setEditing(false);
+            setAvatar(null);
             setTimeout(() => setSuccess(''), 3000);
         } catch (err) {
             setError(err.response?.data?.message || 'Có lỗi xảy ra khi cập nhật thông tin');
@@ -232,15 +314,22 @@ const SellerProfile = () => {
                                 )}
                             </div>
                             {editing && (
-                                <label className="absolute bottom-0 right-0 bg-green-600 text-white p-2 rounded-full cursor-pointer hover:bg-green-700 transition">
-                                    <FiUpload />
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleAvatarChange}
-                                        className="hidden"
-                                    />
-                                </label>
+                                <>
+                                    <label className="absolute bottom-0 right-0 bg-green-600 text-white p-2 rounded-full cursor-pointer hover:bg-green-700 transition">
+                                        <FiUpload />
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleAvatarChange}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                    {validationErrors.avatar && (
+                                        <p className="mt-1 text-sm text-red-500 absolute -bottom-6 left-0 whitespace-nowrap">
+                                            {validationErrors.avatar}
+                                        </p>
+                                    )}
+                                </>
                             )}
                         </div>
                         <div>
@@ -257,16 +346,32 @@ const SellerProfile = () => {
                         {/* Full Name */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Họ và tên
+                                Họ và tên <span className="text-red-500">*</span>
                             </label>
                             {editing ? (
-                                <input
-                                    type="text"
-                                    value={formData.fullName}
-                                    onChange={(e) => handleInputChange('fullName', e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="Nhập họ và tên"
-                                />
+                                <>
+                                    <input
+                                        type="text"
+                                        value={formData.fullName}
+                                        onChange={(e) => {
+                                            handleInputChange('fullName', e.target.value);
+                                            if (validationErrors.fullName) {
+                                                setValidationErrors(prev => {
+                                                    const newErrors = { ...prev };
+                                                    delete newErrors.fullName;
+                                                    return newErrors;
+                                                });
+                                            }
+                                        }}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                                            validationErrors.fullName ? 'border-red-500' : 'border-gray-300'
+                                        }`}
+                                        placeholder="Nhập họ và tên"
+                                    />
+                                    {validationErrors.fullName && (
+                                        <p className="mt-1 text-sm text-red-500">{validationErrors.fullName}</p>
+                                    )}
+                                </>
                             ) : (
                                 <p className="text-gray-800 font-semibold">{formData.fullName || '-'}</p>
                             )}
@@ -286,13 +391,29 @@ const SellerProfile = () => {
                                 Số điện thoại
                             </label>
                             {editing ? (
-                                <input
-                                    type="tel"
-                                    value={formData.phoneNumber}
-                                    onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="Nhập số điện thoại"
-                                />
+                                <>
+                                    <input
+                                        type="tel"
+                                        value={formData.phoneNumber}
+                                        onChange={(e) => {
+                                            handleInputChange('phoneNumber', e.target.value);
+                                            if (validationErrors.phoneNumber) {
+                                                setValidationErrors(prev => {
+                                                    const newErrors = { ...prev };
+                                                    delete newErrors.phoneNumber;
+                                                    return newErrors;
+                                                });
+                                            }
+                                        }}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                                            validationErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'
+                                        }`}
+                                        placeholder="Nhập số điện thoại (ví dụ: 0123456789)"
+                                    />
+                                    {validationErrors.phoneNumber && (
+                                        <p className="mt-1 text-sm text-red-500">{validationErrors.phoneNumber}</p>
+                                    )}
+                                </>
                             ) : (
                                 <p className="text-gray-800 font-semibold">{formData.phoneNumber || '-'}</p>
                             )}
@@ -304,13 +425,29 @@ const SellerProfile = () => {
                                 Tên trang trại
                             </label>
                             {editing ? (
-                                <input
-                                    type="text"
-                                    value={formData.farmName}
-                                    onChange={(e) => handleInputChange('farmName', e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="Nhập tên trang trại"
-                                />
+                                <>
+                                    <input
+                                        type="text"
+                                        value={formData.farmName}
+                                        onChange={(e) => {
+                                            handleInputChange('farmName', e.target.value);
+                                            if (validationErrors.farmName) {
+                                                setValidationErrors(prev => {
+                                                    const newErrors = { ...prev };
+                                                    delete newErrors.farmName;
+                                                    return newErrors;
+                                                });
+                                            }
+                                        }}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                                            validationErrors.farmName ? 'border-red-500' : 'border-gray-300'
+                                        }`}
+                                        placeholder="Nhập tên trang trại"
+                                    />
+                                    {validationErrors.farmName && (
+                                        <p className="mt-1 text-sm text-red-500">{validationErrors.farmName}</p>
+                                    )}
+                                </>
                             ) : (
                                 <p className="text-gray-800 font-semibold">{formData.farmName || '-'}</p>
                             )}
@@ -323,43 +460,123 @@ const SellerProfile = () => {
                             </label>
                             {editing ? (
                                 <div className="space-y-3">
-                                    <input
-                                        type="text"
-                                        value={formData.address.street}
-                                        onChange={(e) => handleInputChange('address.street', e.target.value)}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                        placeholder="Số nhà, đường"
-                                    />
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div>
                                         <input
                                             type="text"
-                                            value={formData.address.ward}
-                                            onChange={(e) => handleInputChange('address.ward', e.target.value)}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                            placeholder="Phường/Xã"
+                                            value={formData.address.street}
+                                            onChange={(e) => {
+                                                handleInputChange('address.street', e.target.value);
+                                                if (validationErrors['address.street']) {
+                                                    setValidationErrors(prev => {
+                                                        const newErrors = { ...prev };
+                                                        delete newErrors['address.street'];
+                                                        return newErrors;
+                                                    });
+                                                }
+                                            }}
+                                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                                                validationErrors['address.street'] ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                            placeholder="Số nhà, đường"
                                         />
-                                        <input
-                                            type="text"
-                                            value={formData.address.district}
-                                            onChange={(e) => handleInputChange('address.district', e.target.value)}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                            placeholder="Quận/Huyện"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={formData.address.city}
-                                            onChange={(e) => handleInputChange('address.city', e.target.value)}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                            placeholder="Tỉnh/Thành phố"
-                                        />
+                                        {validationErrors['address.street'] && (
+                                            <p className="mt-1 text-sm text-red-500">{validationErrors['address.street']}</p>
+                                        )}
                                     </div>
-                                    <input
-                                        type="text"
-                                        value={formData.address.country}
-                                        onChange={(e) => handleInputChange('address.country', e.target.value)}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                        placeholder="Quốc gia"
-                                    />
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <div>
+                                            <input
+                                                type="text"
+                                                value={formData.address.ward}
+                                                onChange={(e) => {
+                                                    handleInputChange('address.ward', e.target.value);
+                                                    if (validationErrors['address.ward']) {
+                                                        setValidationErrors(prev => {
+                                                            const newErrors = { ...prev };
+                                                            delete newErrors['address.ward'];
+                                                            return newErrors;
+                                                        });
+                                                    }
+                                                }}
+                                                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                                                    validationErrors['address.ward'] ? 'border-red-500' : 'border-gray-300'
+                                                }`}
+                                                placeholder="Phường/Xã"
+                                            />
+                                            {validationErrors['address.ward'] && (
+                                                <p className="mt-1 text-xs text-red-500">{validationErrors['address.ward']}</p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <input
+                                                type="text"
+                                                value={formData.address.district}
+                                                onChange={(e) => {
+                                                    handleInputChange('address.district', e.target.value);
+                                                    if (validationErrors['address.district']) {
+                                                        setValidationErrors(prev => {
+                                                            const newErrors = { ...prev };
+                                                            delete newErrors['address.district'];
+                                                            return newErrors;
+                                                        });
+                                                    }
+                                                }}
+                                                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                                                    validationErrors['address.district'] ? 'border-red-500' : 'border-gray-300'
+                                                }`}
+                                                placeholder="Quận/Huyện"
+                                            />
+                                            {validationErrors['address.district'] && (
+                                                <p className="mt-1 text-xs text-red-500">{validationErrors['address.district']}</p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <input
+                                                type="text"
+                                                value={formData.address.city}
+                                                onChange={(e) => {
+                                                    handleInputChange('address.city', e.target.value);
+                                                    if (validationErrors['address.city']) {
+                                                        setValidationErrors(prev => {
+                                                            const newErrors = { ...prev };
+                                                            delete newErrors['address.city'];
+                                                            return newErrors;
+                                                        });
+                                                    }
+                                                }}
+                                                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                                                    validationErrors['address.city'] ? 'border-red-500' : 'border-gray-300'
+                                                }`}
+                                                placeholder="Tỉnh/Thành phố"
+                                            />
+                                            {validationErrors['address.city'] && (
+                                                <p className="mt-1 text-xs text-red-500">{validationErrors['address.city']}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <input
+                                            type="text"
+                                            value={formData.address.country}
+                                            onChange={(e) => {
+                                                handleInputChange('address.country', e.target.value);
+                                                if (validationErrors['address.country']) {
+                                                    setValidationErrors(prev => {
+                                                        const newErrors = { ...prev };
+                                                        delete newErrors['address.country'];
+                                                        return newErrors;
+                                                    });
+                                                }
+                                            }}
+                                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                                                validationErrors['address.country'] ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                            placeholder="Quốc gia"
+                                        />
+                                        {validationErrors['address.country'] && (
+                                            <p className="mt-1 text-sm text-red-500">{validationErrors['address.country']}</p>
+                                        )}
+                                    </div>
                                 </div>
                             ) : (
                                 <p className="text-gray-800 font-semibold">
@@ -376,13 +593,29 @@ const SellerProfile = () => {
                                 Địa chỉ trang trại
                             </label>
                             {editing ? (
-                                <input
-                                    type="text"
-                                    value={formData.farmAddress}
-                                    onChange={(e) => handleInputChange('farmAddress', e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                    placeholder="Nhập địa chỉ trang trại"
-                                />
+                                <>
+                                    <input
+                                        type="text"
+                                        value={formData.farmAddress}
+                                        onChange={(e) => {
+                                            handleInputChange('farmAddress', e.target.value);
+                                            if (validationErrors.farmAddress) {
+                                                setValidationErrors(prev => {
+                                                    const newErrors = { ...prev };
+                                                    delete newErrors.farmAddress;
+                                                    return newErrors;
+                                                });
+                                            }
+                                        }}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                                            validationErrors.farmAddress ? 'border-red-500' : 'border-gray-300'
+                                        }`}
+                                        placeholder="Nhập địa chỉ trang trại"
+                                    />
+                                    {validationErrors.farmAddress && (
+                                        <p className="mt-1 text-sm text-red-500">{validationErrors.farmAddress}</p>
+                                    )}
+                                </>
                             ) : (
                                 <p className="text-gray-800 font-semibold">{formData.farmAddress || '-'}</p>
                             )}

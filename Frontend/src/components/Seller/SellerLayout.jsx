@@ -1,11 +1,15 @@
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FiBarChart2, FiPackage, FiShoppingCart, FiUser, FiLogOut, FiBox, FiHome } from 'react-icons/fi';
 import { useSellerAuth } from '../../context/SellerAuthContext';
+import Toast from '../Customer/Toast';
 
 const SellerLayout = ({ children }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { seller, logout } = useSellerAuth();
+    const [toastMessage, setToastMessage] = useState('');
+    const [showToast, setShowToast] = useState(false);
 
     const menuItems = [
         { path: '/seller/dashboard', icon: FiBarChart2, label: 'Dashboard' },
@@ -20,9 +24,21 @@ const SellerLayout = ({ children }) => {
         return location.pathname.startsWith(path);
     };
 
-    const handleLogout = () => {
-        logout();
-        navigate('/seller/login');
+    const handleLogout = async () => {
+        try {
+            const result = await logout();
+            if (result?.message) {
+                setToastMessage(result.message);
+                setShowToast(true);
+            }
+            // Navigate after a short delay to show toast
+            setTimeout(() => {
+                navigate('/seller/login');
+            }, 500);
+        } catch (error) {
+            console.error('Logout error:', error);
+            navigate('/seller/login');
+        }
     };
 
     return (
@@ -109,6 +125,12 @@ const SellerLayout = ({ children }) => {
                     {children}
                 </div>
             </div>
+            <Toast
+                message={toastMessage}
+                isVisible={showToast}
+                onClose={() => setShowToast(false)}
+                type="success"
+            />
         </div>
     );
 };

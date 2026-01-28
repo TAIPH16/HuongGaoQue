@@ -19,6 +19,8 @@ const FavoritesPage = () => {
   const [wishlistLoading, setWishlistLoading] = useState({});
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [showLogoutToast, setShowLogoutToast] = useState(false);
+  const [logoutToastMessage, setLogoutToastMessage] = useState('');
 
   useEffect(() => {
     if (!customer) {
@@ -66,9 +68,20 @@ const FavoritesPage = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      const result = await logout();
+      if (result?.message) {
+        setLogoutToastMessage(result.message);
+        setShowLogoutToast(true);
+      }
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
+    } catch (error) {
+      console.error('Logout error:', error);
+      navigate('/');
+    }
   };
 
   const getImageUrl = (imagePath) => {
@@ -290,6 +303,12 @@ const FavoritesPage = () => {
         isVisible={showToast}
         onClose={() => setShowToast(false)}
         type={toastMessage.includes('lỗi') ? 'error' : 'success'}
+      />
+      <Toast
+        message={logoutToastMessage}
+        isVisible={showLogoutToast}
+        onClose={() => setShowLogoutToast(false)}
+        type="success"
       />
     </CustomerLayout>
   );

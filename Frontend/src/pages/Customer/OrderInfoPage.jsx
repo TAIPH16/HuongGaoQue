@@ -4,6 +4,7 @@ import CustomerLayout from '../../components/Customer/CustomerLayout';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { useAuth } from '../../context/AuthContext';
 import { customerOrdersAPI } from '../../utils/customerApi';
+import Toast from '../../components/Customer/Toast';
 
 const OrderInfoPage = () => {
   const { customer, logout: customerLogout } = useCustomerAuth();
@@ -13,14 +14,28 @@ const OrderInfoPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showLogoutToast, setShowLogoutToast] = useState(false);
+  const [logoutToastMessage, setLogoutToastMessage] = useState('');
 
-  const handleLogout = () => {
-    if (customer) {
-      customerLogout();
-    } else if (adminUser) {
-      adminLogout();
+  const handleLogout = async () => {
+    try {
+      let result;
+      if (customer) {
+        result = await customerLogout();
+      } else if (adminUser) {
+        result = await adminLogout();
+      }
+      if (result?.message) {
+        setLogoutToastMessage(result.message);
+        setShowLogoutToast(true);
+      }
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
+    } catch (error) {
+      console.error('Logout error:', error);
+      navigate('/');
     }
-    navigate('/');
   };
 
   const filters = [
@@ -404,7 +419,13 @@ const OrderInfoPage = () => {
           </div>
         </div>
       </div>
-    </CustomerLayout >
+      <Toast
+        message={logoutToastMessage}
+        isVisible={showLogoutToast}
+        onClose={() => setShowLogoutToast(false)}
+        type="success"
+      />
+    </CustomerLayout>
   );
 };
 

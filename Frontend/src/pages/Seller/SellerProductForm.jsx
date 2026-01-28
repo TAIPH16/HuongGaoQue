@@ -155,7 +155,7 @@ const SellerProductForm = () => {
             }
 
             setTimeout(() => {
-                navigate('/seller/products');
+                navigate('/seller/products', { state: { refresh: true } });
             }, 2000);
         } catch (error) {
             setErrorModal({
@@ -173,7 +173,7 @@ const SellerProductForm = () => {
             setDeleteModal({ isOpen: false });
             setSuccessModal({ isOpen: true, message: 'Xóa sản phẩm thành công' });
             setTimeout(() => {
-                navigate('/seller/products');
+                navigate('/seller/products', { state: { refresh: true } });
             }, 2000);
         } catch (error) {
             setErrorModal({
