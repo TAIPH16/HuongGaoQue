@@ -37,7 +37,6 @@ const UniversalLogin = ({ onClose }) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    console.log("zzzz", formData.password);
 
     try {
       // Call UNIFIED login API
@@ -45,13 +44,29 @@ const UniversalLogin = ({ onClose }) => {
         email: formData.email,
         password: formData.password,
       });
-      console.log("répose", response);
+      
+      console.log("Login response:", response);
+      console.log("Response data:", response.data);
+      console.log("Response data.data:", response.data?.data);
 
-      const { token, user } = response.data.data || {};
+      // Check if response has the expected structure
+      if (!response.data) {
+        throw new Error("Phản hồi từ server không hợp lệ");
+      }
+
+      // Handle both response formats: { data: { token, user } } or { success: true, data: { token, user } }
+      const responseData = response.data.data || response.data;
+      const { token, user } = responseData || {};
+
       if (!token || !user) {
+        console.error("Missing token or user in response:", { token, user, fullResponse: response.data });
         throw new Error("Dữ liệu đăng nhập không hợp lệ");
       }
+
+      console.log("Login successful, user role:", user.role);
+      
       const role = user.role?.toLowerCase().trim();
+      
       // Redirect dựa vào role
       switch (role) {
         case "admin":
@@ -59,6 +74,7 @@ const UniversalLogin = ({ onClose }) => {
           localStorage.setItem("token", token);
           localStorage.setItem("user", JSON.stringify(user));
           setAdminUser(user);
+          if (onClose) onClose();
           navigate("/admin/dashboard");
           break;
 
@@ -67,6 +83,7 @@ const UniversalLogin = ({ onClose }) => {
           localStorage.setItem("sellerToken", token);
           localStorage.setItem("seller", JSON.stringify(user));
           updateSeller(user);
+          if (onClose) onClose();
           navigate("/seller/dashboard");
           break;
 
@@ -75,16 +92,26 @@ const UniversalLogin = ({ onClose }) => {
           localStorage.setItem("customer_token", token);
           localStorage.setItem("customer", JSON.stringify(user));
           updateCustomer(user);
+          if (onClose) onClose();
           navigate("/");
           break;
         default:
+          console.error("Unknown role:", user.role);
           throw new Error(`Role không được hỗ trợ: ${user.role}`);
       }
-      console.log();
-      if (onClose) onClose();
     } catch (err) {
       console.error("LOGIN ERROR:", err);
-      setError(err.response?.data?.message || "Đăng nhập thất bại");
+      console.error("Error response:", err.response);
+      console.error("Error message:", err.message);
+      
+      // Better error handling
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError("Đăng nhập thất bại. Vui lòng thử lại.");
+      }
     } finally {
       setLoading(false);
     }

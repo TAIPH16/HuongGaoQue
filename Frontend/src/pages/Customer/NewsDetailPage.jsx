@@ -18,6 +18,7 @@ const NewsDetailPage = () => {
       setLoading(true);
       const response = await publicPostsAPI.getById(id);
       setPost(response.data?.data || response.data);
+      publicPostsAPI.incrementView(id).catch(() => {});
     } catch (error) {
       console.error('Error fetching post:', error);
     } finally {

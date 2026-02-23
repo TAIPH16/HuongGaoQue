@@ -8,7 +8,9 @@ import {
   FiUser,
   FiBell,
   FiLogOut,
-  FiBriefcase
+  FiBriefcase,
+  FiStar,
+  FiTrendingUp,
 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 
@@ -31,7 +33,9 @@ const Sidebar = () => {
     { path: '/admin/posts', icon: FiFileText, label: 'Bài viết' },
     { path: '/admin/customers', icon: FiUsers, label: 'Khách hàng' },
     { path: '/admin/sellers', icon: FiBriefcase, label: 'Quản lý người bán' },
+    { path: '/admin/sellers/reports', icon: FiTrendingUp, label: 'Báo cáo người bán' },
     { path: '/admin/notifications', icon: FiBell, label: 'Thông báo' },
+    { path: '/admin/reviews', icon: FiStar, label: 'Đánh giá sản phẩm' },
     { path: '/admin/profile', icon: FiUser, label: 'Thông tin quản trị viên' },
   ];
 

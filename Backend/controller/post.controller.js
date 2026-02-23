@@ -166,6 +166,23 @@ const incrementView = async (req, res, next) => {
     }
 };
 
+/**
+ * GET /api/posts/stats/views-by-date - Lượt xem bài viết theo ngày (hành vi xem bài)
+ * Query: startDate, endDate (YYYY-MM-DD)
+ */
+const getPostViewsByDate = async (req, res, next) => {
+    try {
+        const { startDate, endDate } = req.query;
+        const data = await postService.getPostViewsByDate(startDate, endDate);
+        res.json({
+            success: true,
+            data
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getPosts,
     getPostDetail,
@@ -173,6 +190,7 @@ module.exports = {
     updatePost,
     deletePost,
     incrementView,
+    getPostViewsByDate,
     uploadMiddleware
 };
 

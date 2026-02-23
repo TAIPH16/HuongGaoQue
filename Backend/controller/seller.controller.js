@@ -1,4 +1,6 @@
 const User = require('../model/user.js');
+const Order = require('../model/order');
+const Product = require('../model/product');
 
 // Get all sellers with filters
 exports.getSellers = async (req, res) => {
@@ -214,6 +216,133 @@ exports.updateSeller = async (req, res) => {
                 message: err.message
             });
         }
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+/**
+ * Báo cáo người bán - Admin: danh sách tất cả seller kèm thống kê
+ */
+exports.getSellerReports = async (req, res) => {
+    try {
+        const sellers = await User.find({ role: 'seller' })
+            .select('fullName email phoneNumber region is_banned is_hidden is_approved')
+            .sort({ fullName: 1 });
+
+        const SUCCESS_ORDER_STATUSES = ['completed', 'shipping', 'paid', 'processing', 'Đã thanh toán'];
+        const PENDING_STATUSES = ['pending', 'Pending', 'WaitingPayment', 'WaitingConfirm'];
+
+        const reports = [];
+        for (const seller of sellers) {
+            const sellerProducts = await Product.find({ seller: seller._id });
+            const productIds = sellerProducts.map(p => p._id);
+
+            const orders = await Order.find({
+                'items.product': { $in: productIds },
+                status: { $in: SUCCESS_ORDER_STATUSES }
+            });
+
+            let totalRevenue = 0;
+            let totalProductsSold = 0;
+            orders.forEach(order => {
+                order.items.forEach(item => {
+                    if (productIds.some(id => id.equals(item.product))) {
+                        totalRevenue += item.subtotal || (item.unitPrice || 0) * (item.quantity || 0);
+                        totalProductsSold += item.quantity || 0;
+                    }
+                });
+            });
+
+            const pendingOrders = await Order.countDocuments({
+                'items.product': { $in: productIds },
+                status: { $in: PENDING_STATUSES }
+            });
+
+            reports.push({
+                seller: {
+                    _id: seller._id,
+                    fullName: seller.fullName,
+                    email: seller.email,
+                    phoneNumber: seller.phoneNumber,
+                    region: seller.region,
+                    is_banned: seller.is_banned,
+                    is_hidden: seller.is_hidden,
+                    is_approved: seller.is_approved,
+                },
+                totalRevenue,
+                totalOrders: orders.length,
+                totalProductsSold,
+                pendingOrders,
+                totalProducts: sellerProducts.length,
+                outOfStockProducts: sellerProducts.filter(p => (p.remainingQuantity || 0) === 0).length,
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: reports
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+/**
+ * Báo cáo chi tiết một người bán - Admin
+ */
+exports.getSellerReportById = async (req, res) => {
+    try {
+        const seller = await User.findOne({ _id: req.params.id, role: 'seller' });
+        if (!seller) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy người bán' });
+        }
+
+        const sellerProducts = await Product.find({ seller: seller._id });
+        const productIds = sellerProducts.map(p => p._id);
+
+        const SUCCESS_ORDER_STATUSES = ['completed', 'shipping', 'paid', 'processing', 'Đã thanh toán'];
+        const PENDING_STATUSES = ['pending', 'Pending', 'WaitingPayment', 'WaitingConfirm'];
+
+        const orders = await Order.find({
+            'items.product': { $in: productIds },
+            status: { $in: SUCCESS_ORDER_STATUSES }
+        });
+
+        let totalRevenue = 0;
+        let totalProductsSold = 0;
+        orders.forEach(order => {
+            order.items.forEach(item => {
+                if (productIds.some(id => id.equals(item.product))) {
+                    totalRevenue += item.subtotal || (item.unitPrice || 0) * (item.quantity || 0);
+                    totalProductsSold += item.quantity || 0;
+                }
+            });
+        });
+
+        const pendingOrders = await Order.countDocuments({
+            'items.product': { $in: productIds },
+            status: { $in: PENDING_STATUSES }
+        });
+
+        res.status(200).json({
+            success: true,
+            data: {
+                seller: {
+                    _id: seller._id,
+                    fullName: seller.fullName,
+                    email: seller.email,
+                    phoneNumber: seller.phoneNumber,
+                    region: seller.region,
+                },
+                totalRevenue,
+                totalOrders: orders.length,
+                totalProductsSold,
+                pendingOrders,
+                totalProducts: sellerProducts.length,
+                outOfStockProducts: sellerProducts.filter(p => (p.remainingQuantity || 0) === 0).length,
+            }
+        });
+    } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 };

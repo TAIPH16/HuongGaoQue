@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { customersAPI } from '../../utils/api';
 import MainLayout from '../../components/Layout/MainLayout';
 import { useNavigate } from 'react-router-dom';
-import { FiEye, FiMoreVertical, FiMinus, FiEdit, FiCheckCircle } from 'react-icons/fi';
+import { FiSearch, FiMoreVertical, FiMinus, FiEdit, FiCheckCircle } from 'react-icons/fi';
 
 const CustomerList = () => {
   const [customers, setCustomers] = useState([]);
@@ -111,7 +111,7 @@ const CustomerList = () => {
   };
 
   return (
-    <MainLayout title="Quản Lí Khách Hàng" onSearch={setSearchTerm}>
+    <MainLayout title="Quản Lí Khách Hàng">
       <div className="space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -129,6 +129,20 @@ const CustomerList = () => {
             <h3 className="text-sm font-medium text-gray-600 mb-2">Lượt đánh giá</h3>
             <p className="text-2xl font-bold text-gray-800">{stats?.totalReviews || 4082}</p>
             <p className="text-sm text-red-600 mt-1">↓ 72% (-3,527 lượt hôm nay)</p>
+          </div>
+        </div>
+
+        {/* Thanh tìm kiếm - ngay dưới phần Lượt truy cập */}
+        <div className="bg-white rounded-lg shadow p-4">
+          <div className="relative max-w-md">
+            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Tìm kiếm theo tên, email, số điện thoại..."
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+            />
           </div>
         </div>
 

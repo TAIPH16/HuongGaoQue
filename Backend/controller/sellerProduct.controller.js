@@ -1,4 +1,5 @@
 const Product = require('../model/product');
+const Category = require('../model/category');
 
 // Get seller's own products
 exports.getSellerProducts = async (req, res) => {
@@ -145,17 +146,97 @@ exports.updateSellerProduct = async (req, res) => {
             });
         }
 
-        // Update fields
-        Object.keys(req.body).forEach(key => {
-            if (key !== 'seller' && key !== 'is_approved') { // Don't allow changing seller or approval status
-                product[key] = req.body[key];
-            }
-        });
+        // Parse and update fields
+        const {
+            name,
+            category,
+            listedPrice,
+            discountPercent,
+            description,
+            initialQuantity,
+            remainingQuantity,
+            unit,
+            status,
+            details,
+            allowComments,
+            imagesToDelete
+        } = req.body;
 
-        // Handle new images if uploaded
-        if (req.files && req.files.length > 0) {
-            product.images = req.files.map(file => `/images/products/${file.filename}`);
+        // Update basic fields
+        if (name !== undefined) product.name = name.trim();
+        if (category !== undefined) {
+            const categoryExists = await Category.findById(category);
+            if (!categoryExists) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Danh mục không tồn tại'
+                });
+            }
+            product.category = category;
         }
+        if (listedPrice !== undefined) product.listedPrice = parseFloat(listedPrice);
+        if (discountPercent !== undefined) product.discountPercent = parseFloat(discountPercent);
+        if (description !== undefined) product.description = description;
+        if (initialQuantity !== undefined) {
+            product.initialQuantity = parseInt(initialQuantity);
+            if (remainingQuantity === undefined) {
+                product.remainingQuantity = parseInt(initialQuantity);
+            }
+        }
+        if (remainingQuantity !== undefined) product.remainingQuantity = parseInt(remainingQuantity);
+        if (unit !== undefined) product.unit = unit;
+        if (status !== undefined) product.status = status;
+        if (allowComments !== undefined) {
+            product.allowComments = allowComments === 'false' || allowComments === false ? false : true;
+        }
+
+        // Handle details - parse properly
+        if (details !== undefined) {
+            try {
+                let parsedDetails = [];
+                if (typeof details === 'string') {
+                    // Nếu là string rỗng hoặc chỉ có whitespace hoặc "[]", dùng empty array
+                    const trimmed = details.trim();
+                    if (trimmed === '' || trimmed === '[]' || trimmed === 'null') {
+                        parsedDetails = [];
+                    } else {
+                        parsedDetails = JSON.parse(details);
+                        // Đảm bảo là array
+                        if (!Array.isArray(parsedDetails)) {
+                            parsedDetails = [];
+                        }
+                    }
+                } else if (Array.isArray(details)) {
+                    parsedDetails = details;
+                } else if (details === null) {
+                    parsedDetails = [];
+                }
+                product.details = parsedDetails;
+                console.log('Updated product details - Parsed:', parsedDetails);
+            } catch (error) {
+                console.error('Error parsing details:', error, 'Raw details:', details);
+                // Nếu parse lỗi, dùng empty array thay vì giữ nguyên (tránh lỗi validation)
+                product.details = [];
+            }
+        }
+
+        // Handle images to delete
+        if (imagesToDelete) {
+            const imagesToDeleteArray = typeof imagesToDelete === 'string'
+                ? JSON.parse(imagesToDelete)
+                : imagesToDelete;
+            product.images = product.images.filter(img => !imagesToDeleteArray.includes(img));
+        }
+
+        // Handle new images if uploaded (append to existing)
+        if (req.files && req.files.length > 0) {
+            const newImages = req.files.map(file => `/images/products/${file.filename}`);
+            product.images = [...(product.images || []), ...newImages];
+        }
+
+        // Update status based on quantity
+        product.updateStatus();
+        product.updatedAt = new Date();
 
         // Set back to pending approval if significant changes
         product.is_approved = false;

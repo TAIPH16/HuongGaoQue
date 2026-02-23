@@ -14,6 +14,7 @@ import OrderDetail from './pages/Orders/OrderDetail';
 import CustomerList from './pages/Customers/CustomerList';
 import PostList from './pages/Posts/PostList';
 import PostForm from './pages/Posts/PostForm';
+import ReviewManagement from './pages/Reviews/ReviewManagement';
 import Profile from './pages/Profile/Profile';
 import Dashboard from './pages/Dashboard/Dashboard';
 import HomePage from './pages/Customer/HomePage';
@@ -43,6 +44,7 @@ import CustomerEditForm from './pages/Customers/CustomerEditForm';
 import SellerManagement from './pages/Sellers/SellerManagement';
 import SellerDetail from './pages/Sellers/SellerDetail';
 import SellerEditForm from './pages/Sellers/SellerEditForm';
+import SellerReports from './pages/Sellers/SellerReports';
 import SellerLogin from './pages/Seller/SellerLogin';
 import SellerDashboard from './pages/Seller/SellerDashboard';
 import SellerProfile from './pages/Seller/SellerProfile';
@@ -266,6 +268,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/admin/sellers/reports"
+        element={
+          <ProtectedRoute>
+            <SellerReports />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/sellers/:id/edit"
         element={
           <ProtectedRoute>
@@ -302,6 +312,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <PostForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/reviews"
+        element={
+          <ProtectedRoute>
+            <ReviewManagement />
           </ProtectedRoute>
         }
       />

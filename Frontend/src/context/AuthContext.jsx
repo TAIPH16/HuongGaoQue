@@ -48,12 +48,17 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         await authAPI.logout();
       }
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       setUser(null);
+      return { success: true, message: 'Đăng xuất thành công' };
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still clear local storage even if API call fails
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+      return { success: true, message: 'Đăng xuất thành công' };
     }
   };
 

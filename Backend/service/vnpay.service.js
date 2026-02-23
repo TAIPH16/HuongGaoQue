@@ -9,13 +9,14 @@ const BACKEND_URL = process.env.BACKEND_URL || process.env.API_URL || 'http://lo
 const VNPAY_RETURN_URL = process.env.VNPAY_RETURN_URL || `${BACKEND_URL}/api/vnpay/return`;
 
 // Cảnh báo nếu return URL là localhost (VNPAY không thể truy cập được)
-if (VNPAY_RETURN_URL.includes('localhost') || VNPAY_RETURN_URL.includes('127.0.0.1')) {
-  console.warn('⚠️  CẢNH BÁO: VNPAY Return URL đang sử dụng localhost!');
-  console.warn('   VNPAY không thể truy cập localhost từ server của họ.');
-  console.warn('   Vui lòng sử dụng ngrok hoặc deploy backend lên server thật.');
-  console.warn('   Xem hướng dẫn tại: VNPAY_SETUP.md');
-  console.warn(`   Return URL hiện tại: ${VNPAY_RETURN_URL}`);
-}
+// Tạm thời tắt cảnh báo
+// if (VNPAY_RETURN_URL.includes('localhost') || VNPAY_RETURN_URL.includes('127.0.0.1')) {
+//   console.warn('⚠️  CẢNH BÁO: VNPAY Return URL đang sử dụng localhost!');
+//   console.warn('   VNPAY không thể truy cập localhost từ server của họ.');
+//   console.warn('   Vui lòng sử dụng ngrok hoặc deploy backend lên server thật.');
+//   console.warn('   Xem hướng dẫn tại: VNPAY_SETUP.md');
+//   console.warn(`   Return URL hiện tại: ${VNPAY_RETURN_URL}`);
+// }
 
 /**
  * Tạo URL thanh toán VNPay

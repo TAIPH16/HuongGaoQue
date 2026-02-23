@@ -8,6 +8,8 @@ router.use(protectRoute(['admin']));
 
 // GET /api/posts - List with filters/pagination
 router.get('/', postController.getPosts);
+// GET /api/posts/stats/views-by-date - Lượt xem bài viết theo ngày (admin)
+router.get('/stats/views-by-date', postController.getPostViewsByDate);
 
 // GET /api/posts/:id - Detail
 router.get('/:id', postController.getPostDetail);

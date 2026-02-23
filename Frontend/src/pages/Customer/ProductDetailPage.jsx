@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiHeart, FiMinus, FiPlus, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
+import axios from 'axios';
 import CustomerLayout from '../../components/Customer/CustomerLayout';
 import { useCart } from '../../context/CartContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
@@ -21,6 +22,10 @@ const ProductDetailPage = () => {
   const [showToast, setShowToast] = useState(false);
   const { addToCart } = useCart();
   const { customer } = useCustomerAuth();
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewContent, setReviewContent] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState('');
 
   useEffect(() => {
     fetchProduct();
@@ -53,6 +58,55 @@ const ProductDetailPage = () => {
       setReviews(response.data?.data || response.data || []);
     } catch (error) {
       console.error('Error fetching reviews:', error);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (!customer) {
+      alert('Vui lòng đăng nhập để đánh giá sản phẩm.');
+      return;
+    }
+    if (!reviewContent.trim()) {
+      setReviewMessage('Vui lòng nhập nội dung đánh giá.');
+      return;
+    }
+
+    try {
+      setSubmittingReview(true);
+      setReviewMessage('');
+
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+      const token = localStorage.getItem('customer_token');
+
+      await axios.post(
+        `${API_BASE_URL}/reviews`,
+        {
+          target_type: 'product',
+          target_id: product._id,
+          rating: reviewRating,
+          title: '',
+          content: reviewContent.trim(),
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
+
+      setReviewContent('');
+      setReviewRating(5);
+      setReviewMessage('Đánh giá sản phẩm thành công.');
+      fetchReviews();
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      const message =
+        error.response?.data?.message ||
+        'Không thể gửi đánh giá. Vui lòng thử lại sau.';
+      setReviewMessage(message);
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -444,7 +498,10 @@ const ProductDetailPage = () => {
                         <button
                           key={star}
                           type="button"
-                          className="text-2xl text-gray-300 hover:text-yellow-400 focus:outline-none"
+                          onClick={() => setReviewRating(star)}
+                          className={`text-2xl focus:outline-none ${
+                            star <= reviewRating ? 'text-yellow-400' : 'text-gray-300'
+                          }`}
                         >
                           ★
                         </button>
@@ -459,10 +516,19 @@ const ProductDetailPage = () => {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                       rows={4}
                       placeholder="Viết đánh giá..."
+                      value={reviewContent}
+                      onChange={(e) => setReviewContent(e.target.value)}
                     />
                   </div>
-                  <button className="bg-[#2d5016] text-white px-6 py-2 rounded-lg hover:bg-[#1f350d] transition font-semibold">
-                    Đánh Giá Ngay
+                  {reviewMessage && (
+                    <p className="text-sm mb-3 text-gray-600">{reviewMessage}</p>
+                  )}
+                  <button
+                    onClick={handleSubmitReview}
+                    disabled={submittingReview}
+                    className="bg-[#2d5016] text-white px-6 py-2 rounded-lg hover:bg-[#1f350d] transition font-semibold disabled:opacity-60"
+                  >
+                    {submittingReview ? 'Đang gửi...' : 'Đánh Giá Ngay'}
                   </button>
                 </div>
               )}

@@ -32,6 +32,23 @@ const getOrderStats = async (req, res, next) => {
 };
 
 /**
+ * GET /api/orders/stats/by-date - Thống kê đơn hàng theo ngày (hành vi mua hàng)
+ * Query: startDate, endDate (YYYY-MM-DD)
+ */
+const getOrderStatsByDate = async (req, res, next) => {
+    try {
+        const { startDate, endDate } = req.query;
+        const data = await orderService.getOrderStatsByDate(startDate, endDate);
+        res.json({
+            success: true,
+            data
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
  * GET /api/orders/:id - Lấy chi tiết đơn hàng
  */
 const getOrderDetail = async (req, res, next) => {
@@ -257,6 +274,7 @@ const updateCustomerOrder = async (req, res, next) => {
 module.exports = {
     getOrders,
     getOrderStats,
+    getOrderStatsByDate,
     getOrderDetail,
     createOrder,
     updateOrder,

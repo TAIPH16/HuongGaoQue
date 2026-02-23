@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ordersAPI } from '../../utils/api';
 import MainLayout from '../../components/Layout/MainLayout';
 import { FiTrash2, FiPrinter, FiCheckCircle, FiCalendar, FiPackage, FiRotateCcw, FiMail, FiPhone, FiMapPin, FiCreditCard } from 'react-icons/fi';
@@ -89,7 +89,7 @@ const OrderDetail = () => {
     try {
       await ordersAPI.delete(id);
       setDeleteModal({ isOpen: false });
-      navigate('/orders');
+      navigate('/admin/orders');
     } catch (error) {
       console.error('Error deleting order:', error);
     }
@@ -135,10 +135,17 @@ const OrderDetail = () => {
   return (
     <MainLayout title="Chi tiết đơn hàng">
       <div className="space-y-6">
-        {/* Breadcrumbs */}
-        <div className="text-sm text-gray-600">
-          Đơn hàng / Chi tiết đơn hàng
-        </div>
+        {/* Breadcrumbs - bấm "Đơn hàng" để quay lại danh sách */}
+        <nav className="text-sm text-gray-600 flex items-center gap-1">
+          <Link
+            to="/admin/orders"
+            className="text-green-600 hover:text-green-700 hover:underline"
+          >
+            Đơn hàng
+          </Link>
+          <span className="text-gray-400">/</span>
+          <span className="text-gray-800 font-medium">Chi tiết đơn hàng</span>
+        </nav>
 
         {/* Order ID Header */}
         <div className="flex items-center justify-between">

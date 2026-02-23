@@ -51,10 +51,36 @@ export const SellerAuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
-        localStorage.removeItem('sellerToken');
-        localStorage.removeItem('seller');
-        setSeller(null);
+    const logout = async () => {
+        try {
+            const token = localStorage.getItem('sellerToken');
+            if (token) {
+                try {
+                    await axios.post(
+                        `${API_BASE_URL}/seller/auth/logout`,
+                        {},
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    );
+                } catch (error) {
+                    console.error('Logout API error:', error);
+                    // Continue with logout even if API fails
+                }
+            }
+            localStorage.removeItem('sellerToken');
+            localStorage.removeItem('seller');
+            setSeller(null);
+            return { success: true, message: 'Đăng xuất thành công' };
+        } catch (error) {
+            console.error('Logout error:', error);
+            localStorage.removeItem('sellerToken');
+            localStorage.removeItem('seller');
+            setSeller(null);
+            return { success: true, message: 'Đăng xuất thành công' };
+        }
     };
 
     const updateProfile = (updatedSeller) => {
