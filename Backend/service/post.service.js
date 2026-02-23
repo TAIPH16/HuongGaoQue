@@ -1,5 +1,6 @@
 const Post = require('../model/post');
 const PostCategory = require('../model/postCategory');
+const PostViewLog = require('../model/postViewLog');
 const path = require('path');
 const fs = require('fs');
 
@@ -231,7 +232,7 @@ const deletePost = async (postId) => {
 };
 
 /**
- * Tăng lượt xem
+ * Tăng lượt xem và ghi log (cho thống kê hành vi xem bài viết)
  */
 const incrementView = async (postId) => {
     const post = await Post.findByIdAndUpdate(
@@ -244,7 +245,37 @@ const incrementView = async (postId) => {
         throw new Error('Không tìm thấy bài viết');
     }
 
+    try {
+        await PostViewLog.create({ postId, viewedAt: new Date() });
+    } catch (e) {
+        // Không chặn nếu ghi log lỗi
+    }
+
     return { viewCount: post.viewCount };
+};
+
+/**
+ * Thống kê lượt xem bài viết theo ngày (cho biểu đồ Hành vi xem bài viết)
+ * @param {string} startDate - YYYY-MM-DD
+ * @param {string} endDate - YYYY-MM-DD
+ */
+const getPostViewsByDate = async (startDate, endDate) => {
+    const start = startDate ? new Date(startDate + 'T00:00:00.000Z') : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const end = endDate ? new Date(endDate + 'T23:59:59.999Z') : new Date();
+
+    const result = await PostViewLog.aggregate([
+        { $match: { viewedAt: { $gte: start, $lte: end } } },
+        {
+            $group: {
+                _id: { $dateToString: { format: '%Y-%m-%d', date: '$viewedAt' } },
+                views: { $sum: 1 }
+            }
+        },
+        { $sort: { _id: 1 } },
+        { $project: { date: '$_id', views: 1, _id: 0 } }
+    ]);
+
+    return result;
 };
 
 module.exports = {
@@ -253,6 +284,7 @@ module.exports = {
     createPost,
     updatePost,
     deletePost,
-    incrementView
+    incrementView,
+    getPostViewsByDate
 };
 

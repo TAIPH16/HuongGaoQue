@@ -129,6 +129,7 @@ export const ordersAPI = {
   update: (id, data) => api.put(`/orders/${id}`, data),
   delete: (id) => api.delete(`/orders/${id}`),
   getStats: () => api.get('/orders/stats'),
+  getStatsByDate: (params) => api.get('/orders/stats/by-date', { params }),
 };
 
 // src/utils/api.js (hoặc file chứa code này)
@@ -204,6 +205,10 @@ export const sellersAPI = {
 
   // Thống kê
   getStats: () => api.get('/sellers/stats/summary'),
+
+  // Báo cáo người bán (admin)
+  getReports: () => api.get('/sellers/reports'),
+  getReportById: (id) => api.get(`/sellers/${id}/reports`),
 };
 // Posts API
 export const postsAPI = {
@@ -217,6 +222,7 @@ export const postsAPI = {
   }),
   delete: (id) => api.delete(`/posts/${id}`),
   incrementView: (id) => api.post(`/posts/${id}/increment-view`),
+  getViewsByDate: (params) => api.get('/posts/stats/views-by-date', { params }),
 };
 
 // Post Categories API

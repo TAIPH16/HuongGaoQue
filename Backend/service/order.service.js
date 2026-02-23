@@ -82,6 +82,31 @@ const getOrderStats = async () => {
 };
 
 /**
+ * Thống kê đơn hàng theo ngày (cho biểu đồ Hành vi mua hàng)
+ * @param {string} startDate - YYYY-MM-DD
+ * @param {string} endDate - YYYY-MM-DD
+ */
+const getOrderStatsByDate = async (startDate, endDate) => {
+    const start = startDate ? new Date(startDate + 'T00:00:00.000Z') : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const end = endDate ? new Date(endDate + 'T23:59:59.999Z') : new Date();
+
+    const result = await Order.aggregate([
+        { $match: { created_at: { $gte: start, $lte: end } } },
+        {
+            $group: {
+                _id: { $dateToString: { format: '%Y-%m-%d', date: '$created_at' } },
+                orderCount: { $sum: 1 },
+                revenue: { $sum: '$total' }
+            }
+        },
+        { $sort: { _id: 1 } },
+        { $project: { date: '$_id', orderCount: 1, revenue: 1, _id: 0 } }
+    ]);
+
+    return result;
+};
+
+/**
  * Lấy chi tiết đơn hàng
  */
 const getOrderDetail = async (orderId) => {
@@ -353,6 +378,7 @@ const deleteOrder = async (orderId) => {
 module.exports = {
     getOrders,
     getOrderStats,
+    getOrderStatsByDate,
     getOrderDetail,
     createOrder,
     updateOrder,

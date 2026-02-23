@@ -19,6 +19,8 @@ router.get('/posts', postController.getPosts);
 
 // GET /api/public/posts/:id - Post detail (public)
 router.get('/posts/:id', postController.getPostDetail);
+// POST /api/public/posts/:id/increment-view - Tăng lượt xem (public, để ghi log hành vi xem bài)
+router.post('/posts/:id/increment-view', postController.incrementView);
 
 // GET /api/public/reviews - List reviews (public)
 router.get('/reviews', reviewController.listReviews);

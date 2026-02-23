@@ -54,6 +54,9 @@ const uploadMiddleware = (req, res, next) => {
 // Routes for sellers
 router.get("/", protectRoute(['admin']), sellerController.getSellers);
 router.get("/stats/summary", protectRoute(['admin']), sellerController.getSellerStats);
+// Báo cáo người bán (phải đặt trước /:id)
+router.get("/reports", protectRoute(['admin']), sellerController.getSellerReports);
+router.get("/:id/reports", protectRoute(['admin']), sellerController.getSellerReportById);
 router.get("/:id", protectRoute(['admin']), sellerController.getSellerById);
 router.put("/:id", protectRoute(['admin']), uploadMiddleware, sellerController.updateSeller);
 

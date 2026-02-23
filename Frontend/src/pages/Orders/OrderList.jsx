@@ -12,10 +12,13 @@ const OrderList = () => {
   const [statusFilter, setStatusFilter] = useState('Tất cả');
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1 });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, order: null });
+  const [orderStats, setOrderStats] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchOrders();
+    fetchOrderStats();
   }, [pagination.currentPage, searchTerm, statusFilter]);
 
   const fetchOrders = async () => {
@@ -44,6 +47,19 @@ const OrderList = () => {
       console.error('Error fetching orders:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchOrderStats = async () => {
+    try {
+      setLoadingStats(true);
+      const response = await ordersAPI.getStats();
+      // Giả định backend trả về { data: { total, byStatus } }
+      setOrderStats(response.data.data || response.data);
+    } catch (error) {
+      console.error('Error fetching order stats:', error);
+    } finally {
+      setLoadingStats(false);
     }
   };
 
@@ -87,6 +103,18 @@ const OrderList = () => {
     return statusMap[status] || status;
   };
 
+  const getStatusBarColor = (status) => {
+    const colorMap = {
+      pending: 'bg-amber-500',
+      paid: 'bg-emerald-500',
+      processing: 'bg-blue-500',
+      shipping: 'bg-violet-500',
+      completed: 'bg-green-500',
+      cancelled: 'bg-red-400',
+    };
+    return colorMap[status] || 'bg-gray-500';
+  };
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN').format(price) + '₫';
   };
@@ -99,6 +127,108 @@ const OrderList = () => {
   return (
     <MainLayout title="Quản Lí Đơn Hàng" onSearch={setSearchTerm}>
       <div className="space-y-6">
+        {/* Order Statistics Summary */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">Thống kê đơn hàng</h2>
+              <p className="text-sm text-gray-500">
+                Tổng quan số lượng, doanh thu và trạng thái đơn hàng trên hệ thống.
+              </p>
+            </div>
+            {loadingStats && (
+              <span className="text-xs text-gray-500">Đang tải thống kê...</span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="p-4 rounded-lg border border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
+              <p className="text-xs text-gray-500 mb-1">Tổng số đơn hàng</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {orderStats?.total?.totalOrders
+                  ? new Intl.NumberFormat('vi-VN').format(orderStats.total.totalOrders)
+                  : '0'}
+              </p>
+            </div>
+            <div className="p-4 rounded-lg border border-gray-100 bg-white">
+              <p className="text-xs text-gray-500 mb-1">Tổng doanh thu từ đơn hàng</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {orderStats?.total?.totalRevenue
+                  ? new Intl.NumberFormat('vi-VN').format(orderStats.total.totalRevenue) + '₫'
+                  : '0₫'}
+              </p>
+            </div>
+            <div className="p-4 rounded-lg border border-gray-100 bg-white">
+              <p className="text-xs text-gray-500 mb-1">Tổng sản phẩm trong đơn</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {orderStats?.total?.totalItems
+                  ? new Intl.NumberFormat('vi-VN').format(orderStats.total.totalItems)
+                  : '0'}
+              </p>
+            </div>
+          </div>
+
+          {orderStats?.byStatus && orderStats.byStatus.length > 0 && (
+            <div className="border-t border-gray-100 pt-5 mt-2">
+              <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                <span className="w-1 h-4 rounded-full bg-green-500" />
+                Phân bố đơn hàng theo trạng thái
+              </h3>
+              <p className="text-xs text-gray-500 mb-4">
+                Số đơn và doanh thu tương ứng với từng trạng thái đơn hàng.
+              </p>
+              <div className="space-y-4">
+                {[...orderStats.byStatus]
+                  .map((item) => ({ ...item, status: item.status ?? item._id }))
+                  .sort((a, b) => (b.count || 0) - (a.count || 0))
+                  .map((item) => {
+                    const totalOrders = orderStats.total?.totalOrders || 0;
+                    const percentage =
+                      totalOrders > 0 ? Math.round((item.count / totalOrders) * 100) : 0;
+                    const statusLabel = getStatusText(item.status);
+                    const barColor = getStatusBarColor(item.status);
+                    const badgeClass = getStatusColor(item.status);
+                    return (
+                      <div
+                        key={item.status || item._id}
+                        className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg bg-gray-50/80 hover:bg-gray-50 border border-gray-100"
+                      >
+                        <div className="flex items-center gap-3 min-w-[140px]">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium shrink-0 ${badgeClass}`}
+                          >
+                            {statusLabel}
+                          </span>
+                          <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                            {new Intl.NumberFormat('vi-VN').format(item.count || 0)} đơn
+                            <span className="text-gray-500 font-normal ml-1">({percentage}%)</span>
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                            <div
+                              className={`h-3 rounded-full transition-all duration-500 ${barColor}`}
+                              style={{ width: `${Math.max(percentage, 2)}%` }}
+                              title={`${percentage}%`}
+                            />
+                          </div>
+                        </div>
+                        <div className="sm:text-right shrink-0">
+                          <span className="text-xs text-gray-500">Doanh thu </span>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {item.totalRevenue
+                              ? new Intl.NumberFormat('vi-VN').format(item.totalRevenue) + '₫'
+                              : '0₫'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Filter Tabs */}
         <div className="bg-white rounded-lg shadow">
           <div className="flex space-x-1 p-1 border-b border-gray-200">

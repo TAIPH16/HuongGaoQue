@@ -90,6 +90,7 @@ const sellerProductsRouter = require("./routes/sellerProducts.routes");
 const sellerOrdersRouter = require("./routes/sellerOrders.routes");
 const sellerStockRouter = require("./routes/sellerStock.routes");
 const unifiedAuthRouter = require("./routes/unifiedAuth.routes");
+const reviewRouter = require("./routes/review.routes");
 
 // Register routes
 app.use("/", indexRouter);
@@ -112,6 +113,7 @@ app.use("/api/contacts", contactRouter);
 
 app.use("/api/account-management", accountManagementRouter);
 app.use("/api/notifications", notificationsRouter);
+app.use("/api/reviews", reviewRouter);
 app.use("/api/sellers", sellersRouter);
 
 // Seller routes

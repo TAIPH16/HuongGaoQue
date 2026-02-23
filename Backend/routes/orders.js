@@ -11,6 +11,8 @@ router.get('/', orderController.getOrders);
 
 // GET /api/orders/stats - Statistics
 router.get('/stats', orderController.getOrderStats);
+// GET /api/orders/stats/by-date - Thống kê theo ngày (hành vi mua hàng)
+router.get('/stats/by-date', orderController.getOrderStatsByDate);
 
 // GET /api/orders/:id - Detail
 router.get('/:id', orderController.getOrderDetail);

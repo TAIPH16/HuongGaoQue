@@ -20,6 +20,7 @@ export const publicProductsAPI = {
 export const publicPostsAPI = {
   getAll: (params) => publicApi.get('/public/posts', { params }),
   getById: (id) => publicApi.get(`/public/posts/${id}`),
+  incrementView: (id) => publicApi.post(`/public/posts/${id}/increment-view`),
 };
 
 // Public Reviews API
