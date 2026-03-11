@@ -46,6 +46,7 @@ require("./model/wishlist");
 require("./model/wishlistGroup");
 require("./model/contact");
 require("./model/membership");
+require("./model/stockEntry");
 
 // View engine setup
 app.set("views", path.join(__dirname, "views"));

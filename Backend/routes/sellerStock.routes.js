@@ -3,6 +3,10 @@ const router = express.Router();
 const sellerStockController = require('../controller/sellerStock.controller');
 const protectRoute = require('../middleware/auth.middleware');
 
+// Bản ghi nhập kho (đặt trước /:id)
+router.get('/entries/by-product/:productId', protectRoute(['seller']), sellerStockController.listStockEntries);
+router.delete('/entries/:entryId', protectRoute(['seller']), sellerStockController.deleteStockRecord);
+
 // Tất cả routes cần seller authentication
 router.get('/', protectRoute(['seller']), sellerStockController.getStockList);
 router.get('/:id', protectRoute(['seller']), sellerStockController.getStockDetail);

@@ -74,7 +74,9 @@ export const sellerStockAPI = {
     getById: (id) => sellerApi.get(`/seller/stock/${id}`),
     getHistory: (id) => sellerApi.get(`/seller/stock/${id}/history`),
     update: (id, data) => sellerApi.patch(`/seller/stock/${id}`, data),
-    addStock: (id, quantity) => sellerApi.post(`/seller/stock/${id}/add`, { quantity }),
+    addStock: (id, quantity, note) => sellerApi.post(`/seller/stock/${id}/add`, { quantity, note }),
+    listStockEntries: (productId) => sellerApi.get(`/seller/stock/entries/by-product/${productId}`),
+    deleteStockRecord: (entryId) => sellerApi.delete(`/seller/stock/entries/${entryId}`),
 };
 
 export default sellerApi;
