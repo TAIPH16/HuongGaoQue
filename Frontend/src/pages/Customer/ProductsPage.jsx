@@ -124,8 +124,18 @@ const ProductsPage = () => {
     }
   };
 
+  const getWishlistItemProductId = (item) => {
+    const p = item.product || item.product_variation_id;
+    if (!p) return null;
+    return p._id != null ? p._id : p;
+  };
+
   const isInWishlist = (productId) => {
-    return wishlistItems.some(item => item.product?._id === productId || item.product_id === productId);
+    const idStr = String(productId);
+    return wishlistItems.some((item) => {
+      const pid = getWishlistItemProductId(item);
+      return pid != null && String(pid) === idStr;
+    });
   };
 
   const handleWishlistToggle = async (productId) => {
@@ -138,18 +148,34 @@ const ProductsPage = () => {
     try {
       const inWishlist = isInWishlist(productId);
       if (inWishlist) {
-        const wishlistItem = wishlistItems.find(item => item.product?._id === productId || item.product_id === productId);
+        const wishlistItem = wishlistItems.find((item) => {
+          const pid = getWishlistItemProductId(item);
+          return pid != null && String(pid) === String(productId);
+        });
         if (wishlistItem) {
           await customerWishlistAPI.remove(wishlistItem._id);
-          setWishlistItems(wishlistItems.filter(item => item._id !== wishlistItem._id));
+          setWishlistItems(wishlistItems.filter((item) => item._id !== wishlistItem._id));
         }
       } else {
-        await customerWishlistAPI.add(productId);
-        await fetchWishlist(); // Refresh wishlist
+        try {
+          await customerWishlistAPI.add(productId);
+        } catch (addErr) {
+          const msg = addErr.response?.data?.message || '';
+          if (
+            addErr.response?.status === 400 &&
+            (String(msg).toLowerCase().includes('already') || String(msg).includes('đã có') || String(msg).includes('trùng'))
+          ) {
+            await fetchWishlist();
+            return;
+          }
+          throw addErr;
+        }
+        await fetchWishlist();
       }
     } catch (error) {
       console.error('Error toggling wishlist:', error);
-      alert('Có lỗi xảy ra khi thêm/xóa khỏi wishlist');
+      const msg = error.response?.data?.message || error.message || '';
+      alert(msg || 'Có lỗi xảy ra khi thêm/xóa khỏi wishlist');
     } finally {
       setWishlistLoading({ ...wishlistLoading, [productId]: false });
     }
@@ -174,20 +200,28 @@ const ProductsPage = () => {
               {/* Search */}
               <div>
                 <h3 className="font-bold text-gray-800 mb-4">Tìm kiếm</h3>
-                <form onSubmit={handleSearch} className="flex gap-2">
+                <form onSubmit={handleSearch} className="flex gap-2 items-stretch">
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Điền yêu cầu của bạn"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                    className="flex-1 min-w-0 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                   />
                   <button
                     type="submit"
-                    className="bg-[#2d5016] text-white px-4 py-2 rounded-lg hover:bg-[#1f350d] transition"
+                    className="bg-[#2d5016] text-white px-4 py-2 rounded-lg hover:bg-[#1f350d] transition shrink-0"
+                    title="Tìm kiếm"
                   >
                     🔍
                   </button>
+                  <Link
+                    to="/da-thich"
+                    className="flex items-center justify-center bg-white border-2 border-[#2d5016] text-[#2d5016] px-3 py-2 rounded-lg hover:bg-[#2d5016] hover:text-white transition shrink-0"
+                    title="Danh sách yêu thích"
+                  >
+                    <FiHeart className="w-5 h-5" />
+                  </Link>
                 </form>
               </div>
 

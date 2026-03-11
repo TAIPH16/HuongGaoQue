@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SellerLayout from '../../components/Seller/SellerLayout';
 import { sellerStockAPI } from '../../utils/sellerApi';
-import { FiPackage, FiEdit, FiEye, FiPlus, FiSearch, FiFilter } from 'react-icons/fi';
+import { FiPackage, FiEdit, FiEye, FiPlus, FiSearch, FiTrash2, FiList } from 'react-icons/fi';
 
 const SellerStockManagement = () => {
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -17,6 +17,9 @@ const SellerStockManagement = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showAddStockModal, setShowAddStockModal] = useState(false);
+  const [showEntriesModal, setShowEntriesModal] = useState(false);
+  const [stockEntries, setStockEntries] = useState([]);
+  const [loadingEntries, setLoadingEntries] = useState(false);
   const [editForm, setEditForm] = useState({ remainingQuantity: '', initialQuantity: '' });
   const [addStockForm, setAddStockForm] = useState({ quantity: '' });
   const navigate = useNavigate();
@@ -91,6 +94,37 @@ const SellerStockManagement = () => {
       setShowDetailModal(true);
     } catch (err) {
       alert(err.response?.data?.message || 'Không tải được chi tiết');
+    }
+  };
+
+  const fetchEntries = async (productId) => {
+    try {
+      setLoadingEntries(true);
+      const res = await sellerStockAPI.listStockEntries(productId);
+      setStockEntries(res.data.data || []);
+    } catch (err) {
+      setStockEntries([]);
+      alert(err.response?.data?.message || 'Không tải được bản ghi nhập kho');
+    } finally {
+      setLoadingEntries(false);
+    }
+  };
+
+  const handleOpenEntries = async (stock) => {
+    setSelectedStock(stock);
+    setShowEntriesModal(true);
+    await fetchEntries(stock._id);
+  };
+
+  const handleDeleteEntry = async (entryId) => {
+    if (!confirm('Xóa bản ghi nhập kho này? Tồn kho sẽ bị trừ tương ứng.')) return;
+    try {
+      await sellerStockAPI.deleteStockRecord(entryId);
+      await fetchEntries(selectedStock._id);
+      fetchStocks();
+      alert('Đã xóa bản ghi nhập kho.');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Xóa thất bại');
     }
   };
 
@@ -252,6 +286,13 @@ const SellerStockManagement = () => {
                           >
                             <FiPlus className="w-4 h-4" />
                           </button>
+                          <button
+                            onClick={() => handleOpenEntries(stock)}
+                            className="p-2 text-amber-600 hover:bg-amber-50 rounded"
+                            title="Bản ghi nhập kho"
+                          >
+                            <FiList className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -287,6 +328,68 @@ const SellerStockManagement = () => {
           )}
         </div>
       </div>
+
+      {/* Bản ghi nhập kho - Delete stock record */}
+      {showEntriesModal && selectedStock && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold mb-2">Bản ghi nhập kho</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              {selectedStock.name} — Mã: {selectedStock.productId}
+            </p>
+            {loadingEntries ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+              </div>
+            ) : stockEntries.length === 0 ? (
+              <p className="text-gray-500 py-6 text-center">
+                Chưa có bản ghi nhập kho. Các lần nhập sau khi dùng nút &quot;Thêm kho&quot; sẽ hiển thị tại đây.
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium text-gray-600">Thời gian</th>
+                      <th className="px-3 py-2 text-left font-medium text-gray-600">Số lượng</th>
+                      <th className="px-3 py-2 text-left font-medium text-gray-600">Còn khấu trừ</th>
+                      <th className="px-3 py-2 text-left font-medium text-gray-600">Ghi chú</th>
+                      <th className="px-3 py-2 text-right font-medium text-gray-600">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {stockEntries.map((entry) => (
+                      <tr key={entry._id} className="hover:bg-gray-50">
+                        <td className="px-3 py-2 text-gray-700">
+                          {entry.created_at ? new Date(entry.created_at).toLocaleString('vi-VN') : '—'}
+                        </td>
+                        <td className="px-3 py-2 font-medium">{formatPrice(entry.quantity || 0)}</td>
+                        <td className="px-3 py-2">{formatPrice(entry.remainingAllocated ?? entry.quantity ?? 0)}</td>
+                        <td className="px-3 py-2 text-gray-600">{entry.note || '—'}</td>
+                        <td className="px-3 py-2 text-right">
+                          <button
+                            onClick={() => handleDeleteEntry(entry._id)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded"
+                            title="Xóa bản ghi"
+                          >
+                            <FiTrash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <button
+              onClick={() => setShowEntriesModal(false)}
+              className="mt-4 w-full px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Edit Modal */}
       {showEditModal && (
