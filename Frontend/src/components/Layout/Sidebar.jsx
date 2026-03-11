@@ -30,7 +30,15 @@ const Sidebar = () => {
       ],
     },
     { path: '/admin/orders', icon: FiShoppingCart, label: 'Đơn hàng' },
-    { path: '/admin/posts', icon: FiFileText, label: 'Bài viết' },
+    {
+      path: '/admin/posts',
+      icon: FiFileText,
+      label: 'Bài viết',
+      subItems: [
+        { path: '/admin/posts', label: 'Danh sách' },
+        { path: '/admin/posts/categories', label: 'Danh mục' },
+      ],
+    },
     { path: '/admin/customers', icon: FiUsers, label: 'Khách hàng' },
     { path: '/admin/sellers', icon: FiBriefcase, label: 'Quản lý người bán' },
     { path: '/admin/sellers/reports', icon: FiTrendingUp, label: 'Báo cáo người bán' },
@@ -65,7 +73,7 @@ const Sidebar = () => {
             <div key={item.path} className="mb-2">
               <Link
                 to={item.path}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition ${active
+                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition ${active && !item.subItems
                   ? 'bg-green-50 text-green-600 font-semibold'
                   : 'text-gray-700 hover:bg-gray-50'
                   }`}
@@ -73,6 +81,23 @@ const Sidebar = () => {
                 <Icon className="w-5 h-5" />
                 <span>{item.label}</span>
               </Link>
+              {item.subItems && active && (
+                <div className="ml-8 mt-2 space-y-2">
+                  {item.subItems.map((subItem) => (
+                    <Link
+                      key={subItem.path}
+                      to={subItem.path}
+                      className={`block px-4 py-2 text-sm rounded-lg transition ${
+                        location.pathname === subItem.path
+                          ? 'bg-green-50 text-green-600 font-semibold'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      {subItem.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}

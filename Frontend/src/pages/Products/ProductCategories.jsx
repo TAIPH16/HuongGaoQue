@@ -5,6 +5,7 @@ import { FiPlus, FiPackage } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import SuccessModal from '../../components/Modal/SuccessModal';
 import ErrorModal from '../../components/Modal/ErrorModal';
+import ConfirmModal from '../../components/Modal/ConfirmModal';
 
 const ProductCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -12,10 +13,11 @@ const ProductCategories = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1 });
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' });
   const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
   const [isCreating, setIsCreating] = useState(false);
-  const navigate = useNavigate();
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, categoryId: null });
 
   useEffect(() => {
     fetchCategories();
@@ -44,8 +46,12 @@ const ProductCategories = () => {
 
     try {
       setIsCreating(true);
-      await categoriesAPI.create({ name: newCategoryName.trim(), description: '' });
+      await categoriesAPI.create({ 
+        name: newCategoryName.trim(), 
+        description: newCategoryDescription.trim() 
+      });
       setNewCategoryName('');
+      setNewCategoryDescription('');
       setSuccessModal({ isOpen: true, message: 'Tạo danh mục thành công' });
       fetchCategories();
     } catch (error) {
@@ -56,6 +62,23 @@ const ProductCategories = () => {
       });
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!deleteModal.categoryId) return;
+    try {
+      await categoriesAPI.delete(deleteModal.categoryId);
+      setSuccessModal({ isOpen: true, message: 'Xóa danh mục thành công' });
+      setDeleteModal({ isOpen: false, categoryId: null });
+      fetchCategories();
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      setDeleteModal({ isOpen: false, categoryId: null });
+      setErrorModal({ 
+        isOpen: true, 
+        message: error.response?.data?.message || 'Xóa danh mục thất bại, có thể danh mục đang chứa sản phẩm' 
+      });
     }
   };
 
@@ -99,7 +122,14 @@ const ProductCategories = () => {
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   placeholder="Nhập tên loại gạo"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-sm mb-3"
+                  disabled={isCreating}
+                />
+                <textarea
+                  value={newCategoryDescription}
+                  onChange={(e) => setNewCategoryDescription(e.target.value)}
+                  placeholder="Nhập phần mô tả (không bắt buộc)"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-sm resize-none h-20"
                   disabled={isCreating}
                 />
                 <button
@@ -116,18 +146,49 @@ const ProductCategories = () => {
             {categories.map((category) => (
               <div
                 key={category._id}
-                onClick={() => handleCategoryClick(category._id)}
-                className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer"
+                className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition flex flex-col justify-between"
               >
-                <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mb-4 mx-auto">
-                  <FiPackage className="w-6 h-6 text-green-600" />
+                <div 
+                  className="cursor-pointer mb-2" 
+                  onClick={() => handleCategoryClick(category._id)}
+                >
+                  <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mb-4 mx-auto">
+                    <FiPackage className="w-6 h-6 text-green-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 text-center mb-1">
+                    {category.name}
+                  </h3>
+                  <p className="text-xs text-center text-gray-500 mb-3 px-2 line-clamp-2 min-h-[2rem]">
+                    {category.description || 'Chưa có mô tả'}
+                  </p>
+                  <p className="text-sm text-gray-600 text-center">
+                    {category.productCount || 0} Sản phẩm | {category.variantCount || 0} Biến thể
+                  </p>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800 text-center mb-2">
-                  {category.name}
-                </h3>
-                <p className="text-sm text-gray-600 text-center">
-                  {category.productCount || 0} Sản phẩm | {category.variantCount || 0} Biến thể
-                </p>
+                
+                {/* Hành động (Sửa/Xoá) */}
+                <div className="border-t border-gray-100 pt-3 mt-auto flex justify-between items-center">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCategoryClick(category._id);
+                    }}
+                    className="flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 rounded transition"
+                    title="Xem chi tiết danh sách"
+                  >
+                    <span>Xem danh sách</span>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteModal({ isOpen: true, categoryId: category._id });
+                    }}
+                    className="flex items-center space-x-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition"
+                    title="Xoá Loại Gạo"
+                  >
+                    <span>Xoá</span>
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -184,6 +245,15 @@ const ProductCategories = () => {
       </div>
 
       {/* Modals */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, categoryId: null })}
+        onConfirm={handleDeleteCategory}
+        title="Xoá Loại Gạo (Danh Mục)"
+        message="Bạn có chắc chắn muốn xoá loại gạo này? Hành động này không thể hoàn tác và chỉ có thể thực hiện khi không còn sản phẩm nào thuộc loại này."
+        type="delete"
+        confirmText="Xoá"
+      />
       <SuccessModal
         isOpen={successModal.isOpen}
         onClose={() => setSuccessModal({ isOpen: false, message: '' })}

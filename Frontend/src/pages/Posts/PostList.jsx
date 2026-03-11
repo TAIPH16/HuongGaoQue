@@ -16,10 +16,8 @@ const PostList = () => {
   const [statusFilter, setStatusFilter] = useState('Tất cả');
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1 });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, post: null });
-  const [newCategoryName, setNewCategoryName] = useState('');
   const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' });
   const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
-  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,32 +69,21 @@ const PostList = () => {
     }
   };
 
-  const handleCreateCategory = async (e) => {
-    e.preventDefault();
-    if (!newCategoryName.trim()) return;
 
-    try {
-      setIsCreatingCategory(true);
-      await postCategoriesAPI.create({ name: newCategoryName.trim(), description: '' });
-      setNewCategoryName('');
-      setSuccessModal({ isOpen: true, message: 'Tạo danh mục thành công' });
-      fetchCategories();
-    } catch (error) {
-      console.error('Error creating category:', error);
-      setErrorModal({ 
-        isOpen: true, 
-        message: error.response?.data?.message || 'Tạo danh mục thất bại, vui lòng thử lại' 
-      });
-    } finally {
-      setIsCreatingCategory(false);
-    }
-  };
 
   return (
     <MainLayout title="Quản Lí Bài Viết" onSearch={setSearchTerm}>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex justify-end">
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={() => navigate('/admin/posts/categories')}
+            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            <FiPlus className="w-5 h-5" />
+            <span>Quản lý Danh Mục Bài Viết</span>
+          </button>
+          
           <button
             onClick={() => navigate('/admin/posts/add')}
             className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
@@ -106,54 +93,7 @@ const PostList = () => {
           </button>
         </div>
 
-        {/* Category Grid */}
-        {categoryFilter === 'Tất cả' && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Danh Mục Bài Viết</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {/* Add New Category Card */}
-              <div className="p-4 border border-gray-200 rounded-lg hover:border-green-500 transition">
-                <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mb-3 mx-auto">
-                  <FiPlus className="w-6 h-6 text-green-600" />
-                </div>
-                <h3 className="font-medium text-gray-800 text-center mb-3">Danh mục</h3>
-                <form onSubmit={handleCreateCategory}>
-                  <input
-                    type="text"
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                    placeholder="Nhập tên danh mục"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-sm mb-3"
-                    disabled={isCreatingCategory}
-                  />
-                  <button
-                    type="submit"
-                    disabled={isCreatingCategory || !newCategoryName.trim()}
-                    className="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isCreatingCategory ? 'Đang tạo...' : 'Thêm'}
-                  </button>
-                </form>
-              </div>
 
-              {/* Category Cards */}
-              {categories.map((category) => (
-                <div
-                  key={category._id}
-                  onClick={() => setCategoryFilter(category._id)}
-                  className="p-4 border border-gray-200 rounded-lg hover:border-green-500 transition cursor-pointer"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium text-gray-800">{category.name}</h3>
-                      <p className="text-sm text-gray-500">{category.postCount || 0} bài viết</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Filter Tabs */}
         <div className="bg-white rounded-lg shadow">
