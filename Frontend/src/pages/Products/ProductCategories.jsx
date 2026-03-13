@@ -13,7 +13,7 @@ const ProductCategories = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1 });
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [newCategoryDescription, setNewCategoryDescription] = useState('');
+
   const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' });
   const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
   const [isCreating, setIsCreating] = useState(false);
@@ -48,10 +48,9 @@ const ProductCategories = () => {
       setIsCreating(true);
       await categoriesAPI.create({ 
         name: newCategoryName.trim(), 
-        description: newCategoryDescription.trim() 
       });
       setNewCategoryName('');
-      setNewCategoryDescription('');
+
       setSuccessModal({ isOpen: true, message: 'Tạo danh mục thành công' });
       fetchCategories();
     } catch (error) {
@@ -125,13 +124,8 @@ const ProductCategories = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-sm mb-3"
                   disabled={isCreating}
                 />
-                <textarea
-                  value={newCategoryDescription}
-                  onChange={(e) => setNewCategoryDescription(e.target.value)}
-                  placeholder="Nhập phần mô tả (không bắt buộc)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none text-sm resize-none h-20"
-                  disabled={isCreating}
-                />
+
+
                 <button
                   type="submit"
                   disabled={isCreating || !newCategoryName.trim()}
@@ -158,9 +152,7 @@ const ProductCategories = () => {
                   <h3 className="text-lg font-semibold text-gray-800 text-center mb-1">
                     {category.name}
                   </h3>
-                  <p className="text-xs text-center text-gray-500 mb-3 px-2 line-clamp-2 min-h-[2rem]">
-                    {category.description || 'Chưa có mô tả'}
-                  </p>
+
                   <p className="text-sm text-gray-600 text-center">
                     {category.productCount || 0} Sản phẩm | {category.variantCount || 0} Biến thể
                   </p>
