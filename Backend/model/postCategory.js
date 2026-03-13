@@ -26,8 +26,8 @@ const postCategorySchema = new mongoose.Schema({
 });
 
 postCategorySchema.pre('save', function(next) {
-        this.updatedAt = Date.now();
-    
+    this.updatedAt = Date.now();
+    next();
 });
 
 module.exports = mongoose.model('PostCategory', postCategorySchema);

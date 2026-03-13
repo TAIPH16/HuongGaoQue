@@ -104,7 +104,7 @@ const ProductList = () => {
             className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
           >
             <FiPlus className="w-5 h-5" />
-            <span>Tạo Danh Mục</span>
+            <span>Danh Mục</span>
           </button>
           <button
             onClick={() => navigate('/admin/products/add')}

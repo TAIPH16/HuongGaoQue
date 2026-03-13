@@ -2,14 +2,17 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import CustomerLayout from '../../components/Customer/CustomerLayout';
 import { publicPostsAPI } from '../../utils/publicApi';
-import { FiFacebook, FiTwitter, FiInstagram } from 'react-icons/fi';
+import { FiFacebook, FiTwitter, FiInstagram, FiArrowRight, FiClock, FiUser, FiShare2 } from 'react-icons/fi';
 
 const NewsDetailPage = () => {
   const { id } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [relatedNews, setRelatedNews] = useState([]);
+  const [loadingRelated, setLoadingRelated] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     fetchPost();
   }, [id]);
 
@@ -17,8 +20,14 @@ const NewsDetailPage = () => {
     try {
       setLoading(true);
       const response = await publicPostsAPI.getById(id);
-      setPost(response.data?.data || response.data);
+      const postData = response.data?.data || response.data;
+      setPost(postData);
       publicPostsAPI.incrementView(id).catch(() => {});
+      
+      // Fetch related posts based on category
+      if (postData) {
+        fetchRelatedNews(postData.category?.name || postData.category, postData._id);
+      }
     } catch (error) {
       console.error('Error fetching post:', error);
     } finally {
@@ -26,8 +35,27 @@ const NewsDetailPage = () => {
     }
   };
 
+  const fetchRelatedNews = async (category, currentPostId) => {
+    try {
+      setLoadingRelated(true);
+      const params = { limit: 4 }; // Fetch 4, we will filter out the current one and keep 3
+      if (category && typeof category === 'string') {
+        params.category = category;
+      }
+      const response = await publicPostsAPI.getAll(params);
+      let news = response.data?.data || response.data || [];
+      // Filter out the current post and take top 3
+      news = news.filter(item => item._id !== currentPostId).slice(0, 3);
+      setRelatedNews(news);
+    } catch (error) {
+      console.error('Error fetching related news:', error);
+    } finally {
+      setLoadingRelated(false);
+    }
+  };
+
   const getImageUrl = (imagePath) => {
-    if (!imagePath) return 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400';
+    if (!imagePath) return 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800';
     if (imagePath.startsWith('http')) return imagePath;
     const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     return `${API_BASE_URL.replace('/api', '')}${imagePath}`;
@@ -46,7 +74,9 @@ const NewsDetailPage = () => {
   if (loading) {
     return (
       <CustomerLayout>
-        <div className="container mx-auto px-4 py-12 text-center">Đang tải...</div>
+        <div className="container mx-auto px-4 py-20 flex justify-center items-center h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2d5016]"></div>
+        </div>
       </CustomerLayout>
     );
   }
@@ -54,92 +84,212 @@ const NewsDetailPage = () => {
   if (!post) {
     return (
       <CustomerLayout>
-        <div className="container mx-auto px-4 py-12 text-center">Không tìm thấy bài viết</div>
+        <div className="container mx-auto px-4 py-24 text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Không tìm thấy bài viết</h2>
+          <p className="text-gray-600 mb-8">Bài viết bạn đang tìm kiếm có thể đã bị xóa hoặc không tồn tại.</p>
+          <Link to="/tin-tuc" className="bg-[#2d5016] text-white px-6 py-3 rounded-lg hover:bg-[#1a330b] transition-colors">
+            Quay lại trang tin tức
+          </Link>
+        </div>
       </CustomerLayout>
     );
   }
 
+  const authorName = post.author?.name || post.createdBy?.name || 'Admin';
+  const categoryName = post.category?.name || post.category || 'Tin tức';
+
   return (
     <CustomerLayout>
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
-        <div className="mb-6 text-sm text-gray-600">
-          <Link to="/" className="hover:text-[#2d5016]">Trang chủ</Link>
-          {' > '}
-          <Link to="/tin-tuc" className="hover:text-[#2d5016]">Tin tức</Link>
-          {' > '}
-          <span className="text-gray-800">{post.category?.name || 'Báo Chí'}</span>
-        </div>
-
-        {/* Article Header */}
-        <div className="mb-8">
-          <div className="mb-4">
-            <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded">
-              {post.category?.name || 'Báo Chí'}
-            </span>
+      <div className="bg-gray-50 pb-16">
+        {/* Header Section with Background Image */}
+        <div className="relative w-full h-[50vh] min-h-[400px] mb-12">
+          <div 
+            className="absolute inset-0 w-full h-full bg-cover bg-center"
+            style={{ 
+              backgroundImage: `url(${getImageUrl(post.image || post.coverImage)})`,
+            }}
+          >
+            <div className="absolute inset-0 bg-black bg-opacity-60"></div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
-            {post.title}
-          </h1>
-          <div className="flex items-center space-x-4 mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                {post.author?.name?.[0] || post.createdBy?.name?.[0] || 'A'}
-              </div>
-              <div>
-                <p className="font-semibold text-gray-800">
-                  {post.author?.name || post.createdBy?.name || 'Admin'}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {formatDate(post.createdAt || post.created_at)}
-                </p>
-              </div>
+          
+          <div className="relative h-full container mx-auto px-4 flex flex-col justify-end pb-12">
+            {/* Breadcrumbs */}
+            <div className="mb-6 text-sm text-gray-300 flex items-center space-x-2">
+              <Link to="/" className="hover:text-white transition-colors">Trang chủ</Link>
+              <span>/</span>
+              <Link to="/tin-tuc" className="hover:text-white transition-colors">Tin tức</Link>
+              <span>/</span>
+              <span className="text-white font-medium truncate max-w-[200px] sm:max-w-none">{categoryName}</span>
             </div>
-            <div className="flex items-center space-x-3 ml-auto">
-              <button className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition">
-                <FiFacebook className="w-5 h-5" />
-              </button>
-              <button className="w-10 h-10 bg-blue-400 text-white rounded-full flex items-center justify-center hover:bg-blue-500 transition">
-                <FiTwitter className="w-5 h-5" />
-              </button>
-              <button className="w-10 h-10 bg-pink-600 text-white rounded-full flex items-center justify-center hover:bg-pink-700 transition">
-                <FiInstagram className="w-5 h-5" />
-              </button>
+
+            <div className="mb-4">
+              <span className="inline-block bg-[#2d5016] text-white px-3 py-1 rounded-full text-sm font-medium">
+                {categoryName}
+              </span>
+            </div>
+            
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight max-w-4xl">
+              {post.title}
+            </h1>
+            
+            <div className="flex flex-wrap items-center text-gray-200 space-x-6">
+              <div className="flex items-center space-x-2">
+                <FiUser className="w-4 h-4" />
+                <span>{authorName}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <FiClock className="w-4 h-4" />
+                <span>{formatDate(post.createdAt || post.created_at)}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Featured Image */}
-        {post.image || post.coverImage ? (
-          <div className="mb-8">
-            <img
-              src={getImageUrl(post.image || post.coverImage)}
-              alt={post.title}
-              className="w-full h-96 object-cover rounded-lg"
-            />
-          </div>
-        ) : null}
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col lg:flex-row gap-12 max-w-6xl mx-auto">
+            
+            {/* Main Content Area */}
+            <div className="lg:w-8/12 bg-white rounded-2xl shadow-sm p-8 lg:p-12 -mt-24 relative z-10">
+              
+              {/* Image inside content area */}
+              {post.image || post.coverImage ? (
+                <div className="mb-8 rounded-xl overflow-hidden shadow-sm">
+                  <img
+                    src={getImageUrl(post.image || post.coverImage)}
+                    alt={post.title}
+                    className="w-full h-auto max-h-[500px] object-cover"
+                  />
+                </div>
+              ) : null}
 
-        {/* Article Content */}
-        <div className="prose max-w-none mb-12">
-          {post.content ? (
-            <div
-              className="text-gray-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
-          ) : (
-            <div className="text-gray-700 leading-relaxed whitespace-pre-line">
-              {post.excerpt || post.description || 'Nội dung bài viết đang được cập nhật...'}
+              {/* Introduction/Excerpt */}
+              {(post.excerpt || post.description) && (
+                <div 
+                  className="text-xl text-gray-600 font-medium italic border-l-4 border-[#2d5016] pl-6 mb-10 leading-relaxed max-w-none prose prose-p:my-0 prose-p:inline"
+                  dangerouslySetInnerHTML={{ __html: post.excerpt || post.description }}
+                />
+              )}
+
+              {/* Article Content */}
+              <div className="prose prose-lg max-w-none prose-headings:text-[#2d5016] prose-a:text-blue-600 hover:prose-a:text-blue-500 prose-img:rounded-xl prose-img:shadow-md mb-12">
+                {post.content ? (
+                  <div
+                    className="text-gray-800 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: post.content }}
+                  />
+                ) : (
+                  <div className="text-gray-700 leading-relaxed whitespace-pre-line">
+                    Nội dung bài viết đang được cập nhật...
+                  </div>
+                )}
+              </div>
+
+              {/* Tags & Sharing */}
+              <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-100 pt-8 mt-8">
+                <div className="mb-4 sm:mb-0 flex items-center space-x-2">
+                  <span className="font-semibold text-gray-700">Tags:</span>
+                  <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">{categoryName}</span>
+                </div>
+                
+                <div className="flex items-center space-x-4">
+                  <span className="font-semibold text-gray-700 flex items-center">
+                    <FiShare2 className="mr-2" /> Chia sẻ:
+                  </span>
+                  <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-[#3b5998] text-white rounded-full flex items-center justify-center hover:bg-opacity-90 transition shadow-sm">
+                    <FiFacebook className="w-5 h-5" />
+                  </a>
+                  <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title)}`} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-[#1da1f2] text-white rounded-full flex items-center justify-center hover:bg-opacity-90 transition shadow-sm">
+                    <FiTwitter className="w-5 h-5" />
+                  </a>
+                  <button onClick={() => {
+                      navigator.clipboard.writeText(window.location.href);
+                      alert('Đã sao chép đường dẫn bài viết!');
+                    }} className="w-10 h-10 bg-gray-600 text-white rounded-full flex items-center justify-center hover:opacity-90 transition shadow-sm" title="Sao chép liên kết">
+                    <FiShare2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
             </div>
-          )}
+
+            {/* Sidebar (Optional empty space for layout balance, or recent posts) */}
+            <div className="lg:w-4/12 flex-shrink-0 mt-8 lg:mt-0">
+              <div className="sticky top-24 bg-white rounded-2xl shadow-sm p-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-6 border-b pb-2 border-[#2d5016]">
+                  Thông tin tác giả
+                </h3>
+                <div className="flex items-center space-x-4 mb-6">
+                  <div className="w-16 h-16 bg-[#2d5016] text-white text-2xl font-bold rounded-full flex items-center justify-center shadow-md">
+                    {authorName[0]}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800 text-lg">{authorName}</h4>
+                    <p className="text-sm text-gray-500">Thành viên Ban Biện Tập</p>
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  Cảm ơn bạn đã đọc bài viết này! Chúng tôi luôn nỗ lực chia sẻ những thông tin hữu ích và góc nhìn đa chiều về các chủ đề xoay quanh sản phẩm và cuộc sống.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Related Posts Section */}
-        <div className="border-t pt-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Bài viết liên quan</h2>
-          <div className="text-center text-gray-500">
-            <p>Đang tải các bài viết liên quan...</p>
+        <div className="container mx-auto px-4 mt-20 max-w-6xl">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold text-gray-800">Bài viết liên quan</h2>
+            <Link to="/tin-tuc" className="text-[#2d5016] font-semibold hover:underline flex items-center">
+              Xem tất cả <FiArrowRight className="ml-1" />
+            </Link>
           </div>
+
+          {loadingRelated ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#2d5016]"></div>
+            </div>
+          ) : relatedNews.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {relatedNews.map((article) => (
+                <Link
+                  key={article._id}
+                  to={`/tin-tuc/${article._id}`}
+                  className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group flex flex-col h-full"
+                >
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={getImageUrl(article.image || article.coverImage)}
+                      alt={article.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="bg-[#2d5016] text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md">
+                        {article.category?.name || 'Tin tức'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-6 flex flex-col flex-grow">
+                    <div className="text-xs text-gray-500 mb-3 flex items-center">
+                      <FiClock className="mr-1" />
+                      {formatDate(article.createdAt || article.created_at)}
+                    </div>
+                    <h3 className="font-bold text-gray-800 text-lg mb-3 line-clamp-2 group-hover:text-[#2d5016] transition-colors">
+                      {article.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
+                      {article.excerpt || article.content?.replace(/<[^>]+>/g, '').substring(0, 100) || 'Đang cập nhật nội dung...'}
+                    </p>
+                    <div className="flex items-center text-[#2d5016] font-semibold text-sm mt-auto group-hover:translate-x-1 transition-transform">
+                      ĐỌC TIẾP <FiArrowRight className="ml-1" />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-white rounded-xl shadow-sm">
+              <p className="text-gray-500">Chưa có bài viết liên quan nào.</p>
+            </div>
+          )}
         </div>
       </div>
     </CustomerLayout>

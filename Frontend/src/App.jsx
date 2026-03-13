@@ -13,6 +13,7 @@ import OrderList from './pages/Orders/OrderList';
 import OrderDetail from './pages/Orders/OrderDetail';
 import CustomerList from './pages/Customers/CustomerList';
 import PostList from './pages/Posts/PostList';
+import PostCategories from './pages/Posts/PostCategories';
 import PostForm from './pages/Posts/PostForm';
 import ReviewManagement from './pages/Reviews/ReviewManagement';
 import Profile from './pages/Profile/Profile';
@@ -296,6 +297,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <PostList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/posts/categories"
+        element={
+          <ProtectedRoute>
+            <PostCategories />
           </ProtectedRoute>
         }
       />
