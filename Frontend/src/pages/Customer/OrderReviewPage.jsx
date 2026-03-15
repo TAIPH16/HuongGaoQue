@@ -1,66 +1,78 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { FiEdit } from 'react-icons/fi';
-import CustomerLayout from '../../components/Customer/CustomerLayout';
-import { useCart } from '../../context/CartContext';
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { FiEdit } from "react-icons/fi";
+import CustomerLayout from "../../components/Customer/CustomerLayout";
+import { useCart } from "../../context/CartContext";
 
 const OrderReviewPage = () => {
   const { cartItems } = useCart();
   const navigate = useNavigate();
   const [selectedAddress, setSelectedAddress] = useState(null);
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
 
   useEffect(() => {
     if (cartItems.length === 0) {
-      navigate('/gio-hang');
+      navigate("/gio-hang");
       return;
     }
 
     // Load selected address from localStorage
-    const savedAddress = localStorage.getItem('checkout_address');
+    const savedAddress = localStorage.getItem("checkout_address");
     if (savedAddress) {
       setSelectedAddress(JSON.parse(savedAddress));
     } else {
-      navigate('/dia-chi-giao-hang');
+      navigate("/dia-chi-giao-hang");
       return;
     }
 
     // Load notes
-    const savedNotes = localStorage.getItem('checkout_notes');
+    const savedNotes = localStorage.getItem("checkout_notes");
     if (savedNotes) {
       setNotes(savedNotes);
     }
   }, [cartItems, navigate]);
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN').format(price) + '₫';
+    return new Intl.NumberFormat("vi-VN").format(price) + "₫";
   };
 
   const subtotal = cartItems.reduce((total, item) => {
     const price = item.product.listedPrice || item.product.price || 0;
     const discountPercent = item.product.discountPercent || 0;
-    const itemPrice = discountPercent > 0 ? price * (1 - discountPercent / 100) : price;
+    const itemPrice =
+      discountPercent > 0 ? price * (1 - discountPercent / 100) : price;
     return total + itemPrice * item.quantity;
   }, 0);
 
-  const discount = 50000;
+  const discount = selectedItemsData.reduce((total, item) => {
+    const price = item.product.listedPrice || item.product.price || 0;
+    const percent = item.product.discountPercent || 0;
+
+    const discountPerItem = (price * percent) / 100;
+
+    return total + discountPerItem * item.quantity;
+  }, 0);
   const total = subtotal - discount;
 
   const handleContinue = () => {
-    navigate('/phuong-thuc-thanh-toan');
+    navigate("/phuong-thuc-thanh-toan");
   };
 
   const getImageUrl = (imagePath) => {
-    if (!imagePath) return 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=100';
-    if (imagePath.startsWith('http')) return imagePath;
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    return `${API_BASE_URL.replace('/api', '')}${imagePath}`;
+    if (!imagePath)
+      return "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=100";
+    if (imagePath.startsWith("http")) return imagePath;
+    const API_BASE_URL =
+      import.meta.env.VITE_API_URL || "http://localhost:3000";
+    return `${API_BASE_URL.replace("/api", "")}${imagePath}`;
   };
 
   if (!selectedAddress) {
     return (
       <CustomerLayout>
-        <div className="container mx-auto px-4 py-12 text-center">Đang tải...</div>
+        <div className="container mx-auto px-4 py-12 text-center">
+          Đang tải...
+        </div>
       </CustomerLayout>
     );
   }
@@ -100,7 +112,9 @@ const OrderReviewPage = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Order Date */}
             <div>
-              <p className="text-gray-600">Ngày đặt hàng: {new Date().toLocaleDateString('vi-VN')}</p>
+              <p className="text-gray-600">
+                Ngày đặt hàng: {new Date().toLocaleDateString("vi-VN")}
+              </p>
             </div>
 
             {/* Products */}
@@ -111,14 +125,20 @@ const OrderReviewPage = () => {
                   <tr className="border-b">
                     <th className="text-left py-3 font-semibold">Sản phẩm</th>
                     <th className="text-center py-3 font-semibold">Số lượng</th>
-                    <th className="text-right py-3 font-semibold">Thành tiền</th>
+                    <th className="text-right py-3 font-semibold">
+                      Thành tiền
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {cartItems.map((item) => {
-                    const price = item.product.listedPrice || item.product.price || 0;
+                    const price =
+                      item.product.listedPrice || item.product.price || 0;
                     const discountPercent = item.product.discountPercent || 0;
-                    const itemPrice = discountPercent > 0 ? price * (1 - discountPercent / 100) : price;
+                    const itemPrice =
+                      discountPercent > 0
+                        ? price * (1 - discountPercent / 100)
+                        : price;
                     const totalPrice = itemPrice * item.quantity;
                     const originalTotal = price * item.quantity;
 
@@ -127,25 +147,32 @@ const OrderReviewPage = () => {
                         <td className="py-4">
                           <div className="flex items-center space-x-4">
                             <img
-                              src={getImageUrl(item.product.images?.[0] || item.product.image)}
+                              src={getImageUrl(
+                                item.product.images?.[0] || item.product.image,
+                              )}
                               alt={item.product.name}
                               className="w-16 h-16 object-cover rounded"
                             />
                             <div>
-                              <p className="font-semibold">{item.product.name}</p>
+                              <p className="font-semibold">
+                                {item.product.name}
+                              </p>
                             </div>
                           </div>
                         </td>
                         <td className="text-center py-4">
-                          <span className="font-semibold">{String(item.quantity).padStart(2, '0')}</span>
+                          <span className="font-semibold">
+                            {String(item.quantity).padStart(2, "0")}
+                          </span>
                         </td>
                         <td className="text-right py-4">
                           <p className="font-bold">{formatPrice(totalPrice)}</p>
-                          {discountPercent > 0 && originalTotal > totalPrice && (
-                            <p className="text-sm text-gray-500 line-through">
-                              {formatPrice(originalTotal)}
-                            </p>
-                          )}
+                          {discountPercent > 0 &&
+                            originalTotal > totalPrice && (
+                              <p className="text-sm text-gray-500 line-through">
+                                {formatPrice(originalTotal)}
+                              </p>
+                            )}
                         </td>
                       </tr>
                     );
@@ -167,13 +194,15 @@ const OrderReviewPage = () => {
               </div>
               <div className="space-y-2">
                 <p className="text-gray-700">
-                  <span className="font-semibold">Họ tên:</span> {selectedAddress.name}
+                  <span className="font-semibold">Họ tên:</span>{" "}
+                  {selectedAddress.name}
                 </p>
                 <p className="text-gray-700">
-                  <span className="font-semibold">Số điện thoại:</span> {selectedAddress.phone}
+                  <span className="font-semibold">Số điện thoại:</span>{" "}
+                  {selectedAddress.phone}
                 </p>
                 <p className="text-gray-700">
-                  <span className="font-semibold">Địa chỉ:</span>{' '}
+                  <span className="font-semibold">Địa chỉ:</span>{" "}
                   {[
                     selectedAddress.street,
                     selectedAddress.ward,
@@ -181,7 +210,7 @@ const OrderReviewPage = () => {
                     selectedAddress.city,
                   ]
                     .filter(Boolean)
-                    .join(', ')}
+                    .join(", ")}
                   {selectedAddress.country && `, ${selectedAddress.country}`}
                 </p>
               </div>
@@ -229,4 +258,3 @@ const OrderReviewPage = () => {
 };
 
 export default OrderReviewPage;
-

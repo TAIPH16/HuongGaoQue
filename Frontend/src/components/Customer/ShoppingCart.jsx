@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { FiX, FiPlus, FiMinus, FiTrash2 } from 'react-icons/fi';
-import { useCart } from '../../context/CartContext';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { FiX, FiPlus, FiMinus, FiTrash2 } from "react-icons/fi";
+import { useCart } from "../../context/CartContext";
 
 const ShoppingCart = ({ isOpen, onClose }) => {
   const { cartItems, updateQuantity, removeFromCart, getCartTotal } = useCart();
   const [selectedItems, setSelectedItems] = useState(
-    cartItems.map((item) => item.product._id)
+    cartItems.map((item) => item.product._id),
   );
 
   // Update selectedItems when cartItems change
@@ -17,14 +17,16 @@ const ShoppingCart = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN').format(price) + '₫';
+    return new Intl.NumberFormat("vi-VN").format(price) + "₫";
   };
 
   const getImageUrl = (imagePath) => {
-    if (!imagePath) return 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=100';
-    if (imagePath.startsWith('http')) return imagePath;
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    return `${API_BASE_URL.replace('/api', '')}${imagePath}`;
+    if (!imagePath)
+      return "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=100";
+    if (imagePath.startsWith("http")) return imagePath;
+    const API_BASE_URL =
+      import.meta.env.VITE_API_URL || "http://localhost:3000";
+    return `${API_BASE_URL.replace("/api", "")}${imagePath}`;
   };
 
   const toggleSelect = (productId) => {
@@ -43,9 +45,16 @@ const ShoppingCart = ({ isOpen, onClose }) => {
 
   const subtotal = selectedItemsData.reduce(
     (total, item) => total + (item.product.price || 0) * item.quantity,
-    0
+    0,
   );
-  const discount = 50000; // Example discount
+  const discount = selectedItemsData.reduce((total, item) => {
+    const price = item.product.listedPrice || item.product.price || 0;
+    const percent = item.product.discountPercent || 0;
+
+    const discountPerItem = (price * percent) / 100;
+
+    return total + discountPerItem * item.quantity;
+  }, 0);
   const total = subtotal - discount;
 
   return (
@@ -65,8 +74,18 @@ const ShoppingCart = ({ isOpen, onClose }) => {
           {cartItems.length === 0 ? (
             <div className="text-center py-12">
               <div className="w-24 h-24 mx-auto mb-4 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                <svg
+                  className="w-12 h-12 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
                 </svg>
               </div>
               <p className="text-gray-500 mb-4">Giỏ hàng trống</p>
@@ -81,9 +100,15 @@ const ShoppingCart = ({ isOpen, onClose }) => {
           ) : (
             cartItems.map((item) => {
               const itemProductId = item.product._id || item.product.id;
-              const isSelected = selectedItems.map(String).includes(String(itemProductId));
-              const originalPrice = item.product.originalPrice || item.product.listedPrice || item.product.price;
-              const currentPrice = item.product.price || item.product.listedPrice || 0;
+              const isSelected = selectedItems
+                .map(String)
+                .includes(String(itemProductId));
+              const originalPrice =
+                item.product.originalPrice ||
+                item.product.listedPrice ||
+                item.product.price;
+              const currentPrice =
+                item.product.price || item.product.listedPrice || 0;
 
               return (
                 <div key={itemProductId} className="border rounded-lg p-4">
@@ -95,7 +120,9 @@ const ShoppingCart = ({ isOpen, onClose }) => {
                       className="mt-1 w-5 h-5 text-[#2d5016]"
                     />
                     <img
-                      src={getImageUrl(item.product.images?.[0] || item.product.image)}
+                      src={getImageUrl(
+                        item.product.images?.[0] || item.product.image,
+                      )}
                       alt={item.product.name}
                       className="w-20 h-20 object-cover rounded"
                     />
@@ -105,14 +132,18 @@ const ShoppingCart = ({ isOpen, onClose }) => {
                       </h3>
                       <div className="flex items-center space-x-2 mb-2">
                         <button
-                          onClick={() => updateQuantity(itemProductId, item.quantity - 1)}
+                          onClick={() =>
+                            updateQuantity(itemProductId, item.quantity - 1)
+                          }
                           className="w-6 h-6 flex items-center justify-center border rounded"
                         >
                           <FiMinus className="w-3 h-3" />
                         </button>
                         <span className="w-8 text-center">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(itemProductId, item.quantity + 1)}
+                          onClick={() =>
+                            updateQuantity(itemProductId, item.quantity + 1)
+                          }
                           className="w-6 h-6 flex items-center justify-center border rounded"
                         >
                           <FiPlus className="w-3 h-3" />
@@ -157,7 +188,7 @@ const ShoppingCart = ({ isOpen, onClose }) => {
               </div>
               <div className="flex justify-between font-bold text-lg pt-2 border-t">
                 <span>Tổng</span>
-                <span>{formatPrice(total)}</span>
+                <span>{formatPrice(subtotal)}</span>
               </div>
             </div>
             <Link
@@ -175,4 +206,3 @@ const ShoppingCart = ({ isOpen, onClose }) => {
 };
 
 export default ShoppingCart;
-

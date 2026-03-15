@@ -1,23 +1,32 @@
-import { useState, useEffect } from 'react';
-import { categoriesAPI } from '../../utils/api';
-import MainLayout from '../../components/Layout/MainLayout';
-import { FiPlus, FiPackage } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
-import SuccessModal from '../../components/Modal/SuccessModal';
-import ErrorModal from '../../components/Modal/ErrorModal';
-import ConfirmModal from '../../components/Modal/ConfirmModal';
+import { useState, useEffect } from "react";
+import { categoriesAPI } from "../../utils/api";
+import MainLayout from "../../components/Layout/MainLayout";
+import { FiPlus, FiPackage } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import SuccessModal from "../../components/Modal/SuccessModal";
+import ErrorModal from "../../components/Modal/ErrorModal";
+import ConfirmModal from "../../components/Modal/ConfirmModal";
 
 const ProductCategories = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1 });
-  const [newCategoryName, setNewCategoryName] = useState('');
-
-  const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' });
-  const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+  });
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const navigate = useNavigate();
+  const [successModal, setSuccessModal] = useState({
+    isOpen: false,
+    message: "",
+  });
+  const [errorModal, setErrorModal] = useState({ isOpen: false, message: "" });
   const [isCreating, setIsCreating] = useState(false);
-  const [deleteModal, setDeleteModal] = useState({ isOpen: false, categoryId: null });
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    categoryId: null,
+  });
 
   useEffect(() => {
     fetchCategories();
@@ -34,7 +43,7 @@ const ProductCategories = () => {
       setCategories(response.data.data);
       setPagination(response.data.pagination);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error("Error fetching categories:", error);
     } finally {
       setLoading(false);
     }
@@ -46,18 +55,20 @@ const ProductCategories = () => {
 
     try {
       setIsCreating(true);
-      await categoriesAPI.create({ 
-        name: newCategoryName.trim(), 
+      await categoriesAPI.create({
+        name: newCategoryName.trim(),
       });
-      setNewCategoryName('');
+      setNewCategoryName("");
 
-      setSuccessModal({ isOpen: true, message: 'Tạo danh mục thành công' });
+      setSuccessModal({ isOpen: true, message: "Tạo danh mục thành công" });
       fetchCategories();
     } catch (error) {
-      console.error('Error creating category:', error);
-      setErrorModal({ 
-        isOpen: true, 
-        message: error.response?.data?.message || 'Tạo danh mục thất bại, vui lòng thử lại' 
+      console.error("Error creating category:", error);
+      setErrorModal({
+        isOpen: true,
+        message:
+          error.response?.data?.message ||
+          "Tạo danh mục thất bại, vui lòng thử lại",
       });
     } finally {
       setIsCreating(false);
@@ -68,15 +79,17 @@ const ProductCategories = () => {
     if (!deleteModal.categoryId) return;
     try {
       await categoriesAPI.delete(deleteModal.categoryId);
-      setSuccessModal({ isOpen: true, message: 'Xóa danh mục thành công' });
+      setSuccessModal({ isOpen: true, message: "Xóa danh mục thành công" });
       setDeleteModal({ isOpen: false, categoryId: null });
       fetchCategories();
     } catch (error) {
-      console.error('Error deleting category:', error);
+      console.error("Error deleting category:", error);
       setDeleteModal({ isOpen: false, categoryId: null });
-      setErrorModal({ 
-        isOpen: true, 
-        message: error.response?.data?.message || 'Xóa danh mục thất bại, có thể danh mục đang chứa sản phẩm' 
+      setErrorModal({
+        isOpen: true,
+        message:
+          error.response?.data?.message ||
+          "Xóa danh mục thất bại, có thể danh mục đang chứa sản phẩm",
       });
     }
   };
@@ -91,7 +104,9 @@ const ProductCategories = () => {
         {/* Search */}
         <div className="bg-white p-4 rounded-lg shadow">
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700">Loại gạo:</label>
+            <label className="text-sm font-medium text-gray-700">
+              Loại gạo:
+            </label>
             <input
               type="text"
               value={searchTerm}
@@ -114,7 +129,9 @@ const ProductCategories = () => {
               <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mb-4 mx-auto">
                 <FiPackage className="w-6 h-6 text-green-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 text-center mb-2">Loại gạo</h3>
+              <h3 className="text-lg font-semibold text-gray-800 text-center mb-2">
+                Loại gạo
+              </h3>
               <form onSubmit={handleCreateCategory} className="mt-4">
                 <input
                   type="text"
@@ -125,13 +142,12 @@ const ProductCategories = () => {
                   disabled={isCreating}
                 />
 
-
                 <button
                   type="submit"
                   disabled={isCreating || !newCategoryName.trim()}
                   className="mt-3 w-full bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isCreating ? 'Đang tạo...' : 'Thêm'}
+                  {isCreating ? "Đang tạo..." : "Thêm"}
                 </button>
               </form>
             </div>
@@ -142,8 +158,8 @@ const ProductCategories = () => {
                 key={category._id}
                 className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition flex flex-col justify-between"
               >
-                <div 
-                  className="cursor-pointer mb-2" 
+                <div
+                  className="cursor-pointer mb-2"
                   onClick={() => handleCategoryClick(category._id)}
                 >
                   <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mb-4 mx-auto">
@@ -154,10 +170,11 @@ const ProductCategories = () => {
                   </h3>
 
                   <p className="text-sm text-gray-600 text-center">
-                    {category.productCount || 0} Sản phẩm | {category.variantCount || 0} Biến thể
+                    {category.productCount || 0} Sản phẩm |{" "}
+                    {category.variantCount || 0} Biến thể
                   </p>
                 </div>
-                
+
                 {/* Hành động (Sửa/Xoá) */}
                 <div className="border-t border-gray-100 pt-3 mt-auto flex justify-between items-center">
                   <button
@@ -173,7 +190,10 @@ const ProductCategories = () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setDeleteModal({ isOpen: true, categoryId: category._id });
+                      setDeleteModal({
+                        isOpen: true,
+                        categoryId: category._id,
+                      });
                     }}
                     className="flex items-center space-x-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition"
                     title="Xoá Loại Gạo"
@@ -189,27 +209,38 @@ const ProductCategories = () => {
         {/* Pagination */}
         <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow">
           <p className="text-sm text-gray-600">
-            Hiển thị {categories.length} trên {pagination.totalCategories || 0} sản phẩm
+            Hiển thị {categories.length} trên {pagination.totalCategories || 0}{" "}
+            sản phẩm
           </p>
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => setPagination({ ...pagination, currentPage: pagination.currentPage - 1 })}
+              onClick={() =>
+                setPagination({
+                  ...pagination,
+                  currentPage: pagination.currentPage - 1,
+                })
+              }
               disabled={pagination.currentPage === 1}
               className="px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
               &lt;
             </button>
             {[...Array(Math.min(5, pagination.totalPages))].map((_, i) => {
-              const page = pagination.currentPage <= 3 ? i + 1 : pagination.currentPage - 2 + i;
+              const page =
+                pagination.currentPage <= 3
+                  ? i + 1
+                  : pagination.currentPage - 2 + i;
               if (page > pagination.totalPages) return null;
               return (
                 <button
                   key={page}
-                  onClick={() => setPagination({ ...pagination, currentPage: page })}
+                  onClick={() =>
+                    setPagination({ ...pagination, currentPage: page })
+                  }
                   className={`px-3 py-1 rounded-lg ${
                     page === pagination.currentPage
-                      ? 'bg-green-600 text-white'
-                      : 'border border-gray-300 hover:bg-gray-50'
+                      ? "bg-green-600 text-white"
+                      : "border border-gray-300 hover:bg-gray-50"
                   }`}
                 >
                   {page}
@@ -219,14 +250,24 @@ const ProductCategories = () => {
             {pagination.totalPages > 5 && <span className="px-2">...</span>}
             {pagination.totalPages > 5 && (
               <button
-                onClick={() => setPagination({ ...pagination, currentPage: pagination.totalPages })}
+                onClick={() =>
+                  setPagination({
+                    ...pagination,
+                    currentPage: pagination.totalPages,
+                  })
+                }
                 className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 {pagination.totalPages}
               </button>
             )}
             <button
-              onClick={() => setPagination({ ...pagination, currentPage: pagination.currentPage + 1 })}
+              onClick={() =>
+                setPagination({
+                  ...pagination,
+                  currentPage: pagination.currentPage + 1,
+                })
+              }
               disabled={pagination.currentPage === pagination.totalPages}
               className="px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
@@ -248,13 +289,13 @@ const ProductCategories = () => {
       />
       <SuccessModal
         isOpen={successModal.isOpen}
-        onClose={() => setSuccessModal({ isOpen: false, message: '' })}
+        onClose={() => setSuccessModal({ isOpen: false, message: "" })}
         title="Thành công"
         message={successModal.message}
       />
       <ErrorModal
         isOpen={errorModal.isOpen}
-        onClose={() => setErrorModal({ isOpen: false, message: '' })}
+        onClose={() => setErrorModal({ isOpen: false, message: "" })}
         title="Thất bại"
         message={errorModal.message}
       />
@@ -263,4 +304,3 @@ const ProductCategories = () => {
 };
 
 export default ProductCategories;
-
