@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import SuccessModal from "../../components/Modal/SuccessModal";
 import ErrorModal from "../../components/Modal/ErrorModal";
 import ConfirmModal from "../../components/Modal/ConfirmModal";
+import { FiMoreVertical } from "react-icons/fi";
 
 const ProductCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -21,6 +22,13 @@ const ProductCategories = () => {
     isOpen: false,
     message: "",
   });
+  const [editModal, setEditModal] = useState({
+    isOpen: false,
+    categoryId: null,
+    currentName: "",
+  });
+
+  const [editName, setEditName] = useState("");
   const [errorModal, setErrorModal] = useState({ isOpen: false, message: "" });
   const [isCreating, setIsCreating] = useState(false);
   const [deleteModal, setDeleteModal] = useState({
@@ -31,6 +39,29 @@ const ProductCategories = () => {
   useEffect(() => {
     fetchCategories();
   }, [pagination.currentPage, searchTerm]);
+
+  const handleUpdateCategory = async () => {
+    try {
+      await categoriesAPI.update(editModal.categoryId, {
+        name: editName.trim(),
+      });
+
+      setEditModal({ isOpen: false, categoryId: null, currentName: "" });
+      setEditName("");
+
+      setSuccessModal({
+        isOpen: true,
+        message: "Cập nhật loại gạo thành công",
+      });
+
+      fetchCategories();
+    } catch (error) {
+      setErrorModal({
+        isOpen: true,
+        message: error.response?.data?.message || "Cập nhật thất bại",
+      });
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -158,6 +189,22 @@ const ProductCategories = () => {
                 key={category._id}
                 className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition flex flex-col justify-between"
               >
+                <div className="flex justify-end">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditModal({
+                        isOpen: true,
+                        categoryId: category._id,
+                        currentName: category.name,
+                      });
+                      setEditName(category.name);
+                    }}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <FiMoreVertical />
+                  </button>
+                </div>
                 <div
                   className="cursor-pointer mb-2"
                   onClick={() => handleCategoryClick(category._id)}
@@ -287,6 +334,38 @@ const ProductCategories = () => {
         type="delete"
         confirmText="Xoá"
       />
+      {editModal.isOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h2 className="text-lg font-semibold mb-4">Đổi tên loại gạo</h2>
+
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="w-full border px-3 py-2 rounded-lg mb-4"
+            />
+
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() =>
+                  setEditModal({ isOpen: false, categoryId: null })
+                }
+                className="px-4 py-2 border rounded"
+              >
+                Huỷ
+              </button>
+
+              <button
+                onClick={handleUpdateCategory}
+                className="px-4 py-2 bg-green-600 text-white rounded"
+              >
+                Lưu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <SuccessModal
         isOpen={successModal.isOpen}
         onClose={() => setSuccessModal({ isOpen: false, message: "" })}
