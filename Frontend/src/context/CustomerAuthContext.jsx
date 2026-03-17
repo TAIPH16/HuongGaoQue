@@ -129,12 +129,17 @@ export const CustomerAuthProvider = ({ children }) => {
           }
         );
       }
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
       localStorage.removeItem('customer_token');
       localStorage.removeItem('customer');
       setCustomer(null);
+      return { success: true, message: 'Đăng xuất thành công' };
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still clear local storage even if API call fails
+      localStorage.removeItem('customer_token');
+      localStorage.removeItem('customer');
+      setCustomer(null);
+      return { success: true, message: 'Đăng xuất thành công' };
     }
   };
 

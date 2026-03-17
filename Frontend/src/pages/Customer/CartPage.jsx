@@ -27,21 +27,11 @@ const CartPage = () => {
   );
 
   const subtotal = selectedItemsData.reduce(
-    (total, item) => total + (item.product.listedPrice || 0) * item.quantity,
+    (total, item) => total + (item.product.price || 0) * item.quantity,
     0
   );
-
-  const totalDiscount = selectedItemsData.reduce(
-    (total, item) => {
-      const listedPrice = item.product.listedPrice || 0;
-      const discountPercent = item.product.discountPercent || 0;
-      const discountAmount = listedPrice * (discountPercent / 100);
-      return total + discountAmount * item.quantity;
-    },
-    0
-  );
-
-  const total = subtotal - totalDiscount;
+  const discount = 50000;
+  const total = subtotal - discount;
 
   return (
     <CustomerLayout>
@@ -73,10 +63,8 @@ const CartPage = () => {
             <div className="lg:col-span-2 space-y-4">
               {cartItems.map((item) => {
                 const isSelected = selectedItems.includes(item.product._id);
-                
-                const listedPrice = item.product.listedPrice || 0;
-                const discountPercent = item.product.discountPercent || 0;
-                const finalPrice = listedPrice * (1 - discountPercent / 100);
+                const originalPrice = item.product.originalPrice || item.product.price;
+                const currentPrice = item.product.price || 0;
 
                 return (
                   <div key={item.product._id} className="bg-white border rounded-lg p-4">
@@ -114,17 +102,12 @@ const CartPage = () => {
                         <div className="flex items-center justify-between">
                           <div>
                             <span className="font-bold text-gray-800">
-                              {formatPrice(finalPrice * item.quantity)}
+                              {formatPrice(currentPrice * item.quantity)}
                             </span>
-                            {discountPercent > 0 && (
-                              <div className='flex items-center gap-2'>
-                                <span className="block text-sm text-gray-500 line-through">
-                                  {formatPrice(listedPrice * item.quantity)}
-                                </span>
-                                <span className="block text-sm font-bold text-red-500">
-                                  -{discountPercent}%
-                                </span>
-                              </div>
+                            {originalPrice > currentPrice && (
+                              <span className="block text-sm text-gray-500 line-through">
+                                {formatPrice(originalPrice * item.quantity)}
+                              </span>
                             )}
                           </div>
                           <button
@@ -151,7 +134,7 @@ const CartPage = () => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Giảm giá</span>
-                    <span className="text-red-500">-{formatPrice(totalDiscount)}</span>
+                    <span className="text-red-500">-{formatPrice(discount)}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg pt-2 border-t">
                     <span>Tổng</span>

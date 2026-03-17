@@ -7,6 +7,7 @@ import { useCart } from '../../context/CartContext';
 import LoginModal from './LoginModal';
 import RegisterModal from './RegisterModal';
 import ShoppingCart from './ShoppingCart';
+import Toast from './Toast';
 
 const Header = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -14,8 +15,10 @@ const Header = () => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
   const { customer, logout } = useCustomerAuth();
-  const { user: adminUser } = useAuth();
+  const { user: adminUser, logout: adminLogout } = useAuth();
   const { getCartCount, showCart, setShowCart } = useCart();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -41,12 +44,29 @@ const Header = () => {
     };
   }, [showUserDropdown]);
 
-  const handleLogout = () => {
-    if (customer) {
-      logout();
+  const handleLogout = async () => {
+    try {
+      if (customer) {
+        const result = await logout();
+        if (result?.message) {
+          setToastMessage(result.message);
+          setShowToast(true);
+        }
+      } else if (adminUser) {
+        const result = await adminLogout();
+        if (result?.message) {
+          setToastMessage(result.message);
+          setShowToast(true);
+        }
+      }
+      // Navigate after a short delay to show toast
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
+    } catch (error) {
+      console.error('Logout error:', error);
+      navigate('/');
     }
-    // Admin logout is handled separately if needed
-    navigate('/');
   };
 
   const handleSearch = (e) => {
@@ -194,6 +214,12 @@ const Header = () => {
         }}
       />
       <ShoppingCart isOpen={showCart} onClose={() => setShowCart(false)} />
+      <Toast
+        message={toastMessage}
+        isVisible={showToast}
+        onClose={() => setShowToast(false)}
+        type="success"
+      />
     </>
   );
 };

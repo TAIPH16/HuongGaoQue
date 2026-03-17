@@ -1,26 +1,49 @@
-const express = require("express");
-const router = express.Router();
 const User = require("../model/user");
 const jwt = require("jsonwebtoken");
-const { log } = require("console");
 
 // UNIFIED LOGIN - Cho tất cả roles: admin, seller, customer
 exports.unifiedLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log("Unified login attempt for email:", email, password);
+    
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email và mật khẩu là bắt buộc",
+      });
+    }
+    
+    // Normalize email to lowercase (same as registration)
+    const normalizedEmail = email.trim().toLowerCase();
+    // Trim password to remove any accidental whitespace
+    const trimmedPassword = password.trim();
+    
+    console.log("Unified login attempt for email:", normalizedEmail);
+    
     // Find user (bất kỳ role nào)
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
+      console.log("User not found for email:", normalizedEmail);
       return res.status(401).json({
         success: false,
         message: "Email hoặc mật khẩu không đúng",
       });
     }
 
+    // Check if user has password (not Google/Facebook only account)
+    if (!user.password) {
+      console.log("User has no password (OAuth account):", normalizedEmail);
+      return res.status(401).json({
+        success: false,
+        message: "Tài khoản này sử dụng đăng nhập bằng Google/Facebook",
+      });
+    }
+
     // Check password
-    const isPasswordValid = await user.comparePassword(password);
+    const isPasswordValid = await user.comparePassword(trimmedPassword);
+    console.log("Password validation result:", isPasswordValid);
 
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -65,7 +88,7 @@ exports.unifiedLogin = async (req, res) => {
     await user.save();
 
     // Return user data with role for frontend routing
-    res.json({
+    const responseData = {
       success: true,
       message: "Đăng nhập thành công",
       data: {
@@ -80,7 +103,10 @@ exports.unifiedLogin = async (req, res) => {
           profile_image: user.profile_image,
         },
       },
-    });
+    };
+    
+    console.log("Sending success response:", JSON.stringify(responseData, null, 2));
+    res.json(responseData);
   } catch (error) {
     console.error("Unified login error:", error);
     res.status(500).json({

@@ -219,12 +219,12 @@ const ProductDetailPage = () => {
               </span>
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-4">{product.name}</h1>
-            <div className="mb-8 flex items-end gap-6">
-              <span className="text-4xl font-extrabold text-green-600 tracking-tight">
+            <div className="mb-6 flex items-baseline">
+              <span className="text-3xl font-extrabold text-green-600">
                 {formatPrice(finalPrice)}
               </span>
               {originalPrice && (
-                <span className="text-xl text-gray-400 line-through mb-1 font-medium">
+                <span className="ml-6 text-lg text-gray-400 line-through">
                   {formatPrice(originalPrice)}/kg
                 </span>
               )}
@@ -238,12 +238,12 @@ const ProductDetailPage = () => {
             />
 
             {/* Quantity */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Số lượng</label>
-              <div className="flex items-center w-max border border-gray-300 rounded-lg overflow-hidden">
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-700 mb-3">Số lượng</label>
+              <div className="flex items-center border border-gray-300 rounded-lg w-fit">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="w-12 h-12 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition text-gray-600 active:bg-gray-200"
+                  className="w-12 h-12 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-l-lg transition"
                 >
                   <FiMinus />
                 </button>
@@ -251,11 +251,11 @@ const ProductDetailPage = () => {
                   type="number"
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-16 h-12 text-center border-x border-gray-300 focus:outline-none font-semibold text-gray-800 text-lg"
+                  className="w-16 text-center border-none focus:ring-0 font-semibold text-lg h-12 appearance-none m-0"
                 />
                 <button
                   onClick={() => setQuantity((q) => q + 1)}
-                  className="w-12 h-12 flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition text-gray-600 active:bg-gray-200"
+                  className="w-12 h-12 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-r-lg transition"
                 >
                   <FiPlus />
                 </button>
@@ -269,7 +269,7 @@ const ProductDetailPage = () => {
                   addToCart({ ...product, price: finalPrice, originalPrice }, quantity);
                   setShowToast(true);
                 }}
-                className="flex-1 bg-[#2d5016] text-white py-3 rounded-lg font-bold text-lg hover:bg-[#244011] hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
+                className="flex-1 bg-[#2d5016] text-white py-4 rounded-lg font-bold hover:bg-[#1a3c0b] transition flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
               >
                 <FiShoppingCart className="w-5 h-5" />
                 Thêm Vào Giỏ Hàng
@@ -363,37 +363,42 @@ const ProductDetailPage = () => {
 
           {activeTab === 'details' && (
             <div>
-              <h3 className="text-xl font-bold mb-4">Thông tin sản phẩm</h3>
-              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
-                <div className="flex justify-between py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition">
-                  <span className="text-gray-600 font-medium">Tên sản phẩm</span>
-                  <span className="text-gray-900 font-semibold text-right">{product.name}</span>
-                </div>
-                <div className="flex justify-between py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition">
-                  <span className="text-gray-600 font-medium">Danh mục</span>
-                  <span className="text-gray-900 font-semibold text-right">{product.category?.name || 'Combo'}</span>
-                </div>
-                <div className="flex justify-between py-4 px-6 border-b border-gray-100 hover:bg-gray-50 transition">
-                  <span className="text-gray-600 font-medium">Giá niêm yết</span>
-                  <span className="text-gray-900 font-semibold text-right">{formatPrice(finalPrice)}</span>
-                </div>
-                <div className="flex justify-between py-4 px-6 hover:bg-gray-50 transition">
-                  <span className="text-gray-600 font-medium">Đơn vị tính</span>
-                  <span className="text-gray-900 font-semibold text-right">{product.unit || 'kg'}</span>
-                </div>
+              <h3 className="text-xl font-bold mb-6">Thông tin sản phẩm</h3>
+              
+              <div className="overflow-hidden border border-gray-200 rounded-lg mb-8">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50 w-1/3">Tên sản phẩm</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{product.name}</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50">Danh mục</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{product.category?.name || 'Combo'}</td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50">Đơn vị tính</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{product.unit || 'kg'}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
               
               {/* Product Details from details array */}
               {product.details && product.details.length > 0 && (
-                <div className="mt-6">
-                  <h4 className="text-lg font-semibold mb-4">Thông tin chi tiết</h4>
-                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="mt-8">
+                  <h4 className="text-lg font-bold mb-4">Thông số kỹ thuật</h4>
+                  <div className="overflow-hidden border border-gray-200 rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <tbody className="bg-white divide-y divide-gray-200">
                     {product.details.map((detail, index) => (
-                      <div key={index} className="flex justify-between py-4 px-6 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition">
-                        <span className="text-gray-600 font-medium">{detail.indexName}</span>
-                        <span className="text-gray-900 font-semibold text-right">{detail.value || 'N/A'}</span>
-                      </div>
+                          <tr key={index}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50 w-1/3">{detail.indexName}</td>
+                            <td className="px-6 py-4 text-sm text-gray-700">{detail.value || 'N/A'}</td>
+                          </tr>
                     ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}

@@ -10,7 +10,7 @@ exports.addToCart = async (req, res, next) => {
             return res.status(400).json({ message: "product_id is required" });
         }
         const cart = await cartService.addToCart(userId, targetProductId, quantity || 1);
-         if (cart == 0 ) res.status(400).json({code: 0})
+         if (cart === 0 ) return res.status(400).json({code: 0, message: "Giỏ hàng đã đầy (tối đa 5 loại sản phẩm)"});
         res.status(200).json({
             status: 'success',
             message: 'Add product to cart is successfully',

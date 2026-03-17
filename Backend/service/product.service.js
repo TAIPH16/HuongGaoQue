@@ -93,7 +93,21 @@ const createProduct = async (productData, files) => {
     // Parse details nếu là string
     let parsedDetails = [];
     if (details) {
-        parsedDetails = typeof details === 'string' ? JSON.parse(details) : details;
+        try {
+            parsedDetails = typeof details === 'string' ? JSON.parse(details) : details;
+            if (typeof details === 'string') {
+                const trimmed = details.trim();
+                if (trimmed === '' || trimmed === '[]' || trimmed === 'null') {
+                    parsedDetails = [];
+                } else {
+                    parsedDetails = JSON.parse(details);
+                }
+            } else {
+                parsedDetails = details;
+            }
+        } catch (e) {
+            parsedDetails = [];
+        }
     }
 
     // Tính remainingQuantity từ initialQuantity
@@ -162,17 +176,28 @@ const updateProduct = async (productId, productData, files) => {
 
     // Xóa ảnh được yêu cầu
     if (imagesToDelete) {
-        const imagesToDeleteArray = typeof imagesToDelete === 'string'
-            ? JSON.parse(imagesToDelete)
-            : imagesToDelete;
+        let imagesToDeleteArray = [];
+        try {
+            imagesToDeleteArray = typeof imagesToDelete === 'string'
+                ? JSON.parse(imagesToDelete)
+                : imagesToDelete;
+        } catch (e) {
+            if (typeof imagesToDelete === 'string') imagesToDeleteArray = [imagesToDelete];
+        }
 
-        imagesToDeleteArray.forEach(imagePath => {
-            const filePath = path.join(__dirname, '..', 'public', imagePath);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
-            product.images = product.images.filter(img => img !== imagePath);
-        });
+        if (Array.isArray(imagesToDeleteArray)) {
+            imagesToDeleteArray.forEach(imagePath => {
+                try {
+                    const filePath = path.join(__dirname, '..', 'public', imagePath);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
+                } catch (err) {
+                    console.error('Error deleting image file:', err);
+                }
+                product.images = product.images.filter(img => img !== imagePath);
+            });
+        }
     }
 
     // Cập nhật các trường khác
@@ -207,21 +232,29 @@ const updateProduct = async (productId, productData, files) => {
         try {
             let parsedDetails = [];
             if (typeof details === 'string') {
-                // Nếu là string rỗng hoặc chỉ có whitespace, dùng empty array
-                if (details.trim() === '' || details.trim() === '[]') {
+                // Nếu là string rỗng hoặc chỉ có whitespace hoặc "[]", dùng empty array
+                const trimmed = details.trim();
+                if (trimmed === '' || trimmed === '[]' || trimmed === 'null') {
                     parsedDetails = [];
                 } else {
                     parsedDetails = JSON.parse(details);
+                    // Đảm bảo là array
+                    if (!Array.isArray(parsedDetails)) {
+                        parsedDetails = [];
+                    }
                 }
             } else if (Array.isArray(details)) {
                 parsedDetails = details;
+            } else if (details === null) {
+                parsedDetails = [];
             }
             console.log('Updating product details - Parsed:', parsedDetails);
             console.log('Updating product details - Count:', parsedDetails.length);
             product.details = parsedDetails;
         } catch (error) {
             console.error('Error parsing details:', error, 'Raw details:', details);
-            // Nếu parse lỗi, giữ nguyên details cũ (không cập nhật)
+            // Nếu parse lỗi, dùng empty array thay vì giữ nguyên (tránh lỗi validation)
+            product.details = [];
         }
     } else {
         // Nếu details không có trong request, giữ nguyên details cũ
@@ -328,4 +361,3 @@ module.exports = {
     approveProduct,
     rejectProduct
 };
-
