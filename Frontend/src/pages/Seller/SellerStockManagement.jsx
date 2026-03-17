@@ -1,18 +1,30 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import SellerLayout from '../../components/Seller/SellerLayout';
-import { sellerStockAPI } from '../../utils/sellerApi';
-import { FiPackage, FiEdit, FiEye, FiPlus, FiSearch, FiTrash2, FiList } from 'react-icons/fi';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import SellerLayout from "../../components/Seller/SellerLayout";
+import { sellerStockAPI } from "../../utils/sellerApi";
+import {
+  FiPackage,
+  FiEdit,
+  FiEye,
+  FiPlus,
+  FiSearch,
+  FiTrash2,
+  FiList,
+} from "react-icons/fi";
 
 const SellerStockManagement = () => {
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-  const ORIGIN = API_BASE_URL.replace('/api', '');
+  const API_BASE_URL =
+    import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  const ORIGIN = API_BASE_URL.replace("/api", "");
   const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1 });
+  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+  });
   const [selectedStock, setSelectedStock] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -20,8 +32,11 @@ const SellerStockManagement = () => {
   const [showEntriesModal, setShowEntriesModal] = useState(false);
   const [stockEntries, setStockEntries] = useState([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
-  const [editForm, setEditForm] = useState({ remainingQuantity: '', initialQuantity: '' });
-  const [addStockForm, setAddStockForm] = useState({ quantity: '' });
+  const [editForm, setEditForm] = useState({
+    remainingQuantity: "",
+    initialQuantity: "",
+  });
+  const [addStockForm, setAddStockForm] = useState({ quantity: "" });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,7 +59,7 @@ const SellerStockManagement = () => {
       setStocks(res.data.data || []);
       setPagination(res.data.pagination || { currentPage: 1, totalPages: 1 });
     } catch (err) {
-      setError(err.response?.data?.message || 'Không tải được danh sách kho');
+      setError(err.response?.data?.message || "Không tải được danh sách kho");
     } finally {
       setLoading(false);
     }
@@ -53,8 +68,8 @@ const SellerStockManagement = () => {
   const handleEdit = (stock) => {
     setSelectedStock(stock);
     setEditForm({
-      remainingQuantity: stock.remainingQuantity || '',
-      initialQuantity: stock.initialQuantity || '',
+      remainingQuantity: stock.remainingQuantity || "",
+      initialQuantity: stock.initialQuantity || "",
     });
     setShowEditModal(true);
   };
@@ -64,26 +79,29 @@ const SellerStockManagement = () => {
       await sellerStockAPI.update(selectedStock._id, editForm);
       setShowEditModal(false);
       fetchStocks();
-      alert('Cập nhật kho thành công!');
+      alert("Cập nhật kho thành công!");
     } catch (err) {
-      alert(err.response?.data?.message || 'Cập nhật thất bại');
+      alert(err.response?.data?.message || "Cập nhật thất bại");
     }
   };
 
   const handleAddStock = (stock) => {
     setSelectedStock(stock);
-    setAddStockForm({ quantity: '' });
+    setAddStockForm({ quantity: "" });
     setShowAddStockModal(true);
   };
 
   const handleAddStockSubmit = async () => {
     try {
-      await sellerStockAPI.addStock(selectedStock._id, parseInt(addStockForm.quantity));
+      await sellerStockAPI.addStock(
+        selectedStock._id,
+        parseInt(addStockForm.quantity),
+      );
       setShowAddStockModal(false);
       fetchStocks();
-      alert('Thêm kho thành công!');
+      alert("Thêm kho thành công!");
     } catch (err) {
-      alert(err.response?.data?.message || 'Thêm kho thất bại');
+      alert(err.response?.data?.message || "Thêm kho thất bại");
     }
   };
 
@@ -93,7 +111,7 @@ const SellerStockManagement = () => {
       setSelectedStock(res.data.data);
       setShowDetailModal(true);
     } catch (err) {
-      alert(err.response?.data?.message || 'Không tải được chi tiết');
+      alert(err.response?.data?.message || "Không tải được chi tiết");
     }
   };
 
@@ -104,7 +122,7 @@ const SellerStockManagement = () => {
       setStockEntries(res.data.data || []);
     } catch (err) {
       setStockEntries([]);
-      alert(err.response?.data?.message || 'Không tải được bản ghi nhập kho');
+      alert(err.response?.data?.message || "Không tải được bản ghi nhập kho");
     } finally {
       setLoadingEntries(false);
     }
@@ -117,24 +135,25 @@ const SellerStockManagement = () => {
   };
 
   const handleDeleteEntry = async (entryId) => {
-    if (!confirm('Xóa bản ghi nhập kho này? Tồn kho sẽ bị trừ tương ứng.')) return;
+    if (!confirm("Xóa bản ghi nhập kho này? Tồn kho sẽ bị trừ tương ứng."))
+      return;
     try {
       await sellerStockAPI.deleteStockRecord(entryId);
       await fetchEntries(selectedStock._id);
       fetchStocks();
-      alert('Đã xóa bản ghi nhập kho.');
+      alert("Đã xóa bản ghi nhập kho.");
     } catch (err) {
-      alert(err.response?.data?.message || 'Xóa thất bại');
+      alert(err.response?.data?.message || "Xóa thất bại");
     }
   };
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN').format(price);
+    return new Intl.NumberFormat("vi-VN").format(price);
   };
 
   const resolveImageUrl = (src) => {
-    if (!src) return '';
-    if (src.startsWith('http') || src.startsWith('data:')) return src;
+    if (!src) return "";
+    if (src.startsWith("http") || src.startsWith("data:")) return src;
     return `${ORIGIN}${src}`;
   };
 
@@ -236,28 +255,37 @@ const SellerStockManagement = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{stock.productId}</td>
-                      <td className="px-4 py-3 text-sm text-gray-800">
-                        {formatPrice(stock.initialQuantity || 0)} {stock.unit || 'kg'}
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {stock.productId}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-800">
-                        <span className={`font-semibold ${
-                          (stock.remainingQuantity || 0) < 10 ? 'text-red-600' : 'text-green-600'
-                        }`}>
-                          {formatPrice(stock.remainingQuantity || 0)} {stock.unit || 'kg'}
+                        {formatPrice(stock.initialQuantity || 0)}{" "}
+                        {stock.unit || "kg"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-800">
+                        <span
+                          className={`font-semibold ${
+                            (stock.remainingQuantity || 0) < 10
+                              ? "text-red-600"
+                              : "text-green-600"
+                          }`}
+                        >
+                          {formatPrice(stock.remainingQuantity || 0)}{" "}
+                          {stock.unit || "kg"}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
-                        {formatPrice(stock.soldQuantity || 0)} {stock.unit || 'kg'}
+                        {formatPrice(stock.soldQuantity || 0)}{" "}
+                        {stock.unit || "kg"}
                       </td>
                       <td className="px-4 py-3">
                         <span
                           className={`px-2 py-1 text-xs rounded-full ${
-                            stock.status === 'Còn hàng'
-                              ? 'bg-green-100 text-green-800'
-                              : stock.status === 'Hết hàng'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                            stock.status === "Còn hàng"
+                              ? "bg-green-100 text-green-800"
+                              : stock.status === "Hết hàng"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
                           {stock.status}
@@ -310,14 +338,24 @@ const SellerStockManagement = () => {
               </span>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setPagination({ ...pagination, currentPage: pagination.currentPage - 1 })}
+                  onClick={() =>
+                    setPagination({
+                      ...pagination,
+                      currentPage: pagination.currentPage - 1,
+                    })
+                  }
                   disabled={pagination.currentPage === 1}
                   className="px-3 py-1 border rounded disabled:opacity-50"
                 >
                   Trước
                 </button>
                 <button
-                  onClick={() => setPagination({ ...pagination, currentPage: pagination.currentPage + 1 })}
+                  onClick={() =>
+                    setPagination({
+                      ...pagination,
+                      currentPage: pagination.currentPage + 1,
+                    })
+                  }
                   disabled={pagination.currentPage === pagination.totalPages}
                   className="px-3 py-1 border rounded disabled:opacity-50"
                 >
@@ -343,29 +381,50 @@ const SellerStockManagement = () => {
               </div>
             ) : stockEntries.length === 0 ? (
               <p className="text-gray-500 py-6 text-center">
-                Chưa có bản ghi nhập kho. Các lần nhập sau khi dùng nút &quot;Thêm kho&quot; sẽ hiển thị tại đây.
+                Chưa có bản ghi nhập kho. Các lần nhập sau khi dùng nút
+                &quot;Thêm kho&quot; sẽ hiển thị tại đây.
               </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 text-sm">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-3 py-2 text-left font-medium text-gray-600">Thời gian</th>
-                      <th className="px-3 py-2 text-left font-medium text-gray-600">Số lượng</th>
-                      <th className="px-3 py-2 text-left font-medium text-gray-600">Còn khấu trừ</th>
-                      <th className="px-3 py-2 text-left font-medium text-gray-600">Ghi chú</th>
-                      <th className="px-3 py-2 text-right font-medium text-gray-600">Thao tác</th>
+                      <th className="px-3 py-2 text-left font-medium text-gray-600">
+                        Thời gian
+                      </th>
+                      <th className="px-3 py-2 text-left font-medium text-gray-600">
+                        Số lượng
+                      </th>
+                      <th className="px-3 py-2 text-left font-medium text-gray-600">
+                        Còn khấu trừ
+                      </th>
+                      <th className="px-3 py-2 text-left font-medium text-gray-600">
+                        Ghi chú
+                      </th>
+                      <th className="px-3 py-2 text-right font-medium text-gray-600">
+                        Thao tác
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {stockEntries.map((entry) => (
                       <tr key={entry._id} className="hover:bg-gray-50">
                         <td className="px-3 py-2 text-gray-700">
-                          {entry.created_at ? new Date(entry.created_at).toLocaleString('vi-VN') : '—'}
+                          {entry.created_at
+                            ? new Date(entry.created_at).toLocaleString("vi-VN")
+                            : "—"}
                         </td>
-                        <td className="px-3 py-2 font-medium">{formatPrice(entry.quantity || 0)}</td>
-                        <td className="px-3 py-2">{formatPrice(entry.remainingAllocated ?? entry.quantity ?? 0)}</td>
-                        <td className="px-3 py-2 text-gray-600">{entry.note || '—'}</td>
+                        <td className="px-3 py-2 font-medium">
+                          {formatPrice(entry.quantity || 0)}
+                        </td>
+                        <td className="px-3 py-2">
+                          {formatPrice(
+                            entry.remainingAllocated ?? entry.quantity ?? 0,
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-gray-600">
+                          {entry.note || "—"}
+                        </td>
                         <td className="px-3 py-2 text-right">
                           <button
                             onClick={() => handleDeleteEntry(entry._id)}
@@ -398,20 +457,34 @@ const SellerStockManagement = () => {
             <h3 className="text-xl font-bold mb-4">Cập nhật kho</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Số lượng tồn kho</label>
+                <label className="block text-sm font-medium mb-1">
+                  Số lượng tồn kho
+                </label>
                 <input
                   type="number"
                   value={editForm.remainingQuantity}
-                  onChange={(e) => setEditForm({ ...editForm, remainingQuantity: e.target.value })}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      remainingQuantity: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border rounded"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Số lượng ban đầu</label>
+                <label className="block text-sm font-medium mb-1">
+                  Số lượng ban đầu
+                </label>
                 <input
                   type="number"
                   value={editForm.initialQuantity}
-                  onChange={(e) => setEditForm({ ...editForm, initialQuantity: e.target.value })}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      initialQuantity: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border rounded"
                 />
               </div>
@@ -440,7 +513,9 @@ const SellerStockManagement = () => {
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-xl font-bold mb-4">Thêm kho</h3>
             <div>
-              <label className="block text-sm font-medium mb-1">Số lượng thêm vào</label>
+              <label className="block text-sm font-medium mb-1">
+                Số lượng thêm vào
+              </label>
               <input
                 type="number"
                 value={addStockForm.quantity}
@@ -474,56 +549,82 @@ const SellerStockManagement = () => {
             <h3 className="text-xl font-bold mb-4">Chi tiết kho</h3>
             <div className="space-y-4">
               <div>
-                <h4 className="font-semibold mb-2">{selectedStock.product?.name}</h4>
+                <h4 className="font-semibold mb-2">
+                  {selectedStock.product?.name}
+                </h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">Mã SP:</span>
-                    <span className="ml-2">{selectedStock.product?.productId}</span>
+                    <span className="ml-2">
+                      {selectedStock.product?.productId}
+                    </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Đơn vị:</span>
-                    <span className="ml-2">{selectedStock.product?.unit || 'kg'}</span>
+                    <span className="ml-2">
+                      {selectedStock.product?.unit || "kg"}
+                    </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Số lượng ban đầu:</span>
-                    <span className="ml-2">{formatPrice(selectedStock.product?.initialQuantity || 0)}</span>
+                    <span className="ml-2">
+                      {formatPrice(selectedStock.product?.initialQuantity || 0)}
+                    </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Tồn kho:</span>
                     <span className="ml-2 font-semibold text-green-600">
-                      {formatPrice(selectedStock.product?.remainingQuantity || 0)}
+                      {formatPrice(
+                        selectedStock.product?.remainingQuantity || 0,
+                      )}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Đã bán:</span>
-                    <span className="ml-2">{formatPrice(selectedStock.product?.soldQuantity || 0)}</span>
+                    <span className="ml-2">
+                      {formatPrice(selectedStock.product?.soldQuantity || 0)}
+                    </span>
                   </div>
                   <div>
                     <span className="text-gray-600">Trạng thái:</span>
-                    <span className="ml-2">{selectedStock.product?.status}</span>
+                    <span className="ml-2">
+                      {selectedStock.product?.status}
+                    </span>
                   </div>
                 </div>
               </div>
-              {selectedStock.stockMovements && selectedStock.stockMovements.length > 0 && (
-                <div>
-                  <h4 className="font-semibold mb-2">Lịch sử thay đổi</h4>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {selectedStock.stockMovements.map((movement, idx) => (
-                      <div key={idx} className="p-2 bg-gray-50 rounded text-sm">
-                        <div className="flex justify-between">
-                          <span>Đơn hàng: {movement.orderNumber}</span>
-                          <span className={movement.status === 'completed' ? 'text-green-600' : 'text-yellow-600'}>
-                            {movement.status}
-                          </span>
+              {selectedStock.stockMovements &&
+                selectedStock.stockMovements.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Lịch sử thay đổi</h4>
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {selectedStock.stockMovements.map((movement, idx) => (
+                        <div
+                          key={idx}
+                          className="p-2 bg-gray-50 rounded text-sm"
+                        >
+                          <div className="flex justify-between">
+                            <span>Đơn hàng: {movement.orderNumber}</span>
+                            <span
+                              className={
+                                movement.status === "completed"
+                                  ? "text-green-600"
+                                  : "text-yellow-600"
+                              }
+                            >
+                              {movement.status}
+                            </span>
+                          </div>
+                          <div className="text-gray-600 text-xs mt-1">
+                            {new Date(movement.createdAt).toLocaleString(
+                              "vi-VN",
+                            )}
+                          </div>
                         </div>
-                        <div className="text-gray-600 text-xs mt-1">
-                          {new Date(movement.createdAt).toLocaleString('vi-VN')}
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
             <button
               onClick={() => setShowDetailModal(false)}
@@ -539,4 +640,3 @@ const SellerStockManagement = () => {
 };
 
 export default SellerStockManagement;
-
