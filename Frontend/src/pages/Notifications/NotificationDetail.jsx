@@ -99,6 +99,7 @@ const NotificationDetail = () => {
       'all': 'Tất cả người dùng',
       'admin': 'Quản trị viên',
       'staff': 'Nhân viên',
+      'seller': 'Người bán (Seller)',
       'user': 'Người dùng',
       'specific': 'Người dùng cụ thể'
     };

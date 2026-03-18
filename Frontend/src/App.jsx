@@ -40,6 +40,10 @@ import VNPayFailPage from './pages/Customer/VNPayFailPage';
 import NotificationList from './pages/Notifications/NotificationList';
 import NotificationDetail from './pages/Notifications/NotificationDetail';
 import NotificationForm from './pages/Notifications/NotificationForm';
+import CustomerNotificationsPage from './pages/Customer/CustomerNotificationsPage';
+import CustomerNotificationDetailPage from './pages/Customer/CustomerNotificationDetailPage';
+import SellerNotificationsPage from './pages/Seller/SellerNotificationsPage';
+import SellerNotificationDetailPage from './pages/Seller/SellerNotificationDetailPage';
 import CustomerDetail from './pages/Customers/CustomerDetail';
 import CustomerEditForm from './pages/Customers/CustomerEditForm';
 import SellerManagement from './pages/Sellers/SellerManagement';
@@ -85,8 +89,8 @@ function AppRoutes() {
       <Route path="/ho-so" element={<ProfilePage />} />
       <Route path="/don-hang" element={<OrderInfoPage />} />
       <Route path="/da-thich" element={<FavoritesPage />} />
-      <Route path="/notifications" element={<NotificationList />} />
-      <Route path="/notifications/:id" element={<NotificationDetail />} />
+      <Route path="/notifications" element={<CustomerNotificationsPage />} />
+      <Route path="/notifications/:id" element={<CustomerNotificationDetailPage />} />
       
 
       {/* UNIVERSAL LOGIN - Chung cho tất cả */}
@@ -156,6 +160,22 @@ function AppRoutes() {
         element={
           <SellerProtectedRoute>
             <SellerStockManagement />
+          </SellerProtectedRoute>
+        }
+      />
+      <Route
+        path="/seller/notifications"
+        element={
+          <SellerProtectedRoute>
+            <SellerNotificationsPage />
+          </SellerProtectedRoute>
+        }
+      />
+      <Route
+        path="/seller/notifications/:id"
+        element={
+          <SellerProtectedRoute>
+            <SellerNotificationDetailPage />
           </SellerProtectedRoute>
         }
       />

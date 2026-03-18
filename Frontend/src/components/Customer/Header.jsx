@@ -4,6 +4,8 @@ import { FiSearch, FiShoppingCart, FiUser, FiHeart } from 'react-icons/fi';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import NotificationDropdown from '../Notifications/NotificationDropdown';
+import { customerNotificationsAPI } from '../../utils/customerApi';
 import LoginModal from './LoginModal';
 import RegisterModal from './RegisterModal';
 import ShoppingCart from './ShoppingCart';
@@ -163,6 +165,13 @@ const Header = () => {
                   </span>
                 )}
               </button>
+              {customer && (
+                <NotificationDropdown
+                  api={customerNotificationsAPI}
+                  listPath="/notifications"
+                  detailPathPrefix="/notifications"
+                />
+              )}
               {isLoggedIn ? (
                 <div className="relative" ref={dropdownRef}>
                   <button

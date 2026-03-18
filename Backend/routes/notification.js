@@ -8,23 +8,23 @@ const notificationController = require('../controller/notification.controller');
 // =============================================================================
 
 // 81. View notification list - Admin only (for management dashboard)
-router.get('/', protectRoute(['admin']), notificationController.listNotifications);
+router.get('/', protectRoute(['admin', 'user', 'seller']), notificationController.listNotifications);
 
 // 81b. View notifications for homepage - User context
-router.get('/homepage', protectRoute(['admin', 'user']), notificationController.getHomepageNotifications);
+router.get('/homepage', protectRoute(['admin', 'user', 'seller']), notificationController.getHomepageNotifications);
 
 // 85. Search notification - Admin/User
-router.get('/search', protectRoute(['admin', 'user']), notificationController.searchNotifications);
+router.get('/search', protectRoute(['admin', 'user', 'seller']), notificationController.searchNotifications);
 
 // Get unread count - PHẢI ĐẶT TRƯỚC /:id để tránh match nhầm
-router.get('/unread-count', protectRoute(['admin', 'user']), notificationController.getUnreadCount);
+router.get('/unread-count', protectRoute(['admin', 'user', 'seller']), notificationController.getUnreadCount);
 
 // 86. Filter notification - Admin/User
 // (Filter được tích hợp trong GET / - listNotifications)
 
 // 82. View notification detail - Admin/User
 // PHẢI ĐẶT SAU các route cụ thể như /unread-count, /homepage, /search
-router.get('/:id', protectRoute(['admin', 'user']), notificationController.getNotification);
+router.get('/:id', protectRoute(['admin', 'user', 'seller']), notificationController.getNotification);
 
 
 // 80. Create notification - Admin only
@@ -37,10 +37,10 @@ router.put('/:id', protectRoute(['admin']), notificationController.updateNotific
 router.delete('/:id', protectRoute(['admin']), notificationController.deleteNotification);
 
 // Mark all as read - PHẢI ĐẶT TRƯỚC /:id/mark-read để tránh match nhầm
-router.post('/mark-all-read', protectRoute(['admin', 'user']), notificationController.markAllAsRead);
+router.post('/mark-all-read', protectRoute(['admin', 'user', 'seller']), notificationController.markAllAsRead);
 
 // Read/Unread
-router.post('/:id/mark-read', protectRoute(['admin', 'user']), notificationController.markAsRead);
-router.post('/:id/mark-unread', protectRoute(['admin', 'user']), notificationController.markAsUnread);
+router.post('/:id/mark-read', protectRoute(['admin', 'user', 'seller']), notificationController.markAsRead);
+router.post('/:id/mark-unread', protectRoute(['admin', 'user', 'seller']), notificationController.markAsUnread);
 
 module.exports = router;

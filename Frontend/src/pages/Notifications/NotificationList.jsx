@@ -185,6 +185,8 @@ const NotificationList = () => {
                           ? 'Tất cả'
                           : notification.target_audience === 'admin'
                           ? 'Quản trị viên'
+                          : notification.target_audience === 'seller'
+                          ? 'Seller'
                           : notification.target_audience === 'user'
                           ? 'Người dùng'
                           : notification.target_audience || 'N/A'}

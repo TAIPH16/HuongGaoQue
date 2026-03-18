@@ -45,5 +45,14 @@ export const vnpayAPI = {
   checkStatus: (orderId) => customerApi.get(`/vnpay/check-status/${orderId}`),
 };
 
+// Customer Notifications API
+export const customerNotificationsAPI = {
+  getAll: (params) => customerApi.get('/notifications', { params }),
+  getById: (id) => customerApi.get(`/notifications/${id}`),
+  markAsRead: (id) => customerApi.post(`/notifications/${id}/mark-read`),
+  markAllAsRead: () => customerApi.post('/notifications/mark-all-read'),
+  getUnreadCount: () => customerApi.get('/notifications/unread-count'),
+};
+
 export default customerApi;
 

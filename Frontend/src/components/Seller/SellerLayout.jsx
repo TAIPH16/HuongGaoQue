@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FiBarChart2, FiPackage, FiShoppingCart, FiUser, FiLogOut, FiBox, FiHome } from 'react-icons/fi';
 import { useSellerAuth } from '../../context/SellerAuthContext';
 import Toast from '../Customer/Toast';
+import NotificationDropdown from '../Notifications/NotificationDropdown';
+import { sellerNotificationsAPI } from '../../utils/sellerApi';
 
 const SellerLayout = ({ children }) => {
     const location = useLocation();
@@ -113,10 +115,22 @@ const SellerLayout = ({ children }) => {
             <div className="flex-1 ml-64">
                 {/* Header */}
                 <div className="bg-white shadow-sm sticky top-0 z-10">
-                    <div className="px-6 py-4">
+                    <div className="px-6 py-4 flex items-center justify-between">
                         <h1 className="text-2xl font-bold text-gray-800">
                             {menuItems.find(item => isActive(item.path))?.label || 'Seller Portal'}
                         </h1>
+                        <div className="flex items-center gap-2">
+                            <NotificationDropdown
+                                api={sellerNotificationsAPI}
+                                listPath="/seller/notifications"
+                                detailPathPrefix="/seller/notifications"
+                            />
+                            <div className="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center">
+                                <span className="text-white font-semibold">
+                                    {seller?.name?.charAt(0).toUpperCase() || seller?.fullName?.charAt(0).toUpperCase() || 'S'}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

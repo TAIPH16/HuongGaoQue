@@ -1,5 +1,6 @@
 const Order = require('../model/order');
 const Product = require('../model/product');
+const Notification = require('../model/notification');
 
 // Get seller's orders (orders containing seller's products)
 exports.getSellerOrders = async (req, res) => {
@@ -178,6 +179,31 @@ exports.updateSellerOrderStatus = async (req, res) => {
             order.cancelledReason = cancelledReason;
         }
         await order.save();
+
+        // Notify customer about status change
+        try {
+            const customerId = order.customer;
+            if (customerId) {
+                await Notification.create({
+                    title: `Cập nhật đơn hàng ${order.orderNumber}`,
+                    content:
+                        status === 'Cancelled'
+                            ? `Đơn hàng ${order.orderNumber} đã bị hủy.${cancelledReason ? ` Lý do: ${cancelledReason}` : ''}`
+                            : `Trạng thái đơn hàng ${order.orderNumber} đã được cập nhật: ${status}.`,
+                    type: 'system',
+                    priority: 'medium',
+                    target_audience: 'specific',
+                    target_users: [customerId],
+                    status: 'active',
+                    created_by: req.userId,
+                    created_by_role: 'seller',
+                    related_type: 'order',
+                    related_id: order._id,
+                    action_url: '/don-hang',
+                    action_text: 'Xem đơn hàng',
+                });
+            }
+        } catch (e) { /* ignore notification errors */ }
 
         const saved = await Order.findById(order._id)
             .populate('customer', 'name email phoneNumber')

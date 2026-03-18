@@ -1,6 +1,7 @@
 const Order = require('../model/order');
 const Product = require('../model/product');
 const User = require('../model/user');
+const Notification = require('../model/notification');
 
 // Use User model as Customer (customers are Users with role 'user')
 const Customer = User;
@@ -144,12 +145,14 @@ const createOrder = async (orderData) => {
     // Validate và tính toán items
     let subtotal = 0;
     const orderItems = [];
+    const sellerIds = new Set();
 
     for (const item of items) {
         const product = await Product.findById(item.product);
         if (!product) {
             throw new Error(`Sản phẩm ${item.product} không tồn tại`);
         }
+        if (product.seller) sellerIds.add(String(product.seller));
 
         // Kiểm tra số lượng còn lại
         if (product.remainingQuantity < item.quantity) {
@@ -183,15 +186,21 @@ const createOrder = async (orderData) => {
     // Tạo orderNumber tự động
     const orderNumber = 'ORD' + Date.now().toString().slice(-8);
 
+    const normalizePaymentMethod = (raw) => {
+        const m = (raw ?? 'cash').toString().trim().toLowerCase();
+        if (!m) return 'cash';
+        if (m === 'cod' || m.includes('cash')) return 'cash';
+        if (m.includes('vnpay') || m === 'vn-pay' || m === 'vn pay') return 'vnpay';
+        // Fallback to schema default to avoid enum validation errors
+        return 'cash';
+    };
+
+    const normalizedPaymentMethod = normalizePaymentMethod(paymentMethod);
+
     // Determine initial status based on payment method
     let initialStatus = 'Pending';
-    const method = (paymentMethod || 'cash').toLowerCase();
-
-    if (method.includes('vnpay') || method === 'vnpay') {
+    if (normalizedPaymentMethod === 'vnpay') {
         initialStatus = 'WaitingPayment';
-    } else {
-        // Default (Cash, Payment cash)
-        initialStatus = 'Pending';
     }
 
     const order = new Order({
@@ -199,7 +208,7 @@ const createOrder = async (orderData) => {
         customer,
         items: orderItems,
         shippingAddress,
-        paymentMethod: paymentMethod || 'COD',
+        paymentMethod: normalizedPaymentMethod,
         subtotal,
         discountAmount: maxDiscount,
         shippingFee: totalShippingFee,
@@ -210,6 +219,28 @@ const createOrder = async (orderData) => {
     });
 
     await order.save();
+
+    // Notify sellers (if the ordered products belong to sellers)
+    if (sellerIds.size > 0) {
+        const sellerNotiOps = Array.from(sellerIds).map((sellerId) =>
+            Notification.create({
+                title: `Đơn hàng mới ${orderNumber}`,
+                content: `Bạn có một đơn hàng mới. Mã đơn: ${orderNumber}.`,
+                type: 'system',
+                priority: 'medium',
+                target_audience: 'specific',
+                target_users: [sellerId],
+                status: 'active',
+                created_by: customer,
+                created_by_role: 'user',
+                related_type: 'order',
+                related_id: order._id,
+                action_url: '/seller/orders',
+                action_text: 'Xem đơn hàng',
+            }).catch(() => null)
+        );
+        await Promise.allSettled(sellerNotiOps);
+    }
 
     // Cập nhật số lượng sản phẩm và thống kê
     for (const item of orderItems) {
@@ -314,8 +345,16 @@ const updateOrder = async (orderId, orderData) => {
         order.payment_status = paymentStatus;
     }
     if (paymentMethod) {
-        order.paymentMethod = paymentMethod;
-        order.payment_method = paymentMethod;
+        const m = paymentMethod.toString().trim().toLowerCase();
+        const normalized =
+            m === 'cod' || m.includes('cash')
+                ? 'cash'
+                : (m.includes('vnpay') || m === 'vn-pay' || m === 'vn pay')
+                    ? 'vnpay'
+                    : 'cash';
+
+        order.paymentMethod = normalized;
+        order.payment_method = normalized;
     }
     if (shippingAddress) order.shippingAddress = shippingAddress;
     if (notes !== undefined) {

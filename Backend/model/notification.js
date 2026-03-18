@@ -27,7 +27,7 @@ const notificationSchema = new mongoose.Schema(
     },
     target_audience: { 
       type: String, 
-      enum: ['all', 'admin', 'user', 'specific'], 
+      enum: ['all', 'admin', 'user', 'seller', 'specific'], 
       required: true,
       default: 'all'
     },
@@ -53,7 +53,7 @@ const notificationSchema = new mongoose.Schema(
     },
     created_by_role: { 
       type: String, 
-      enum: ['admin', 'staff',  'user'], 
+      enum: ['admin', 'staff', 'seller', 'user'], 
       required: true 
     },
     read_count: { 
@@ -73,7 +73,7 @@ const notificationSchema = new mongoose.Schema(
     // Optional: Link to related entity
     related_type: { 
       type: String, 
-      enum: ['product', 'service', 'booking', 'review', 'post', 'promotion', 'event'] 
+      enum: ['product', 'service', 'booking', 'review', 'post', 'promotion', 'event', 'order'] 
     },
     related_id: { 
       type: mongoose.Schema.Types.ObjectId 
