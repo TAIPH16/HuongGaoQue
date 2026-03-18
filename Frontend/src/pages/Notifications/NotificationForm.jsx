@@ -152,6 +152,7 @@ const NotificationForm = () => {
               <option value="all">Tất cả</option>
               <option value="admin">Quản trị viên</option>
               <option value="staff">Nhân viên</option>
+              <option value="seller">Người bán (Seller)</option>
               <option value="user">Người dùng</option>
             </select>
           </div>

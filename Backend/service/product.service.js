@@ -13,6 +13,8 @@ const getProducts = async (query) => {
     const search = query.search || '';
     const categoryId = query.categoryId;
     const status = query.status;
+    const sortBy = (query.sortBy || '').toString().trim();
+    const sortOrderRaw = (query.sortOrder || '').toString().trim().toLowerCase();
 
     // Tạo query
     let filter = {};
@@ -29,9 +31,32 @@ const getProducts = async (query) => {
         filter.status = status;
     }
 
+    // Sorting
+    const order = sortOrderRaw === 'asc' ? 1 : -1;
+    const sort = (() => {
+        if (!sortBy) return { createdAt: -1 };
+
+        const key = sortBy.toLowerCase();
+
+        // aliases from frontend
+        if (key === 'price') return { listedPrice: order };
+        if (key === 'listedprice') return { listedPrice: order };
+        if (key === 'createdat' || key === 'created_at' || key === 'newest') return { createdAt: order };
+
+        // "popular" heuristic
+        if (key === 'popular') return { soldQuantity: -1, createdAt: -1 };
+
+        // allow a small whitelist to avoid arbitrary field sorting
+        if (key === 'soldquantity') return { soldQuantity: order };
+        if (key === 'revenue') return { revenue: order };
+        if (key === 'name') return { name: order };
+
+        return { createdAt: -1 };
+    })();
+
     const products = await Product.find(filter)
         .populate('category', 'name')
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip(skip)
         .limit(limit);
 

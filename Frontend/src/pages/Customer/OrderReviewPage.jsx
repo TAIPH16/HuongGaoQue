@@ -36,23 +36,19 @@ const OrderReviewPage = () => {
     return new Intl.NumberFormat("vi-VN").format(price) + "₫";
   };
 
-  const subtotal = cartItems.reduce((total, item) => {
+  const subtotal = cartItems.reduce((sum, item) => {
     const price = item.product.listedPrice || item.product.price || 0;
-    const discountPercent = item.product.discountPercent || 0;
-    const itemPrice =
-      discountPercent > 0 ? price * (1 - discountPercent / 100) : price;
-    return total + itemPrice * item.quantity;
+    return sum + price * item.quantity;
   }, 0);
 
-  const discount = selectedItemsData.reduce((total, item) => {
+  const discount = cartItems.reduce((sum, item) => {
     const price = item.product.listedPrice || item.product.price || 0;
     const percent = item.product.discountPercent || 0;
-
     const discountPerItem = (price * percent) / 100;
-
-    return total + discountPerItem * item.quantity;
+    return sum + discountPerItem * item.quantity;
   }, 0);
-  const total = subtotal - discount;
+
+  const total = Math.max(0, subtotal - discount);
 
   const handleContinue = () => {
     navigate("/phuong-thuc-thanh-toan");

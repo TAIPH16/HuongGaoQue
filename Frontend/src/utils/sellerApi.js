@@ -79,4 +79,13 @@ export const sellerStockAPI = {
     deleteStockRecord: (entryId) => sellerApi.delete(`/seller/stock/entries/${entryId}`),
 };
 
+// Seller Notifications API
+export const sellerNotificationsAPI = {
+    getAll: (params) => sellerApi.get('/notifications', { params }),
+    getById: (id) => sellerApi.get(`/notifications/${id}`),
+    markAsRead: (id) => sellerApi.post(`/notifications/${id}/mark-read`),
+    markAllAsRead: () => sellerApi.post('/notifications/mark-all-read'),
+    getUnreadCount: () => sellerApi.get('/notifications/unread-count'),
+};
+
 export default sellerApi;

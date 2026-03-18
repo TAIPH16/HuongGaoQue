@@ -1,17 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiBell } from 'react-icons/fi';
-import { notificationsAPI } from '../../utils/api';
-import { useAuth } from '../../context/AuthContext';
+import { notificationsAPI as adminNotificationsAPI } from '../../utils/api';
 
-const NotificationDropdown = () => {
+const NotificationDropdown = ({
+  api = adminNotificationsAPI,
+  listPath = '/admin/notifications',
+  detailPathPrefix = '/admin/notifications',
+}) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   useEffect(() => {
     fetchUnreadCount();
@@ -41,7 +43,7 @@ const NotificationDropdown = () => {
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await notificationsAPI.getUnreadCount();
+      const response = await api.getUnreadCount();
       setUnreadCount(response.data.count || 0);
     } catch (error) {
       console.error('Error fetching unread count:', error);
@@ -51,7 +53,7 @@ const NotificationDropdown = () => {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const response = await notificationsAPI.getAll({
+      const response = await api.getAll({
         page: 1,
         limit: 5,
         read_status: 'unread',
@@ -70,24 +72,24 @@ const NotificationDropdown = () => {
 
   const handleNotificationClick = async (notificationId) => {
     try {
-      await notificationsAPI.markAsRead(notificationId);
+      await api.markAsRead(notificationId);
       setUnreadCount((prev) => Math.max(0, prev - 1));
       setNotifications((prev) =>
         prev.map((n) => (n._id === notificationId ? { ...n, is_read: true } : n))
       );
-      navigate(`/admin/notifications/${notificationId}`);
+      navigate(`${detailPathPrefix}/${notificationId}`);
       setShowDropdown(false);
     } catch (error) {
       console.error('Error marking notification as read:', error);
       // Still navigate even if marking as read fails
-      navigate(`/admin/notifications/${notificationId}`);
+      navigate(`${detailPathPrefix}/${notificationId}`);
       setShowDropdown(false);
     }
   };
 
   const handleMarkAllAsRead = async () => {
     try {
-      await notificationsAPI.markAllAsRead();
+      await api.markAllAsRead();
       setUnreadCount(0);
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     } catch (error) {
@@ -209,7 +211,7 @@ const NotificationDropdown = () => {
           <div className="px-4 py-3 border-t border-gray-200">
             <button
               onClick={() => {
-                navigate('/admin/notifications');
+                navigate(listPath);
                 setShowDropdown(false);
               }}
               className="w-full text-center text-sm text-green-600 hover:text-green-700 font-medium"

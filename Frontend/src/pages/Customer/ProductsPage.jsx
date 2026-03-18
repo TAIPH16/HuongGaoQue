@@ -58,7 +58,10 @@ const ProductsPage = () => {
       }
       
       // Add sorting
-      if (sortBy === 'price-asc') {
+      if (sortBy === 'popular') {
+        params.sortBy = 'popular';
+        params.sortOrder = 'desc';
+      } else if (sortBy === 'price-asc') {
         params.sortBy = 'price';
         params.sortOrder = 'asc';
       } else if (sortBy === 'price-desc') {
@@ -71,19 +74,7 @@ const ProductsPage = () => {
       
       const response = await publicProductsAPI.getAll(params);
       const productsData = response.data?.data || response.data || [];
-      
-      // Apply client-side sorting if needed
-      let sortedProducts = Array.isArray(productsData) ? productsData : [];
-      if (sortBy === 'popular') {
-        // Sort by popularity (you can adjust this logic)
-        sortedProducts = sortedProducts.sort((a, b) => {
-          const aPrice = (a.listedPrice || a.price || 0) * (1 - (a.discountPercent || 0) / 100);
-          const bPrice = (b.listedPrice || b.price || 0) * (1 - (b.discountPercent || 0) / 100);
-          return bPrice - aPrice; // Higher price = more popular (adjust as needed)
-        });
-      }
-      
-      setProducts(sortedProducts);
+      setProducts(Array.isArray(productsData) ? productsData : []);
       
       // Set pagination info if available
       if (response.data?.pagination) {
