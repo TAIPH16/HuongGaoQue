@@ -81,7 +81,8 @@ const ProductDetailPage = () => {
   const fetchReviews = async () => {
     try {
       const response = await publicReviewsAPI.getAll({
-        productId: id,
+        target_type: 'product',
+        target_id: id,
         limit: 10,
       });
       const resultData = response.data?.data || response.data || {};

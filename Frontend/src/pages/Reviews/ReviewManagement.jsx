@@ -36,6 +36,7 @@ const ReviewManagement = () => {
       const params = {
         page: pagination.current_page,
         limit: pagination.items_per_page,
+        target_type: 'product',
       };
 
       if (statusFilter !== 'Tất cả') {
@@ -117,16 +118,7 @@ const ReviewManagement = () => {
     setDeleteTarget(review);
   };
 
-  const handleToggleVisibility = async (review) => {
-    try {
-      await api.delete(`/reviews/${review._id}`);
-      setActionMessage(`Đã ${review.status === 'hidden' ? 'hiển thị' : 'ẩn'} đánh giá.`);
-      fetchReviews();
-    } catch (error) {
-      console.error('Error toggling review:', error);
-      setActionMessage('Có lỗi xảy ra khi đổi trạng thái đánh giá.');
-    }
-  };
+
 
   const handleDeleteReview = async () => {
     if (!deleteTarget) return;
@@ -296,13 +288,6 @@ const ReviewManagement = () => {
                             title="Chỉnh sửa đánh giá"
                           >
                             <FiEdit className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => handleToggleVisibility(review)}
-                            className={`${review.status === 'visible' ? 'text-orange-600 hover:text-orange-800' : 'text-green-600 hover:text-green-800'}`}
-                            title={review.status === 'visible' ? "Ẩn đánh giá" : "Hiển thị đánh giá"}
-                          >
-                            {review.status === 'visible' ? <FiEyeOff className="w-5 h-5" /> : <FiEye className="w-5 h-5" />}
                           </button>
                           <button
                             onClick={() => confirmDelete(review)}

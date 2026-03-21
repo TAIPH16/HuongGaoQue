@@ -8,6 +8,28 @@ const SellerOrders = () => {
   const [error, setError] = useState('');
   const [statusLoadingId, setStatusLoadingId] = useState(null);
   const [filter, setFilter] = useState('');
+  
+  // Detail Modal State
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderItems, setOrderItems] = useState([]);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  // Focus detail modal
+  const handleViewDetail = async (id) => {
+    setShowDetailModal(true);
+    setDetailLoading(true);
+    try {
+      const res = await sellerOrdersAPI.getById(id);
+      setSelectedOrder(res.data.data);
+      setOrderItems(res.data.data.items || []);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Không tải được chi tiết đơn hàng');
+      setShowDetailModal(false);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -121,7 +143,7 @@ const SellerOrders = () => {
                           : '-'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-800">
-                        {order.customer?.fullName || order.customer?.name || order.customerName || '-'}
+                        {order.shippingAddress?.name || order.customer?.fullName || order.customer?.name || order.customerName || '-'}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-800">
                         {new Intl.NumberFormat('vi-VN').format(order.total || 0)}₫
@@ -133,6 +155,12 @@ const SellerOrders = () => {
                       </td>
                       <td className="px-4 py-3 space-x-2">
                         {/* Action buttons based on status */}
+                        <button
+                          onClick={() => handleViewDetail(order._id)}
+                          className="px-3 py-1 text-xs bg-gray-500 hover:bg-gray-600 text-white rounded mb-1 mr-1"
+                        >
+                          Chi tiết
+                        </button>
                         {order.status === 'Pending' || order.status === 'WaitingPayment' ? (
                           <button
                             disabled={statusLoadingId === order._id}
@@ -180,6 +208,118 @@ const SellerOrders = () => {
           )}
         </div>
       </div>
+
+      {/* Detail Modal */}
+      {showDetailModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center p-6 border-b">
+              <h3 className="text-xl font-bold">Chi tiết đơn hàng #{selectedOrder?.orderNumber || '...'}</h3>
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold rounded-full w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200"
+              >
+                &times;
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1 bg-gray-50">
+              {detailLoading ? (
+                <div className="flex justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600" />
+                </div>
+              ) : selectedOrder ? (
+                <div className="space-y-6">
+                  {/* Info Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-white p-4 rounded shadow-sm border">
+                      <h4 className="font-semibold text-gray-800 mb-2 border-b pb-2">Thông tin khách hàng</h4>
+                      <div className="space-y-1 text-sm text-gray-600">
+                        <p><span className="font-medium text-gray-800">Tên:</span> {selectedOrder.shippingAddress?.name || selectedOrder.customer?.fullName || selectedOrder.customer?.name}</p>
+                        <p><span className="font-medium text-gray-800">SĐT:</span> {selectedOrder.shippingAddress?.phone || selectedOrder.customer?.phoneNumber}</p>
+                        <p><span className="font-medium text-gray-800">Địa chỉ:</span> {selectedOrder.shippingAddress?.fullAddress}</p>
+                      </div>
+                    </div>
+                    <div className="bg-white p-4 rounded shadow-sm border">
+                      <h4 className="font-semibold text-gray-800 mb-2 border-b pb-2">Thông tin thanh toán</h4>
+                      <div className="space-y-1 text-sm text-gray-600">
+                        <p><span className="font-medium text-gray-800">Trạng thái:</span> <span className="text-blue-600 font-semibold">{selectedOrder.status}</span></p>
+                        <p><span className="font-medium text-gray-800">H.thức:</span> {selectedOrder.paymentMethod} ({selectedOrder.paymentStatus})</p>
+                        <p><span className="font-medium text-gray-800">Ghi chú:</span> {selectedOrder.notes || 'Không có'}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Order Items Table */}
+                  <div className="bg-white rounded shadow-sm border overflow-hidden">
+                    <div className="p-4 border-b bg-gray-50">
+                      <h4 className="font-semibold text-gray-800">Sản phẩm</h4>
+                    </div>
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 text-gray-600">
+                        <tr>
+                          <th className="py-2 px-4 text-left font-medium">Sản phẩm</th>
+                          <th className="py-2 px-4 text-center font-medium">SL</th>
+                          <th className="py-2 px-4 text-right font-medium">Đơn giá</th>
+                          <th className="py-2 px-4 text-right font-medium">Tạm tính</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {orderItems.map((item, idx) => (
+                          <tr key={idx} className="hover:bg-gray-50">
+                            <td className="py-3 px-4 text-gray-800">
+                                {item.product_name || item.product?.name}
+                                {item.variation_name && <span className="block text-xs text-gray-500">Loại: {item.variation_name}</span>}
+                            </td>
+                            <td className="py-3 px-4 text-center font-medium">{item.quantity}</td>
+                            <td className="py-3 px-4 text-right text-gray-600">{(item.price || item.unitPrice)?.toLocaleString('vi-VN')}₫</td>
+                            <td className="py-3 px-4 text-right font-semibold text-gray-800">{(item.subtotal)?.toLocaleString('vi-VN')}₫</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  {/* Summary */}
+                  <div className="flex justify-end">
+                    <div className="w-full md:w-1/2 bg-white p-4 rounded shadow-sm border space-y-2 text-sm text-gray-600">
+                      <div className="flex justify-between">
+                        <span>Tạm tính ({orderItems.length} sản phẩm):</span>
+                        <span className="font-medium text-gray-800">{(selectedOrder.subtotal || 0).toLocaleString('vi-VN')}₫</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Phí giao hàng:</span>
+                        <span className="font-medium text-gray-800">{(selectedOrder.shippingFee || 0).toLocaleString('vi-VN')}₫</span>
+                      </div>
+                      <div className="flex justify-between text-green-600">
+                        <span>Giảm giá:</span>
+                        <span className="font-medium">-{(selectedOrder.discountAmount || 0).toLocaleString('vi-VN')}₫</span>
+                      </div>
+                      <div className="flex justify-between pt-3 border-t font-bold text-lg text-gray-800">
+                        <span>Tổng thanh toán:</span>
+                        <span className="text-[#2d5016]">{(selectedOrder.total || 0).toLocaleString('vi-VN')}₫</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                </div>
+              ) : (
+                <p className="text-center text-gray-500">Kho dữ liệu trống</p>
+              )}
+            </div>
+            
+            <div className="p-4 border-t bg-gray-100 flex justify-end">
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="px-6 py-2 bg-[#2d5016] text-white font-medium rounded-lg hover:bg-[#1a340c] transition"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </SellerLayout>
   );
 };

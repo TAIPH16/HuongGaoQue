@@ -100,33 +100,34 @@ const SellerDashboard = () => {
 
                 {/* Products List */}
                 <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-bold mb-4">Sản phẩm của bạn</h3>
+                    <h3 className="text-lg font-bold mb-4">Hiệu suất sản phẩm (Top 5)</h3>
                     {stats?.products && stats.products.length > 0 ? (
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tên sản phẩm</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Giá</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lượt xem</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Đã bán</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Doanh thu</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kho</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                     {stats.products.slice(0, 5).map((product) => (
                                         <tr key={product._id}>
-                                            <td className="px-4 py-3 text-sm text-gray-800">{product.name}</td>
-                                            <td className="px-4 py-3 text-sm text-gray-800">
-                                                {new Intl.NumberFormat('vi-VN').format(product.listedPrice)}₫
+                                            <td className="px-4 py-3 text-sm text-gray-800 font-medium">{product.name}</td>
+                                            <td className="px-4 py-3 text-sm text-gray-600">
+                                                {product.views || 0}
                                             </td>
-                                            <td className="px-4 py-3 text-sm text-gray-800">{product.remainingQuantity}</td>
-                                            <td className="px-4 py-3">
-                                                <span className={`px-2 py-1 text-xs rounded-full ${product.is_approved
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-yellow-100 text-yellow-800'
-                                                    }`}>
-                                                    {product.is_approved ? 'Đã duyệt' : 'Chờ duyệt'}
-                                                </span>
+                                            <td className="px-4 py-3 text-sm text-green-600 font-semibold">
+                                                {product.soldCount || 0}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-blue-600 font-bold">
+                                                {new Intl.NumberFormat('vi-VN').format(product.revenue || 0)}₫
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-800">
+                                                {product.remainingQuantity}
                                             </td>
                                         </tr>
                                     ))}
