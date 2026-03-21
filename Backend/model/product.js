@@ -85,6 +85,10 @@ const productSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    viewCount: {
+        type: Number,
+        default: 0
+    },
     seller: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

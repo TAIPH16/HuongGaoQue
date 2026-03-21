@@ -14,6 +14,8 @@ const publicApi = axios.create({
 export const publicProductsAPI = {
   getAll: (params) => publicApi.get('/public/products', { params }),
   getById: (id) => publicApi.get(`/public/products/${id}`),
+  incrementView: (id) => publicApi.post(`/public/products/${id}/increment-view`),
+  getTopSelling: (params) => publicApi.get('/public/products/top-selling', { params }),
 };
 
 // Public Posts API
@@ -21,6 +23,7 @@ export const publicPostsAPI = {
   getAll: (params) => publicApi.get('/public/posts', { params }),
   getById: (id) => publicApi.get(`/public/posts/${id}`),
   incrementView: (id) => publicApi.post(`/public/posts/${id}/increment-view`),
+  getFeatured: (params) => publicApi.get('/public/posts/featured', { params }),
 };
 
 // Public Reviews API

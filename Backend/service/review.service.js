@@ -19,6 +19,10 @@ exports.createReview = async (reviewData, userId, userRole) => {
         } else if (target_type === 'service') {
             const service = await Service.findById(target_id);
             targetExists = !!service;
+        } else if (target_type === 'post') {
+            const Post = require('../model/post');
+            const post = await Post.findById(target_id);
+            targetExists = !!post;
         }
         
         if (!targetExists) {

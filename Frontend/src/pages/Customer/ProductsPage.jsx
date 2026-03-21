@@ -318,7 +318,8 @@ const ProductsPage = () => {
                           </button>
                         </div>
                         <div className="p-4">
-                          <h3 className="font-semibold text-gray-800 mb-2">{product.name}</h3>
+                          <h3 className="font-semibold text-gray-800 mb-1">{product.name}</h3>
+                          <div className="text-xs text-gray-400 mb-2">👁 {product.viewCount || 0} lượt xem</div>
                           <div className="mb-3">
                             <span className="text-lg font-bold text-gray-800">
                               Giá: {formatPrice(finalPrice)}/kg

@@ -208,6 +208,47 @@ const rejectProduct = async (req, res, next) => {
     }
 };
 
+/**
+ * POST /api/public/products/:id/increment-view - Tăng lượt xem sản phẩm
+ */
+const incrementView = async (req, res, next) => {
+    try {
+        const result = await productService.incrementProductView(req.params.id);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        if (error.message === 'Không tìm thấy sản phẩm') {
+            return res.status(404).json({ success: false, message: error.message });
+        }
+        next(error);
+    }
+};
+
+/**
+ * GET /api/public/products/top-selling - Top sản phẩm bán chạy nhất
+ */
+const getTopSellingProducts = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query.limit) || 4;
+        const products = await productService.getTopSellingProducts(limit);
+        res.json({ success: true, data: products });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * GET /api/products/stats/top-viewed - Top 5 sản phẩm xem nhiều nhất
+ */
+const getTopViewedProducts = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query.limit) || 5;
+        const products = await productService.getTopViewedProducts(limit);
+        res.json({ success: true, data: products });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getProducts,
     getProductDetail,
@@ -217,6 +258,9 @@ module.exports = {
     getRevenueStats,
     uploadMiddleware,
     approveProduct,
-    rejectProduct
+    rejectProduct,
+    incrementView,
+    getTopViewedProducts,
+    getTopSellingProducts
 };
 

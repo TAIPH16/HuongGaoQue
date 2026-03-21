@@ -351,6 +351,44 @@ const rejectProduct = async (productId) => {
     return product;
 };
 
+/**
+ * Tăng lượt xem sản phẩm
+ */
+const incrementProductView = async (productId) => {
+    const product = await Product.findByIdAndUpdate(
+        productId,
+        { $inc: { viewCount: 1 } },
+        { new: true }
+    );
+    if (!product) {
+        throw new Error('Không tìm thấy sản phẩm');
+    }
+    return { viewCount: product.viewCount };
+};
+
+/**
+ * Lấy top N sản phẩm bán chạy nhất (theo soldQuantity)
+ */
+const getTopSellingProducts = async (limit = 4) => {
+    const products = await Product.find({ is_approved: true })
+        .populate('category', 'name')
+        .select('name soldQuantity listedPrice discountPercent images viewCount category status')
+        .sort({ soldQuantity: -1 })
+        .limit(limit);
+    return products;
+};
+
+/**
+ * Lấy top N sản phẩm được xem nhiều nhất
+ */
+const getTopViewedProducts = async (limit = 5) => {
+    const products = await Product.find({ is_approved: true })
+        .select('name viewCount images')
+        .sort({ viewCount: -1 })
+        .limit(limit);
+    return products;
+};
+
 module.exports = {
     getProducts,
     getProductDetail,
@@ -359,6 +397,9 @@ module.exports = {
     deleteProduct,
     getRevenueStats,
     approveProduct,
-    rejectProduct
+    rejectProduct,
+    incrementProductView,
+    getTopViewedProducts,
+    getTopSellingProducts
 };
 

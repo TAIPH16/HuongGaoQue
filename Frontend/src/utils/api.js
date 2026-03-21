@@ -110,6 +110,7 @@ export const productsAPI = {
   approve: (id) => api.put(`/products/${id}/approve`),
   reject: (id) => api.put(`/products/${id}/reject`),
   getRevenueStats: (params) => api.get('/products/stats/revenue', { params }),
+  getTopViewed: (params) => api.get('/products/stats/top-viewed', { params }),
 };
 
 // Categories API

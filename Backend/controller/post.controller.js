@@ -183,6 +183,19 @@ const getPostViewsByDate = async (req, res, next) => {
     }
 };
 
+/**
+ * GET /api/public/posts/featured - Bài viết nổi bật (nhiều lượt xem nhất)
+ */
+const getFeaturedPosts = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query.limit) || 4;
+        const posts = await postService.getFeaturedPosts(limit);
+        res.json({ success: true, data: posts });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getPosts,
     getPostDetail,
@@ -191,6 +204,7 @@ module.exports = {
     deletePost,
     incrementView,
     getPostViewsByDate,
-    uploadMiddleware
+    uploadMiddleware,
+    getFeaturedPosts
 };
 

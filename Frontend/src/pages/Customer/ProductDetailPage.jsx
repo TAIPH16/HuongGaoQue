@@ -33,8 +33,18 @@ const ProductDetailPage = () => {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewMessage, setReviewMessage] = useState("");
 
+
   useEffect(() => {
     fetchProduct();
+
+    // Chỉ tăng lượt xem nếu sản phẩm này chưa được xem trong phiên hiện tại
+    if (id) {
+      const sessionKey = `viewed_product_${id}`;
+      if (!sessionStorage.getItem(sessionKey)) {
+        publicProductsAPI.incrementView(id).catch(() => {});
+        sessionStorage.setItem(sessionKey, '1');
+      }
+    }
   }, [id]);
 
   useEffect(() => {
@@ -313,6 +323,12 @@ const ProductDetailPage = () => {
             <h1 className="text-3xl font-bold text-gray-800 mb-4">
               {product.name}
             </h1>
+            <div className="flex items-center text-sm text-gray-500 mb-2">
+              <span>👁 {product.viewCount || 0} lượt xem</span>
+              {product.soldQuantity > 0 && (
+                <span className="ml-4">🛒 {product.soldQuantity} đã bán</span>
+              )}
+            </div>
             <div className="mb-6">
               <span className="text-2xl font-bold text-[#2d5016]">
                 {formatPrice(finalPrice)}

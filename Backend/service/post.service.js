@@ -278,6 +278,17 @@ const getPostViewsByDate = async (startDate, endDate) => {
     return result;
 };
 
+/**
+ * Lấy bài viết nổi bật (nhiều lượt xem nhất)
+ */
+const getFeaturedPosts = async (limit = 4) => {
+    const posts = await Post.find({ status: { $ne: 'Đã xóa' } })
+        .populate('category', 'name')
+        .sort({ viewCount: -1 })
+        .limit(limit);
+    return posts;
+};
+
 module.exports = {
     getPosts,
     getPostDetail,
@@ -285,6 +296,7 @@ module.exports = {
     updatePost,
     deletePost,
     incrementView,
-    getPostViewsByDate
+    getPostViewsByDate,
+    getFeaturedPosts
 };
 

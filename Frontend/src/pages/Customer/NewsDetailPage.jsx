@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import CustomerLayout from '../../components/Customer/CustomerLayout';
-import { publicPostsAPI } from '../../utils/publicApi';
-import { FiFacebook, FiTwitter, FiInstagram, FiArrowRight, FiClock, FiUser, FiShare2 } from 'react-icons/fi';
+import { publicPostsAPI, publicReviewsAPI } from '../../utils/publicApi';
+import { FiFacebook, FiTwitter, FiInstagram, FiArrowRight, FiClock, FiUser, FiShare2, FiEye } from 'react-icons/fi';
+import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import axios from 'axios';
 
 const NewsDetailPage = () => {
   const { id } = useParams();
@@ -10,10 +12,28 @@ const NewsDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [relatedNews, setRelatedNews] = useState([]);
   const [loadingRelated, setLoadingRelated] = useState(false);
+  
+  // FC4: Comment state
+  const { customer } = useCustomerAuth();
+  const [comments, setComments] = useState([]);
+  const [commentContent, setCommentContent] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [commentMessage, setCommentMessage] = useState('');
+
 
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchPost();
+    fetchComments();
+
+    // Chỉ tăng lượt xem nếu bài viết này chưa được xem trong phiên hiện tại
+    if (id) {
+      const sessionKey = `viewed_post_${id}`;
+      if (!sessionStorage.getItem(sessionKey)) {
+        publicPostsAPI.incrementView(id).catch(() => {});
+        sessionStorage.setItem(sessionKey, '1');
+      }
+    }
   }, [id]);
 
   const fetchPost = async () => {
@@ -22,7 +42,6 @@ const NewsDetailPage = () => {
       const response = await publicPostsAPI.getById(id);
       const postData = response.data?.data || response.data;
       setPost(postData);
-      publicPostsAPI.incrementView(id).catch(() => {});
       
       // Fetch related posts based on category
       if (postData) {
@@ -32,6 +51,58 @@ const NewsDetailPage = () => {
       console.error('Error fetching post:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchComments = async () => {
+    try {
+      const response = await publicReviewsAPI.getAll({
+        target_type: 'post',
+        target_id: id,
+        limit: 20
+      });
+      setComments(response.data?.data || response.data || []);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    }
+  };
+
+  const handleSubmitComment = async () => {
+    if (!customer) {
+      alert("Vui lòng đăng nhập để bình luận.");
+      return;
+    }
+    if (!commentContent.trim()) {
+      setCommentMessage("Vui lòng nhập nội dung bình luận.");
+      return;
+    }
+
+    try {
+      setSubmittingComment(true);
+      setCommentMessage("");
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+      const token = localStorage.getItem('customer_token');
+      
+      await axios.post(
+        `${API_BASE_URL}/reviews`,
+        {
+          target_type: 'post',
+          target_id: post._id,
+          rating: 5,
+          title: "Bình luận bài viết",
+          content: commentContent.trim()
+        },
+        { headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) } }
+      );
+      
+      setCommentContent("");
+      setCommentMessage("Gửi bình luận thành công.");
+      fetchComments();
+    } catch (error) {
+      console.error('Error submitting comment:', error);
+      setCommentMessage(error.response?.data?.message || "Lỗi khi gửi bình luận.");
+    } finally {
+      setSubmittingComment(false);
     }
   };
 
@@ -141,6 +212,10 @@ const NewsDetailPage = () => {
                 <FiClock className="w-4 h-4" />
                 <span>{formatDate(post.createdAt || post.created_at)}</span>
               </div>
+              <div className="flex items-center space-x-2">
+                <FiEye className="w-4 h-4" />
+                <span>{post.viewCount || 0} lượt xem</span>
+              </div>
             </div>
           </div>
         </div>
@@ -230,6 +305,77 @@ const NewsDetailPage = () => {
                   Cảm ơn bạn đã đọc bài viết này! Chúng tôi luôn nỗ lực chia sẻ những thông tin hữu ích và góc nhìn đa chiều về các chủ đề xoay quanh sản phẩm và cuộc sống.
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* FC4: Comments Section */}
+        <div className="container mx-auto px-4 mt-16 max-w-4xl">
+          <div className="bg-white rounded-2xl shadow-sm p-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-8 border-b pb-4">Bình luận bài viết ({comments.length})</h3>
+            
+            {/* Comment Form */}
+            {customer ? (
+              <div className="mb-10">
+                <div className="flex space-x-4">
+                  <div className="w-12 h-12 bg-[#2d5016] text-white rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0">
+                    {customer.fullName?.[0] || customer.name?.[0] || 'U'}
+                  </div>
+                  <div className="flex-1">
+                    <textarea
+                      value={commentContent}
+                      onChange={(e) => setCommentContent(e.target.value)}
+                      placeholder="Chia sẻ suy nghĩ của bạn về bài viết này..."
+                      className="w-full border border-gray-300 rounded-xl p-4 focus:ring-2 focus:ring-[#2d5016] focus:border-transparent outline-none min-h-[100px]"
+                    />
+                    {commentMessage && (
+                      <p className={`mt-2 text-sm ${commentMessage.includes("thành công") ? "text-green-600" : "text-red-600"}`}>
+                        {commentMessage}
+                      </p>
+                    )}
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        onClick={handleSubmitComment}
+                        disabled={submittingComment}
+                        className="bg-[#2d5016] text-white px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition disabled:opacity-50"
+                      >
+                        {submittingComment ? 'Đang gửi...' : 'Gửi bình luận'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mb-10 p-6 bg-gray-50 rounded-xl text-center">
+                <p className="text-gray-600 mb-3">Vui lòng đăng nhập để tham gia bình luận.</p>
+                <Link to="/dang-nhap" className="inline-block bg-[#2d5016] text-white px-6 py-2 rounded-lg font-medium hover:bg-opacity-90">
+                  Đăng nhập ngay
+                </Link>
+              </div>
+            )}
+
+            {/* Comments List */}
+            <div className="space-y-6">
+              {comments.length > 0 ? (
+                comments.map((comment) => (
+                  <div key={comment._id} className="flex space-x-4 border-b border-gray-100 pb-6 last:border-0">
+                    <div className="w-10 h-10 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                      {comment.customerName?.[0] || 'U'}
+                    </div>
+                    <div>
+                      <div className="flex items-baseline space-x-2 mb-1">
+                        <span className="font-bold text-gray-800">{comment.customerName || "Khách"}</span>
+                        <span className="text-xs text-gray-400">{formatDate(comment.createdAt || comment.created_at)}</span>
+                      </div>
+                      <p className="text-gray-700 leading-relaxed">{comment.content}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  Chưa có bình luận nào. Hãy trở thành người đầu tiên chia sẻ ý kiến!
+                </div>
+              )}
             </div>
           </div>
         </div>
