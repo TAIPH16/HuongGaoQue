@@ -89,6 +89,10 @@ const productSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    isHidden: {
+        type: Boolean,
+        default: false
+    },
     seller: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

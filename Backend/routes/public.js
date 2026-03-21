@@ -9,7 +9,10 @@ const categoryController = require('../controller/category.controller');
 // Public routes - không cần authentication
 
 // GET /api/public/products - List products (public)
-router.get('/products', productController.getProducts);
+router.get('/products', (req, res, next) => {
+    req.query.isPublic = true;
+    next();
+}, productController.getProducts);
 
 // GET /api/public/products/top-selling - Top sản phẩm bán chạy nhất (public)
 // Phải đặt TRƯỚC /:id để tránh conflict routing

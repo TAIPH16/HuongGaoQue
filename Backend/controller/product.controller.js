@@ -209,6 +209,28 @@ const rejectProduct = async (req, res, next) => {
 };
 
 /**
+ * PUT /api/products/:id/toggle-visibility - Hiện/Ẩn sản phẩm từ Admin
+ */
+const toggleVisibility = async (req, res, next) => {
+    try {
+        const product = await productService.toggleVisibility(req.params.id);
+        res.json({
+            success: true,
+            message: product.isHidden ? 'Đã ẩn sản phẩm khỏi trang chủ' : 'Đã hiện sản phẩm trên trang chủ',
+            data: product
+        });
+    } catch (error) {
+        if (error.message === 'Không tìm thấy sản phẩm') {
+            return res.status(404).json({
+                success: false,
+                message: error.message
+            });
+        }
+        next(error);
+    }
+};
+
+/**
  * POST /api/public/products/:id/increment-view - Tăng lượt xem sản phẩm
  */
 const incrementView = async (req, res, next) => {
@@ -259,6 +281,7 @@ module.exports = {
     uploadMiddleware,
     approveProduct,
     rejectProduct,
+    toggleVisibility,
     incrementView,
     getTopViewedProducts,
     getTopSellingProducts

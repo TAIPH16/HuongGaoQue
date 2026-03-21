@@ -27,6 +27,9 @@ router.put('/:id', productController.uploadMiddleware, productController.updateP
 // DELETE /api/products/:id - Delete product
 router.delete('/:id', productController.deleteProduct);
 
+// PUT /api/products/:id/toggle-visibility - Toggle visibility
+router.put('/:id/toggle-visibility', productController.toggleVisibility);
+
 // PUT /api/products/:id/approve - Approve product
 router.put('/:id/approve', productController.approveProduct);
 
