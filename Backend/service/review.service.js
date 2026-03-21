@@ -88,15 +88,17 @@ exports.createReview = async (reviewData, userId, userRole) => {
         }
 
         // Check if user already reviewed this target
-        const existingReview = await Review.findOne({
-            user_id: userId,
-            target_type,
-            target_id,
-            status: { $ne: 'deleted' }
-        });
+        if (target_type !== 'post') {
+            const existingReview = await Review.findOne({
+                user_id: userId,
+                target_type,
+                target_id,
+                status: { $ne: 'deleted' }
+            });
 
-        if (existingReview) {
-            throw new Error('You have already reviewed this item');
+            if (existingReview) {
+                throw new Error('You have already reviewed this item');
+            }
         }
 
         // Handle images upload (base64 strings or URLs)

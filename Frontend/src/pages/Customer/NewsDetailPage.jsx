@@ -4,6 +4,7 @@ import CustomerLayout from '../../components/Customer/CustomerLayout';
 import { publicPostsAPI, publicReviewsAPI } from '../../utils/publicApi';
 import { FiFacebook, FiTwitter, FiInstagram, FiArrowRight, FiClock, FiUser, FiShare2, FiEye } from 'react-icons/fi';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import ConfirmModal from '../../components/Modal/ConfirmModal';
 import axios from 'axios';
 
 const NewsDetailPage = () => {
@@ -19,7 +20,15 @@ const NewsDetailPage = () => {
   const [commentContent, setCommentContent] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [commentMessage, setCommentMessage] = useState('');
-
+  
+  // Edit/Delete state
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editCommentContent, setEditCommentContent] = useState('');
+  const [submittingEdit, setSubmittingEdit] = useState(false);
+  
+  // Custom Confirm Modal state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -61,7 +70,8 @@ const NewsDetailPage = () => {
         target_id: id,
         limit: 20
       });
-      setComments(response.data?.data || response.data || []);
+      const resultData = response.data?.data || response.data || {};
+      setComments(resultData.reviews || []);
     } catch (error) {
       console.error('Error fetching comments:', error);
     }
@@ -103,6 +113,70 @@ const NewsDetailPage = () => {
       setCommentMessage(error.response?.data?.message || "Lỗi khi gửi bình luận.");
     } finally {
       setSubmittingComment(false);
+    }
+  };
+
+  const handleEditClick = (comment) => {
+    setEditingCommentId(comment._id);
+    setEditCommentContent(comment.content);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null);
+    setEditCommentContent('');
+  };
+
+  const handleSaveEdit = async (commentId) => {
+    if (!editCommentContent.trim()) {
+      alert("Vui lòng nhập nội dung bình luận.");
+      return;
+    }
+
+    try {
+      setSubmittingEdit(true);
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+      const token = localStorage.getItem('customer_token');
+      
+      await axios.put(
+        `${API_BASE_URL}/reviews/${commentId}`,
+        { content: editCommentContent.trim() },
+        { headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) } }
+      );
+      
+      setEditingCommentId(null);
+      setEditCommentContent('');
+      fetchComments();
+    } catch (error) {
+      console.error('Error updating comment:', error);
+      alert(error.response?.data?.message || "Lỗi khi cập nhật bình luận.");
+    } finally {
+      setSubmittingEdit(false);
+    }
+  };
+
+  const requestDeleteComment = (commentId) => {
+    setCommentToDelete(commentId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteComment = async () => {
+    if (!commentToDelete) return;
+
+    try {
+      setDeleteConfirmOpen(false);
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+      const token = localStorage.getItem('customer_token');
+      
+      await axios.delete(
+        `${API_BASE_URL}/reviews/${commentToDelete}`,
+        { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } }
+      );
+      
+      setCommentToDelete(null);
+      fetchComments();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      alert(error.response?.data?.message || "Lỗi khi xóa bình luận.");
     }
   };
 
@@ -357,20 +431,61 @@ const NewsDetailPage = () => {
             {/* Comments List */}
             <div className="space-y-6">
               {comments.length > 0 ? (
-                comments.map((comment) => (
-                  <div key={comment._id} className="flex space-x-4 border-b border-gray-100 pb-6 last:border-0">
-                    <div className="w-10 h-10 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center font-bold flex-shrink-0">
-                      {comment.customerName?.[0] || 'U'}
-                    </div>
-                    <div>
-                      <div className="flex items-baseline space-x-2 mb-1">
-                        <span className="font-bold text-gray-800">{comment.customerName || "Khách"}</span>
-                        <span className="text-xs text-gray-400">{formatDate(comment.createdAt || comment.created_at)}</span>
+                comments.map((comment) => {
+                  const customerId = customer?._id || customer?.id;
+                  const commentUserId = comment.user_id?._id || comment.user_id?.id || comment.user_id;
+                  const isOwner = customerId && commentUserId && String(customerId) === String(commentUserId);
+                  const isEditing = editingCommentId === comment._id;
+
+                  return (
+                    <div key={comment._id} className="flex space-x-4 border-b border-gray-100 pb-6 last:border-0">
+                      <div className="w-10 h-10 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                        {(comment.user_id?.fullName?.[0] || comment.user_id?.name?.[0] || comment.customerName?.[0] || 'U').toUpperCase()}
                       </div>
-                      <p className="text-gray-700 leading-relaxed">{comment.content}</p>
+                      <div className="flex-1">
+                        <div className="flex items-baseline justify-between mb-1">
+                          <div className="flex items-baseline space-x-2">
+                            <span className="font-bold text-gray-800">{comment.user_id?.fullName || comment.user_id?.name || comment.customerName || "Khách"}</span>
+                            <span className="text-xs text-gray-400">{formatDate(comment.createdAt || comment.created_at)}</span>
+                          </div>
+                          {isOwner && !isEditing && (
+                            <div className="text-xs space-x-3 text-gray-500">
+                              <button onClick={() => handleEditClick(comment)} className="hover:text-blue-600 transition-colors">Sửa</button>
+                              <button onClick={() => requestDeleteComment(comment._id)} className="hover:text-red-600 transition-colors">Xóa</button>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {isEditing ? (
+                          <div className="mt-2">
+                            <textarea
+                              value={editCommentContent}
+                              onChange={(e) => setEditCommentContent(e.target.value)}
+                              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#2d5016] focus:border-transparent outline-none min-h-[80px] text-sm"
+                            />
+                            <div className="mt-3 flex justify-end space-x-2">
+                              <button
+                                onClick={handleCancelEdit}
+                                className="px-4 py-1.5 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+                              >
+                                Hủy
+                              </button>
+                              <button
+                                onClick={() => handleSaveEdit(comment._id)}
+                                disabled={submittingEdit}
+                                className="px-4 py-1.5 text-sm rounded bg-[#2d5016] text-white hover:bg-opacity-90 transition disabled:opacity-50"
+                              >
+                                {submittingEdit ? 'Đang lưu...' : 'Lưu lại'}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-gray-700 leading-relaxed mt-1">{comment.content}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   Chưa có bình luận nào. Hãy trở thành người đầu tiên chia sẻ ý kiến!
@@ -438,6 +553,20 @@ const NewsDetailPage = () => {
           )}
         </div>
       </div>
+      
+      <ConfirmModal
+        isOpen={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setCommentToDelete(null);
+        }}
+        onConfirm={confirmDeleteComment}
+        title="Xóa bình luận"
+        message="Bạn có chắc chắn muốn xóa bình luận này không?"
+        type="delete"
+        confirmText="Xóa"
+        cancelText="Hủy"
+      />
     </CustomerLayout>
   );
 };
