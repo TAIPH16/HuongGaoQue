@@ -14,6 +14,7 @@ import { useCustomerAuth } from "../../context/CustomerAuthContext";
 import { publicProductsAPI, publicReviewsAPI } from "../../utils/publicApi";
 import { customerWishlistAPI } from "../../utils/customerApi";
 import Toast from "../../components/Customer/Toast";
+import ConfirmModal from "../../components/Modal/ConfirmModal";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -33,8 +34,27 @@ const ProductDetailPage = () => {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewMessage, setReviewMessage] = useState("");
 
+  // Edit/Delete state
+  const [editingReviewId, setEditingReviewId] = useState(null);
+  const [editReviewContent, setEditReviewContent] = useState("");
+  const [editReviewRating, setEditReviewRating] = useState(5);
+  const [submittingEdit, setSubmittingEdit] = useState(false);
+
+  // Custom Confirm Modal state
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [reviewToDelete, setReviewToDelete] = useState(null);
+
   useEffect(() => {
     fetchProduct();
+
+    // Chỉ tăng lượt xem nếu sản phẩm này chưa được xem trong phiên hiện tại
+    if (id) {
+      const sessionKey = `viewed_product_${id}`;
+      if (!sessionStorage.getItem(sessionKey)) {
+        publicProductsAPI.incrementView(id).catch(() => {});
+        sessionStorage.setItem(sessionKey, '1');
+      }
+    }
   }, [id]);
 
   useEffect(() => {
@@ -61,10 +81,12 @@ const ProductDetailPage = () => {
   const fetchReviews = async () => {
     try {
       const response = await publicReviewsAPI.getAll({
-        productId: id,
+        target_type: 'product',
+        target_id: id,
         limit: 10,
       });
-      setReviews(response.data?.data || response.data || []);
+      const resultData = response.data?.data || response.data || {};
+      setReviews(resultData.reviews || []);
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }
@@ -117,6 +139,72 @@ const ProductDetailPage = () => {
       setReviewMessage(message);
     } finally {
       setSubmittingReview(false);
+    }
+  };
+
+  const handleEditClick = (review) => {
+    setEditingReviewId(review._id);
+    setEditReviewContent(review.content);
+    setEditReviewRating(review.rating || 5);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingReviewId(null);
+    setEditReviewContent("");
+    setEditReviewRating(5);
+  };
+
+  const handleSaveEdit = async (reviewId) => {
+    if (!editReviewContent.trim()) {
+      alert("Vui lòng nhập nội dung đánh giá.");
+      return;
+    }
+
+    try {
+      setSubmittingEdit(true);
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const token = localStorage.getItem("customer_token");
+      
+      await axios.put(
+        `${API_BASE_URL}/reviews/${reviewId}`,
+        { content: editReviewContent.trim(), rating: editReviewRating },
+        { headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) } }
+      );
+      
+      setEditingReviewId(null);
+      setEditReviewContent("");
+      fetchReviews();
+    } catch (error) {
+      console.error("Error updating review:", error);
+      alert(error.response?.data?.message || "Lỗi khi cập nhật đánh giá.");
+    } finally {
+      setSubmittingEdit(false);
+    }
+  };
+
+  const requestDeleteReview = (reviewId) => {
+    setReviewToDelete(reviewId);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteReview = async () => {
+    if (!reviewToDelete) return;
+
+    try {
+      setDeleteConfirmOpen(false);
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+      const token = localStorage.getItem("customer_token");
+      
+      await axios.delete(
+        `${API_BASE_URL}/reviews/${reviewToDelete}`,
+        { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } }
+      );
+      
+      setReviewToDelete(null);
+      fetchReviews();
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      alert(error.response?.data?.message || "Lỗi khi xóa đánh giá.");
     }
   };
 
@@ -313,6 +401,12 @@ const ProductDetailPage = () => {
             <h1 className="text-3xl font-bold text-gray-800 mb-4">
               {product.name}
             </h1>
+            <div className="flex items-center text-sm text-gray-500 mb-2">
+              <span>👁 {product.viewCount || 0} lượt xem</span>
+              {product.soldQuantity > 0 && (
+                <span className="ml-4">🛒 {product.soldQuantity} đã bán</span>
+              )}
+            </div>
             <div className="mb-6">
               <span className="text-2xl font-bold text-[#2d5016]">
                 {formatPrice(finalPrice)}
@@ -516,41 +610,101 @@ const ProductDetailPage = () => {
               <h3 className="text-xl font-bold mb-6">Đánh giá từ người dùng</h3>
               {reviews.length > 0 ? (
                 <div className="space-y-6 mb-8">
-                  {reviews.map((review) => (
-                    <div key={review._id} className="border-b pb-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                            {review.customerName?.[0] || "U"}
-                          </div>
-                          <div>
-                            <p className="font-semibold">
-                              {review.customerName || "Khách hàng"}
-                            </p>
-                            <div className="flex text-yellow-400">
-                              {[...Array(review.rating || 5)].map((_, i) => (
-                                <span key={i}>★</span>
-                              ))}
+                  {reviews.map((review) => {
+                    const customerId = customer?._id || customer?.id;
+                    const reviewUserId = review.user_id?._id || review.user_id?.id || review.user_id;
+                    const isOwner = customerId && reviewUserId && String(customerId) === String(reviewUserId);
+                    const isEditing = editingReviewId === review._id;
+
+                    return (
+                      <div key={review._id} className="border-b pb-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                              {(review.user_id?.fullName?.[0] || review.user_id?.name?.[0] || review.customerName?.[0] || 'U').toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-semibold">
+                                {review.user_id?.fullName || review.user_id?.name || review.customerName || "Khách hàng"}
+                              </p>
+                              {!isEditing && (
+                                <div className="flex text-yellow-400">
+                                  {[...Array(review.rating || 5)].map((_, i) => (
+                                    <span key={i}>★</span>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </div>
+                          <div className="flex flex-col items-end">
+                            <span className="text-sm text-gray-500 mb-1">
+                              Được đánh giá vào{" "}
+                              {new Date(
+                                review.createdAt || review.created_at,
+                              ).toLocaleDateString("vi-VN", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              })}
+                            </span>
+                            {isOwner && !isEditing && (
+                              <div className="text-xs space-x-3 text-gray-500">
+                                <button onClick={() => handleEditClick(review)} className="hover:text-blue-600 transition-colors">Sửa</button>
+                                <button onClick={() => requestDeleteReview(review._id)} className="hover:text-red-600 transition-colors">Xóa</button>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-sm text-gray-500">
-                          Được đánh giá vào{" "}
-                          {new Date(
-                            review.createdAt || review.created_at,
-                          ).toLocaleDateString("vi-VN", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })}
-                        </span>
+                        
+                        {isEditing ? (
+                          <div className="mt-4 bg-gray-50 rounded-lg p-4">
+                            <div className="mb-3">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Đánh giá sao</label>
+                              <div className="flex space-x-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <button
+                                    key={star}
+                                    type="button"
+                                    onClick={() => setEditReviewRating(star)}
+                                    className={`text-2xl focus:outline-none ${star <= editReviewRating ? "text-yellow-400" : "text-gray-300"}`}
+                                  >
+                                    ★
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <textarea
+                              value={editReviewContent}
+                              onChange={(e) => setEditReviewContent(e.target.value)}
+                              className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#2d5016] focus:border-transparent outline-none min-h-[80px] text-sm"
+                            />
+                            <div className="mt-3 flex justify-end space-x-2">
+                              <button
+                                onClick={handleCancelEdit}
+                                className="px-4 py-1.5 text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+                              >
+                                Hủy
+                              </button>
+                              <button
+                                onClick={() => handleSaveEdit(review._id)}
+                                disabled={submittingEdit}
+                                className="px-4 py-1.5 text-sm rounded bg-[#2d5016] text-white hover:bg-opacity-90 transition disabled:opacity-50"
+                              >
+                                {submittingEdit ? 'Đang lưu...' : 'Lưu lại'}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="font-semibold text-gray-800 mb-2 mt-2">
+                              {review.title || review.headline || ""}
+                            </p>
+                            <p className="text-gray-600 mt-1">{review.content}</p>
+                          </>
+                        )}
                       </div>
-                      <p className="font-semibold text-gray-800 mb-2">
-                        {review.title || review.headline || ""}
-                      </p>
-                      <p className="text-gray-600 mt-2">{review.content}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-12 text-gray-500 mb-8">
@@ -619,6 +773,20 @@ const ProductDetailPage = () => {
         isVisible={showToast}
         onClose={() => setShowToast(false)}
         type="success"
+      />
+
+      <ConfirmModal
+        isOpen={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setReviewToDelete(null);
+        }}
+        onConfirm={confirmDeleteReview}
+        title="Xóa đánh giá"
+        message="Bạn có chắc chắn muốn xóa đánh giá này không? Hành động này không thể hoàn tác."
+        type="delete"
+        confirmText="Xóa"
+        cancelText="Hủy"
       />
     </CustomerLayout>
   );

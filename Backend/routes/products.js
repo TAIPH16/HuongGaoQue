@@ -12,6 +12,8 @@ router.get('/', productController.getProducts);
 
 // GET /api/products/stats/revenue - Revenue statistics
 router.get('/stats/revenue', productController.getRevenueStats);
+// GET /api/products/stats/top-viewed - Top 5 most viewed products
+router.get('/stats/top-viewed', productController.getTopViewedProducts);
 
 // GET /api/products/:id - Detail
 router.get('/:id', productController.getProductDetail);
@@ -24,6 +26,9 @@ router.put('/:id', productController.uploadMiddleware, productController.updateP
 
 // DELETE /api/products/:id - Delete product
 router.delete('/:id', productController.deleteProduct);
+
+// PUT /api/products/:id/toggle-visibility - Toggle visibility
+router.put('/:id/toggle-visibility', productController.toggleVisibility);
 
 // PUT /api/products/:id/approve - Approve product
 router.put('/:id/approve', productController.approveProduct);

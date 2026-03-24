@@ -208,6 +208,69 @@ const rejectProduct = async (req, res, next) => {
     }
 };
 
+/**
+ * PUT /api/products/:id/toggle-visibility - Hiện/Ẩn sản phẩm từ Admin
+ */
+const toggleVisibility = async (req, res, next) => {
+    try {
+        const product = await productService.toggleVisibility(req.params.id);
+        res.json({
+            success: true,
+            message: product.isHidden ? 'Đã ẩn sản phẩm khỏi trang chủ' : 'Đã hiện sản phẩm trên trang chủ',
+            data: product
+        });
+    } catch (error) {
+        if (error.message === 'Không tìm thấy sản phẩm') {
+            return res.status(404).json({
+                success: false,
+                message: error.message
+            });
+        }
+        next(error);
+    }
+};
+
+/**
+ * POST /api/public/products/:id/increment-view - Tăng lượt xem sản phẩm
+ */
+const incrementView = async (req, res, next) => {
+    try {
+        const result = await productService.incrementProductView(req.params.id);
+        res.json({ success: true, data: result });
+    } catch (error) {
+        if (error.message === 'Không tìm thấy sản phẩm') {
+            return res.status(404).json({ success: false, message: error.message });
+        }
+        next(error);
+    }
+};
+
+/**
+ * GET /api/public/products/top-selling - Top sản phẩm bán chạy nhất
+ */
+const getTopSellingProducts = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query.limit) || 4;
+        const products = await productService.getTopSellingProducts(limit);
+        res.json({ success: true, data: products });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * GET /api/products/stats/top-viewed - Top 5 sản phẩm xem nhiều nhất
+ */
+const getTopViewedProducts = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query.limit) || 5;
+        const products = await productService.getTopViewedProducts(limit);
+        res.json({ success: true, data: products });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getProducts,
     getProductDetail,
@@ -217,6 +280,10 @@ module.exports = {
     getRevenueStats,
     uploadMiddleware,
     approveProduct,
-    rejectProduct
+    rejectProduct,
+    toggleVisibility,
+    incrementView,
+    getTopViewedProducts,
+    getTopSellingProducts
 };
 

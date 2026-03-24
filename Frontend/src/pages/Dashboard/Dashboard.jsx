@@ -27,6 +27,7 @@ const Dashboard = () => {
   });
   const [shoppingBehaviorData, setShoppingBehaviorData] = useState([]);
   const [articleBehaviorData, setArticleBehaviorData] = useState([]);
+  const [topViewedProducts, setTopViewedProducts] = useState([]);
   const [loadingCharts, setLoadingCharts] = useState(false);
 
   useEffect(() => {
@@ -100,6 +101,15 @@ const Dashboard = () => {
           views: item.views || 0,
         }))
       );
+
+      // Fetch top 5 sản phẩm xem nhiều nhất
+      try {
+        const topRes = await import('../../utils/api').then(m => m.productsAPI.getTopViewed({ limit: 5 }));
+        const topData = topRes.data?.data || [];
+        setTopViewedProducts(topData.map(p => ({ name: p.name?.length > 15 ? p.name.substring(0, 15) + '...' : p.name, viewCount: p.viewCount || 0 })));
+      } catch (_) {
+        setTopViewedProducts([]);
+      }
     } catch (err) {
       console.error('Error fetching charts:', err);
       setShoppingBehaviorData([]);
@@ -308,6 +318,30 @@ const Dashboard = () => {
               </>
             )}
           </div>
+        </div>
+
+        {/* FC2 - Top 5 sản phẩm được xem nhiều nhất */}
+        <div className="bg-white p-6 rounded-lg shadow">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">👁 Top 5 sản phẩm được xem nhiều nhất</h3>
+          {loadingCharts ? (
+            <div className="h-[250px] flex items-center justify-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600" />
+            </div>
+          ) : topViewedProducts.length === 0 ? (
+            <div className="h-[250px] flex items-center justify-center text-gray-500">
+              Chưa có dữ liệu lượt xem sản phẩm
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={topViewedProducts} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" />
+                <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 12 }} />
+                <Tooltip formatter={(value) => [value, 'Lượt xem']} />
+                <Bar dataKey="viewCount" name="Lượt xem" fill="#6366f1" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* Quick Actions */}

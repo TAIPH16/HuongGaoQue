@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import MainLayout from '../../components/Layout/MainLayout';
 import api from '../../utils/api';
-import { FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiEye, FiEyeOff } from 'react-icons/fi';
 
 const ReviewManagement = () => {
   const [reviews, setReviews] = useState([]);
@@ -36,6 +36,7 @@ const ReviewManagement = () => {
       const params = {
         page: pagination.current_page,
         limit: pagination.items_per_page,
+        target_type: 'product',
       };
 
       if (statusFilter !== 'Tất cả') {
@@ -116,6 +117,8 @@ const ReviewManagement = () => {
   const confirmDelete = (review) => {
     setDeleteTarget(review);
   };
+
+
 
   const handleDeleteReview = async () => {
     if (!deleteTarget) return;
@@ -289,7 +292,7 @@ const ReviewManagement = () => {
                           <button
                             onClick={() => confirmDelete(review)}
                             className="text-red-600 hover:text-red-800"
-                            title="Xóa / Ẩn đánh giá"
+                            title="Xóa đánh giá"
                           >
                             <FiTrash2 className="w-5 h-5" />
                           </button>

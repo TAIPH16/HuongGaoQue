@@ -19,6 +19,10 @@ exports.createReview = async (reviewData, userId, userRole) => {
         } else if (target_type === 'service') {
             const service = await Service.findById(target_id);
             targetExists = !!service;
+        } else if (target_type === 'post') {
+            const Post = require('../model/post');
+            const post = await Post.findById(target_id);
+            targetExists = !!post;
         }
         
         if (!targetExists) {
@@ -84,15 +88,17 @@ exports.createReview = async (reviewData, userId, userRole) => {
         }
 
         // Check if user already reviewed this target
-        const existingReview = await Review.findOne({
-            user_id: userId,
-            target_type,
-            target_id,
-            status: { $ne: 'deleted' }
-        });
+        if (target_type !== 'post') {
+            const existingReview = await Review.findOne({
+                user_id: userId,
+                target_type,
+                target_id,
+                status: { $ne: 'deleted' }
+            });
 
-        if (existingReview) {
-            throw new Error('You have already reviewed this item');
+            if (existingReview) {
+                throw new Error('You have already reviewed this item');
+            }
         }
 
         // Handle images upload (base64 strings or URLs)

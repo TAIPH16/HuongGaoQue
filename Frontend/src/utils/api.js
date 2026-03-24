@@ -107,9 +107,11 @@ export const productsAPI = {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
   delete: (id) => api.delete(`/products/${id}`),
+  toggleVisibility: (id) => api.put(`/products/${id}/toggle-visibility`),
   approve: (id) => api.put(`/products/${id}/approve`),
   reject: (id) => api.put(`/products/${id}/reject`),
   getRevenueStats: (params) => api.get('/products/stats/revenue', { params }),
+  getTopViewed: (params) => api.get('/products/stats/top-viewed', { params }),
 };
 
 // Categories API

@@ -95,13 +95,40 @@ exports.getSellerDashboard = async (req, res) => {
         let totalOrders = orders.length;
         let totalProductsSold = 0;
 
+        // Initialize per-product stats
+        let productStats = {};
+        sellerProducts.forEach(p => {
+            productStats[p._id.toString()] = {
+                revenue: 0,
+                soldCount: 0,
+                views: p.viewCount || 0
+            };
+        });
+
         orders.forEach(order => {
             order.items.forEach(item => {
-                if (productIds.some(id => id.equals(item.product))) {
-                    totalRevenue += item.subtotal || (item.unitPrice * item.quantity);
+                const pId = item.product ? item.product.toString() : null;
+                if (pId && productStats[pId]) {
+                    const itemRevenue = item.subtotal || (item.unitPrice * item.quantity);
+                    totalRevenue += itemRevenue;
                     totalProductsSold += item.quantity;
+
+                    productStats[pId].revenue += itemRevenue;
+                    productStats[pId].soldCount += item.quantity;
                 }
             });
+        });
+
+        // Attach stats to products
+        const productsWithStats = sellerProducts.map(p => {
+            const pObj = p.toObject ? p.toObject() : p;
+            const statsObj = productStats[p._id.toString()];
+            return {
+                ...pObj,
+                revenue: statsObj.revenue,
+                soldCount: statsObj.soldCount,
+                views: statsObj.views
+            };
         });
 
         // Get pending orders
@@ -123,7 +150,7 @@ exports.getSellerDashboard = async (req, res) => {
                 pendingOrders,
                 totalProducts,
                 outOfStockProducts,
-                products: sellerProducts
+                products: productsWithStats.sort((a, b) => b.soldCount - a.soldCount)
             }
         });
     } catch (err) {
