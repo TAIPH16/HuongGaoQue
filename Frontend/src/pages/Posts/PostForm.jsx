@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { postsAPI, postCategoriesAPI } from '../../utils/api';
-import MainLayout from '../../components/Layout/MainLayout';
-import { FiSave, FiTrash2, FiX } from 'react-icons/fi';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import SuccessModal from '../../components/Modal/SuccessModal';
-import ErrorModal from '../../components/Modal/ErrorModal';
-import ConfirmModal from '../../components/Modal/ConfirmModal';
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { postsAPI, postCategoriesAPI } from "../../utils/api";
+import MainLayout from "../../components/Layout/MainLayout";
+import { FiSave, FiTrash2, FiX } from "react-icons/fi";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import SuccessModal from "../../components/Modal/SuccessModal";
+import ErrorModal from "../../components/Modal/ErrorModal";
+import ConfirmModal from "../../components/Modal/ConfirmModal";
 
 const PostForm = () => {
   const { id } = useParams();
@@ -15,20 +15,23 @@ const PostForm = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    title: '',
-    category: '',
-    description: '',
+    title: "",
+    category: "",
+    description: "",
     coverImage: null,
     publishNow: false,
-    publishDate: '',
-    audience: 'Mọi người',
+    publishDate: "",
+    audience: "Mọi người",
   });
 
   const [categories, setCategories] = useState([]);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [successModal, setSuccessModal] = useState({ isOpen: false, message: '' });
-  const [errorModal, setErrorModal] = useState({ isOpen: false, message: '' });
+  const [successModal, setSuccessModal] = useState({
+    isOpen: false,
+    message: "",
+  });
+  const [errorModal, setErrorModal] = useState({ isOpen: false, message: "" });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false });
 
   useEffect(() => {
@@ -43,7 +46,7 @@ const PostForm = () => {
       const response = await postCategoriesAPI.getAll({ limit: 100 });
       setCategories(response.data.data);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error("Error fetching categories:", error);
     }
   };
 
@@ -52,18 +55,18 @@ const PostForm = () => {
       const response = await postsAPI.getById(id);
       const post = response.data.data;
       setFormData({
-        title: post.title || '',
-        category: post.category?._id || post.category || '',
-        description: post.description || '',
+        title: post.title || "",
+        category: post.category?._id || post.category || "",
+        description: post.description || "",
         publishNow: !post.publishDate,
-        publishDate: post.publishDate || '',
-        audience: post.audience || 'Mọi người',
+        publishDate: post.publishDate || "",
+        audience: post.audience || "Mọi người",
       });
       if (post.coverImage) {
         setImagePreview(`http://localhost:3000${post.coverImage}`);
       }
     } catch (error) {
-      console.error('Error fetching post:', error);
+      console.error("Error fetching post:", error);
     }
   };
 
@@ -71,7 +74,7 @@ const PostForm = () => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     });
   };
 
@@ -89,33 +92,41 @@ const PostForm = () => {
 
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('category', formData.category);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('audience', formData.audience);
-      formDataToSend.append('publishType', formData.publishNow ? 'now' : 'scheduled');
+      formDataToSend.append("title", formData.title);
+      formDataToSend.append("category", formData.category);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("audience", formData.audience);
+      formDataToSend.append(
+        "publishType",
+        formData.publishNow ? "now" : "scheduled",
+      );
       if (formData.coverImage) {
-        formDataToSend.append('coverImage', formData.coverImage);
+        formDataToSend.append("coverImage", formData.coverImage);
       }
       if (!formData.publishNow && formData.publishDate) {
-        formDataToSend.append('scheduledDate', formData.publishDate);
+        formDataToSend.append("scheduledDate", formData.publishDate);
       }
 
       if (isEdit) {
         await postsAPI.update(id, formDataToSend);
-        setSuccessModal({ isOpen: true, message: 'Cập nhật bài viết thành công' });
+        setSuccessModal({
+          isOpen: true,
+          message: "Cập nhật bài viết thành công",
+        });
       } else {
         await postsAPI.create(formDataToSend);
-        setSuccessModal({ isOpen: true, message: 'Thêm bài viết thành công' });
+        setSuccessModal({ isOpen: true, message: "Thêm bài viết thành công" });
       }
 
       setTimeout(() => {
-        navigate('/admin/posts');
+        navigate("/admin/posts");
       }, 2000);
     } catch (error) {
       setErrorModal({
         isOpen: true,
-        message: error.response?.data?.message || 'Thao tác thất bại, vui lòng thử lại sau',
+        message:
+          error.response?.data?.message ||
+          "Thao tác thất bại, vui lòng thử lại sau",
       });
     } finally {
       setLoading(false);
@@ -126,24 +137,26 @@ const PostForm = () => {
     try {
       await postsAPI.delete(id);
       setDeleteModal({ isOpen: false });
-      navigate('/admin/posts');
+      navigate("/admin/posts");
     } catch (error) {
       setErrorModal({
         isOpen: true,
-        message: 'Xóa bài viết thất bại, vui lòng thử lại sau',
+        message: "Xóa bài viết thất bại, vui lòng thử lại sau",
       });
     }
   };
 
   return (
-    <MainLayout title={isEdit ? 'Chỉnh sửa bài viết' : 'Thêm bài viết'}>
+    <MainLayout title={isEdit ? "Chỉnh sửa bài viết" : "Thêm bài viết"}>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
             {/* Post Info */}
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Thông tin bài viết</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Thông tin bài viết
+              </h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -222,7 +235,9 @@ const PostForm = () => {
                   <ReactQuill
                     theme="snow"
                     value={formData.description}
-                    onChange={(value) => setFormData({ ...formData, description: value })}
+                    onChange={(value) =>
+                      setFormData({ ...formData, description: value })
+                    }
                     placeholder="Nhập mô tả bài viết"
                     className="bg-white"
                   />
@@ -231,7 +246,7 @@ const PostForm = () => {
             </div>
           </div>
 
-          {/* Right Column */}
+          {/* Right Column
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-lg shadow">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Chế độ hiển thị</h3>
@@ -308,13 +323,15 @@ const PostForm = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Bottom Actions */}
         <div className="bg-white p-4 rounded-lg shadow flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-500">Đã lưu trên hệ thống 5 giây trước</span>
+            <span className="text-sm text-gray-500">
+              Đã lưu trên hệ thống 5 giây trước
+            </span>
             {isEdit && (
               <button
                 type="button"
@@ -331,7 +348,7 @@ const PostForm = () => {
             className="flex items-center space-x-2 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
           >
             <FiSave className="w-5 h-5" />
-            <span>{isEdit ? 'Lưu Thay Đổi' : 'Lưu bài viết'}</span>
+            <span>{isEdit ? "Lưu Thay Đổi" : "Lưu bài viết"}</span>
           </button>
         </div>
       </form>
@@ -339,13 +356,13 @@ const PostForm = () => {
       {/* Modals */}
       <SuccessModal
         isOpen={successModal.isOpen}
-        onClose={() => setSuccessModal({ isOpen: false, message: '' })}
+        onClose={() => setSuccessModal({ isOpen: false, message: "" })}
         title="Thành công"
         message={successModal.message}
       />
       <ErrorModal
         isOpen={errorModal.isOpen}
-        onClose={() => setErrorModal({ isOpen: false, message: '' })}
+        onClose={() => setErrorModal({ isOpen: false, message: "" })}
         title="Thất bại"
         message={errorModal.message}
       />
@@ -363,4 +380,3 @@ const PostForm = () => {
 };
 
 export default PostForm;
-

@@ -1,67 +1,73 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { CustomerAuthProvider } from './context/CustomerAuthContext';
-import { SellerAuthProvider } from './context/SellerAuthContext';
-import { CartProvider } from './context/CartContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import SellerProtectedRoute from './components/SellerProtectedRoute';
-import Login from './pages/Login';
-import ProductCategories from './pages/Products/ProductCategories';
-import ProductList from './pages/Products/ProductList';
-import ProductForm from './pages/Products/ProductForm';
-import OrderList from './pages/Orders/OrderList';
-import OrderDetail from './pages/Orders/OrderDetail';
-import CustomerList from './pages/Customers/CustomerList';
-import PostList from './pages/Posts/PostList';
-import PostCategories from './pages/Posts/PostCategories';
-import PostForm from './pages/Posts/PostForm';
-import ReviewManagement from './pages/Reviews/ReviewManagement';
-import Profile from './pages/Profile/Profile';
-import Dashboard from './pages/Dashboard/Dashboard';
-import HomePage from './pages/Customer/HomePage';
-import ProductsPage from './pages/Customer/ProductsPage';
-import ProductDetailPage from './pages/Customer/ProductDetailPage';
-import PromotionsPage from './pages/Customer/PromotionsPage';
-import NewsPage from './pages/Customer/NewsPage';
-import NewsDetailPage from './pages/Customer/NewsDetailPage';
-import ContactPage from './pages/Customer/ContactPage';
-import CartPage from './pages/Customer/CartPage';
-import CheckoutPage from './pages/Customer/CheckoutPage';
-import ProfilePage from './pages/Customer/ProfilePage';
-import OrderInfoPage from './pages/Customer/OrderInfoPage';
-import FavoritesPage from './pages/Customer/FavoritesPage';
-import DeliveryAddressPage from './pages/Customer/DeliveryAddressPage';
-import OrderReviewPage from './pages/Customer/OrderReviewPage';
-import PaymentMethodPage from './pages/Customer/PaymentMethodPage';
-import OrderSuccessPage from './pages/Customer/OrderSuccessPage';
-import VNPayProcessingPage from './pages/Customer/VNPayProcessingPage';
-import VNPaySuccessPage from './pages/Customer/VNPaySuccessPage';
-import VNPayFailPage from './pages/Customer/VNPayFailPage';
-import NotificationList from './pages/Notifications/NotificationList';
-import NotificationDetail from './pages/Notifications/NotificationDetail';
-import NotificationForm from './pages/Notifications/NotificationForm';
-import CustomerNotificationsPage from './pages/Customer/CustomerNotificationsPage';
-import CustomerNotificationDetailPage from './pages/Customer/CustomerNotificationDetailPage';
-import SellerNotificationsPage from './pages/Seller/SellerNotificationsPage';
-import SellerNotificationDetailPage from './pages/Seller/SellerNotificationDetailPage';
-import CustomerDetail from './pages/Customers/CustomerDetail';
-import CustomerEditForm from './pages/Customers/CustomerEditForm';
-import SellerManagement from './pages/Sellers/SellerManagement';
-import SellerDetail from './pages/Sellers/SellerDetail';
-import SellerEditForm from './pages/Sellers/SellerEditForm';
-import SellerReports from './pages/Sellers/SellerReports';
-import SellerLogin from './pages/Seller/SellerLogin';
-import SellerDashboard from './pages/Seller/SellerDashboard';
-import SellerProfile from './pages/Seller/SellerProfile';
-import SellerProducts from './pages/Seller/SellerProducts';
-import SellerProductForm from './pages/Seller/SellerProductForm';
-import SellerOrders from './pages/Seller/SellerOrders';
-import SellerStockManagement from './pages/Seller/SellerStockManagement';
-import SellerFarm from './pages/Seller/SellerFarm';
-import UniversalLogin from './pages/Auth/UniversalLogin';
-import ForgotPassword from './pages/Auth/ForgotPassword';
-import SellerRegister from './pages/Seller/SellerRegister';
-import ResetPassword from './pages/Auth/ResetPassword';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import ProductVariations from "./pages/Products/ProductVariations";
+import { CustomerAuthProvider } from "./context/CustomerAuthContext";
+import { SellerAuthProvider } from "./context/SellerAuthContext";
+import { CartProvider } from "./context/CartContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import SellerProtectedRoute from "./components/SellerProtectedRoute";
+import Login from "./pages/Login";
+import ProductCategories from "./pages/Products/ProductCategories";
+import ProductList from "./pages/Products/ProductList";
+import ProductForm from "./pages/Products/ProductForm";
+import OrderList from "./pages/Orders/OrderList";
+import OrderDetail from "./pages/Orders/OrderDetail";
+import CustomerList from "./pages/Customers/CustomerList";
+import PostList from "./pages/Posts/PostList";
+import PostCategories from "./pages/Posts/PostCategories";
+import PostForm from "./pages/Posts/PostForm";
+import ReviewManagement from "./pages/Reviews/ReviewManagement";
+import Profile from "./pages/Profile/Profile";
+import Dashboard from "./pages/Dashboard/Dashboard";
+import HomePage from "./pages/Customer/HomePage";
+import ProductsPage from "./pages/Customer/ProductsPage";
+import ProductDetailPage from "./pages/Customer/ProductDetailPage";
+import PromotionsPage from "./pages/Customer/PromotionsPage";
+import NewsPage from "./pages/Customer/NewsPage";
+import NewsDetailPage from "./pages/Customer/NewsDetailPage";
+import ContactPage from "./pages/Customer/ContactPage";
+import CartPage from "./pages/Customer/CartPage";
+import CheckoutPage from "./pages/Customer/CheckoutPage";
+import ProfilePage from "./pages/Customer/ProfilePage";
+import OrderInfoPage from "./pages/Customer/OrderInfoPage";
+import FavoritesPage from "./pages/Customer/FavoritesPage";
+import DeliveryAddressPage from "./pages/Customer/DeliveryAddressPage";
+import OrderReviewPage from "./pages/Customer/OrderReviewPage";
+import PaymentMethodPage from "./pages/Customer/PaymentMethodPage";
+import OrderSuccessPage from "./pages/Customer/OrderSuccessPage";
+import VNPayProcessingPage from "./pages/Customer/VNPayProcessingPage";
+import VNPaySuccessPage from "./pages/Customer/VNPaySuccessPage";
+import VNPayFailPage from "./pages/Customer/VNPayFailPage";
+import NotificationList from "./pages/Notifications/NotificationList";
+import NotificationDetail from "./pages/Notifications/NotificationDetail";
+import NotificationForm from "./pages/Notifications/NotificationForm";
+import CustomerNotificationsPage from "./pages/Customer/CustomerNotificationsPage";
+import CustomerNotificationDetailPage from "./pages/Customer/CustomerNotificationDetailPage";
+import SellerNotificationsPage from "./pages/Seller/SellerNotificationsPage";
+import SellerNotificationDetailPage from "./pages/Seller/SellerNotificationDetailPage";
+import CustomerDetail from "./pages/Customers/CustomerDetail";
+import CustomerEditForm from "./pages/Customers/CustomerEditForm";
+import SellerManagement from "./pages/Sellers/SellerManagement";
+import SellerDetail from "./pages/Sellers/SellerDetail";
+import SellerEditForm from "./pages/Sellers/SellerEditForm";
+import SellerReports from "./pages/Sellers/SellerReports";
+import SellerLogin from "./pages/Seller/SellerLogin";
+import SellerDashboard from "./pages/Seller/SellerDashboard";
+import SellerProfile from "./pages/Seller/SellerProfile";
+import SellerProducts from "./pages/Seller/SellerProducts";
+import SellerProductForm from "./pages/Seller/SellerProductForm";
+import SellerOrders from "./pages/Seller/SellerOrders";
+import SellerStockManagement from "./pages/Seller/SellerStockManagement";
+import SellerFarm from "./pages/Seller/SellerFarm";
+import UniversalLogin from "./pages/Auth/UniversalLogin";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+import SellerRegister from "./pages/Seller/SellerRegister";
+import ResetPassword from "./pages/Auth/ResetPassword";
 
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
@@ -69,7 +75,7 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Customer Routes */}
-      
+
       <Route path="/" element={<HomePage />} />
       <Route path="/san-pham" element={<ProductsPage />} />
       <Route path="/san-pham/:id" element={<ProductDetailPage />} />
@@ -83,15 +89,20 @@ function AppRoutes() {
       <Route path="/duyet-lai-don-hang" element={<OrderReviewPage />} />
       <Route path="/phuong-thuc-thanh-toan" element={<PaymentMethodPage />} />
       <Route path="/don-hang-thanh-cong" element={<OrderSuccessPage />} />
-      <Route path="/thanh-toan-vnpay/processing" element={<VNPayProcessingPage />} />
+      <Route
+        path="/thanh-toan-vnpay/processing"
+        element={<VNPayProcessingPage />}
+      />
       <Route path="/thanh-toan-vnpay/success" element={<VNPaySuccessPage />} />
       <Route path="/thanh-toan-vnpay/fail" element={<VNPayFailPage />} />
       <Route path="/ho-so" element={<ProfilePage />} />
       <Route path="/don-hang" element={<OrderInfoPage />} />
       <Route path="/da-thich" element={<FavoritesPage />} />
       <Route path="/notifications" element={<CustomerNotificationsPage />} />
-      <Route path="/notifications/:id" element={<CustomerNotificationDetailPage />} />
-      
+      <Route
+        path="/notifications/:id"
+        element={<CustomerNotificationDetailPage />}
+      />
 
       {/* UNIVERSAL LOGIN - Chung cho tất cả */}
       <Route path="/login" element={<UniversalLogin />} />
@@ -102,15 +113,13 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      
-
       {/* Seller Routes */}
       <Route path="/seller/login" element={<SellerLogin />} />
       <Route path="/seller/register" element={<SellerRegister />} />
       <Route
         path="/seller/dashboard"
         element={
-          <SellerProtectedRoute> 
+          <SellerProtectedRoute>
             <SellerDashboard />
           </SellerProtectedRoute>
         }
@@ -190,7 +199,13 @@ function AppRoutes() {
       {/* Admin Routes */}
       <Route
         path="/admin/login"
-        element={isAuthenticated ? <Navigate to="/admin/dashboard" replace /> : <Login />}
+        element={
+          isAuthenticated ? (
+            <Navigate to="/admin/dashboard" replace />
+          ) : (
+            <Login />
+          )
+        }
       />
       <Route
         path="/admin"
@@ -199,6 +214,10 @@ function AppRoutes() {
             <Navigate to="/admin/dashboard" replace />
           </ProtectedRoute>
         }
+      />
+      <Route
+        path="/admin/products/:id/variations"
+        element={<ProductVariations />}
       />
       <Route
         path="/admin/dashboard"
@@ -384,7 +403,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/admin/notifications/:id"
         element={
