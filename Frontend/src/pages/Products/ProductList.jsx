@@ -248,12 +248,18 @@ const ProductList = () => {
                         <td className="px-4 py-4 whitespace-nowrap">
                           <span
                             className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                              product.is_approved
+                              product.approvalStatus === 'approved'
                                 ? "bg-green-100 text-green-800"
+                                : product.approvalStatus === 'rejected'
+                                ? "bg-red-100 text-red-800"
                                 : "bg-yellow-100 text-yellow-800"
                             }`}
                           >
-                            {product.is_approved ? "Đã duyệt" : "Chờ duyệt"}
+                            {product.approvalStatus === 'approved' 
+                              ? "Đã duyệt" 
+                              : product.approvalStatus === 'rejected'
+                              ? "Từ chối"
+                              : "Chờ duyệt"}
                           </span>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
@@ -325,7 +331,7 @@ const ProductList = () => {
                                   <FiEdit className="w-4 h-4" />
                                   <span>Chỉnh sửa</span>
                                 </button>
-                                {!product.is_approved ? (
+                                {product.approvalStatus !== 'approved' && (
                                   <button
                                     onClick={() => {
                                       handleApprove(product._id);
@@ -336,13 +342,14 @@ const ProductList = () => {
                                     <FiCheck className="w-4 h-4" />
                                     <span>Duyệt</span>
                                   </button>
-                                ) : (
+                                )}
+                                {product.approvalStatus !== 'rejected' && (
                                   <button
                                     onClick={() => {
                                       handleReject(product._id);
                                       setSelectedProduct(null);
                                     }}
-                                    className="w-full text-left px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50 flex items-center space-x-2"
+                                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
                                   >
                                     <FiX className="w-4 h-4" />
                                     <span>Từ chối</span>

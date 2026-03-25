@@ -101,13 +101,14 @@ const updateUser = async (userId, userData, file) => {
     user.name = fullName;
   }
 
-  if (email && email !== user.email) {
-    const existed = await User.findOne({ email });
-    if (existed && existed._id.toString() !== userId) {
-      throw new Error("Email đã được sử dụng");
-    }
-    user.email = email;
-  }
+  /* ================= EMAIL (Admin NOT allowed to edit) ================= */
+  // if (email && email !== user.email) {
+  //   const existed = await User.findOne({ email });
+  //   if (existed && existed._id.toString() !== userId) {
+  //     throw new Error("Email đã được sử dụng");
+  //   }
+  //   user.email = email;
+  // }
 
   /* ================= PHONE VALIDATE (QUAN TRỌNG) ================= */
 

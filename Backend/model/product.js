@@ -98,9 +98,10 @@ const productSchema = new mongoose.Schema({
         ref: 'User',
         default: null // null means admin-created product
     },
-    is_approved: {
-        type: Boolean,
-        default: true // Admin products auto-approved, seller products need approval
+    approvalStatus: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending' // Admin products auto-approved, seller products need approval
     },
     createdAt: {
         type: Date,

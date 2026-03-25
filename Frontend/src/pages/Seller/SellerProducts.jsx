@@ -10,7 +10,7 @@ const SellerProducts = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'approved', 'pending'
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'approved', 'pending', 'rejected'
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -55,9 +55,11 @@ const SellerProducts = () => {
 
     // Apply status filter
     if (statusFilter === 'approved') {
-      filtered = filtered.filter(product => product.is_approved === true);
+      filtered = filtered.filter(product => product.approvalStatus === 'approved');
     } else if (statusFilter === 'pending') {
-      filtered = filtered.filter(product => product.is_approved === false);
+      filtered = filtered.filter(product => product.approvalStatus === 'pending');
+    } else if (statusFilter === 'rejected') {
+      filtered = filtered.filter(product => product.approvalStatus === 'rejected');
     }
 
     setFilteredProducts(filtered);
@@ -108,6 +110,7 @@ const SellerProducts = () => {
                 <option value="all">Tất cả trạng thái</option>
                 <option value="approved">Đã duyệt</option>
                 <option value="pending">Chờ duyệt</option>
+                <option value="rejected">Từ chối</option>
               </select>
             </div>
           </div>
@@ -174,12 +177,19 @@ const SellerProducts = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`px-2 py-1 text-xs rounded-full ${product.is_approved
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                            }`}
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            product.approvalStatus === 'approved'
+                              ? 'bg-green-100 text-green-800'
+                              : product.approvalStatus === 'rejected'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}
                         >
-                          {product.is_approved ? 'Đã duyệt' : 'Chờ duyệt'}
+                          {product.approvalStatus === 'approved' 
+                            ? 'Đã duyệt' 
+                            : product.approvalStatus === 'rejected'
+                            ? 'Từ chối'
+                            : 'Chờ duyệt'}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm">

@@ -96,7 +96,7 @@ exports.createSellerProduct = async (req, res) => {
             allowComments: allowComments === 'false' ? false : true,
             details: parsedDetails,
             seller: req.userId,
-            is_approved: false // require admin approval
+            approvalStatus: 'pending' // require admin approval
         });
 
         res.status(201).json({
@@ -239,7 +239,7 @@ exports.updateSellerProduct = async (req, res) => {
         product.updatedAt = new Date();
 
         // Set back to pending approval if significant changes
-        product.is_approved = false;
+        product.approvalStatus = 'pending';
 
         await product.save();
 
