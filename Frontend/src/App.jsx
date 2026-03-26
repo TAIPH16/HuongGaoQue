@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 // Context
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -31,11 +36,15 @@ import SellerManagement from "./pages/Sellers/SellerManagement";
 import SellerDetail from "./pages/Sellers/SellerDetail";
 import SellerEditForm from "./pages/Sellers/SellerEditForm";
 import SellerReports from "./pages/Sellers/SellerReports";
+
+// Posts & Reviews
 import PostList from "./pages/Posts/PostList";
 import PostCategories from "./pages/Posts/PostCategories";
 import PostForm from "./pages/Posts/PostForm";
 import ReviewManagement from "./pages/Reviews/ReviewManagement";
 import Profile from "./pages/Profile/Profile";
+
+// Notifications
 import NotificationList from "./pages/Notifications/NotificationList";
 import NotificationDetail from "./pages/Notifications/NotificationDetail";
 import NotificationForm from "./pages/Notifications/NotificationForm";
@@ -78,14 +87,12 @@ import SellerFarm from "./pages/Seller/SellerFarm";
 import SellerNotificationsPage from "./pages/Seller/SellerNotificationsPage";
 import SellerNotificationDetailPage from "./pages/Seller/SellerNotificationDetailPage";
 
-
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
 
   return (
     <Routes>
-      {/* Customer Routes */}
-
+      {/* Customer */}
       <Route path="/" element={<HomePage />} />
       <Route path="/san-pham" element={<ProductsPage />} />
       <Route path="/san-pham/:id" element={<ProductDetailPage />} />
@@ -99,343 +106,66 @@ function AppRoutes() {
       <Route path="/duyet-lai-don-hang" element={<OrderReviewPage />} />
       <Route path="/phuong-thuc-thanh-toan" element={<PaymentMethodPage />} />
       <Route path="/don-hang-thanh-cong" element={<OrderSuccessPage />} />
-      <Route
-        path="/thanh-toan-vnpay/processing"
-        element={<VNPayProcessingPage />}
-      />
+      <Route path="/thanh-toan-vnpay/processing" element={<VNPayProcessingPage />} />
       <Route path="/thanh-toan-vnpay/success" element={<VNPaySuccessPage />} />
       <Route path="/thanh-toan-vnpay/fail" element={<VNPayFailPage />} />
       <Route path="/ho-so" element={<ProfilePage />} />
       <Route path="/don-hang" element={<OrderInfoPage />} />
       <Route path="/da-thich" element={<FavoritesPage />} />
       <Route path="/notifications" element={<CustomerNotificationsPage />} />
-
       <Route path="/notifications/:id" element={<CustomerNotificationDetailPage />} />
       <Route path="/admin/contact" element={<AdminContactPage />} />
       <Route path="/admin/promotions" element={<AdminPromotion />} />
 
-
-      <Route
-        path="/notifications/:id"
-        element={<CustomerNotificationDetailPage />}
-      />
-
-
-      {/* UNIVERSAL LOGIN - Chung cho tất cả */}
+      {/* Auth */}
       <Route path="/login" element={<UniversalLogin />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* 🔑 FORGOT PASSWORD */}
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-
-
-
-
-
-      {/* Seller Routes */}
+      {/* Seller */}
       <Route path="/seller/login" element={<SellerLogin />} />
       <Route path="/seller/register" element={<SellerRegister />} />
-      <Route path="/thanh-toan1" element={<PaymentMethodPage />} />
-      <Route
-        path="/seller/dashboard"
-        element={
-          <SellerProtectedRoute>
-            <SellerDashboard />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/profile"
-        element={
-          <SellerProtectedRoute>
-            <SellerProfile />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/products"
-        element={
-          <SellerProtectedRoute>
-            <SellerProducts />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/products/add"
-        element={
-          <SellerProtectedRoute>
-            <SellerProductForm />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/products/edit/:id"
-        element={
-          <SellerProtectedRoute>
-            <SellerProductForm />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/orders"
-        element={
-          <SellerProtectedRoute>
-            <SellerOrders />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/stock"
-        element={
-          <SellerProtectedRoute>
-            <SellerStockManagement />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/notifications"
-        element={
-          <SellerProtectedRoute>
-            <SellerNotificationsPage />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/notifications/:id"
-        element={
-          <SellerProtectedRoute>
-            <SellerNotificationDetailPage />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/farm"
-        element={
-          <SellerProtectedRoute>
-            <SellerFarm />
-          </SellerProtectedRoute>
-        }
-      />
-      {/* Admin Routes */}
-      <Route
-        path="/admin/login"
-        element={
-          isAuthenticated ? (
-            <Navigate to="/admin/dashboard" replace />
-          ) : (
-            <Login />
-          )
-        }
-      />
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute>
-            <Navigate to="/admin/dashboard" replace />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/products/variations/:id"
-        element={<ProductVariations />}
-      />
-      <Route
-        path="/admin/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/products"
-        element={
-          <ProtectedRoute>
-            <ProductList />
-          </ProtectedRoute>
-        }
-      />
 
-      <Route
-        path="/admin/products/categories"
-        element={
-          <ProtectedRoute>
-            <ProductCategories />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/products/add"
-        element={
-          <ProtectedRoute>
-            <ProductForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/products/edit/:id"
-        element={
-          <ProtectedRoute>
-            <ProductForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/orders"
-        element={
-          <ProtectedRoute>
-            <OrderList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/orders/:id"
-        element={
-          <ProtectedRoute>
-            <OrderDetail />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/customers"
-        element={
-          <ProtectedRoute>
-            <CustomerList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/customers/:id/edit"
-        element={
-          <ProtectedRoute>
-            <CustomerEditForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/customers/:id"
-        element={
-          <ProtectedRoute>
-            <CustomerDetail />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/sellers"
-        element={
-          <ProtectedRoute>
-            <SellerManagement />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/sellers/reports"
-        element={
-          <ProtectedRoute>
-            <SellerReports />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/sellers/:id/edit"
-        element={
-          <ProtectedRoute>
-            <SellerEditForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/sellers/:id"
-        element={
-          <ProtectedRoute>
-            <SellerDetail />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/posts"
-        element={
-          <ProtectedRoute>
-            <PostList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/posts/categories"
-        element={
-          <ProtectedRoute>
-            <PostCategories />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/posts/add"
-        element={
-          <ProtectedRoute>
-            <PostForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/posts/edit/:id"
-        element={
-          <ProtectedRoute>
-            <PostForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/reviews"
-        element={
-          <ProtectedRoute>
-            <ReviewManagement />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/notifications"
-        element={
-          <ProtectedRoute>
-            <NotificationList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/notifications/add"
-        element={
-          <ProtectedRoute>
-            <NotificationForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/notifications/:id/edit"
-        element={
-          <ProtectedRoute>
-            <NotificationForm />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/seller/dashboard" element={<SellerProtectedRoute><SellerDashboard /></SellerProtectedRoute>} />
+      <Route path="/seller/profile" element={<SellerProtectedRoute><SellerProfile /></SellerProtectedRoute>} />
+      <Route path="/seller/products" element={<SellerProtectedRoute><SellerProducts /></SellerProtectedRoute>} />
+      <Route path="/seller/products/add" element={<SellerProtectedRoute><SellerProductForm /></SellerProtectedRoute>} />
+      <Route path="/seller/products/edit/:id" element={<SellerProtectedRoute><SellerProductForm /></SellerProtectedRoute>} />
+      <Route path="/seller/orders" element={<SellerProtectedRoute><SellerOrders /></SellerProtectedRoute>} />
+      <Route path="/seller/stock" element={<SellerProtectedRoute><SellerStockManagement /></SellerProtectedRoute>} />
+      <Route path="/seller/notifications" element={<SellerProtectedRoute><SellerNotificationsPage /></SellerProtectedRoute>} />
+      <Route path="/seller/notifications/:id" element={<SellerProtectedRoute><SellerNotificationDetailPage /></SellerProtectedRoute>} />
+      <Route path="/seller/farm" element={<SellerProtectedRoute><SellerFarm /></SellerProtectedRoute>} />
 
-      <Route
-        path="/admin/notifications/:id"
-        element={
-          <ProtectedRoute>
-            <NotificationDetail />
-          </ProtectedRoute>
-        }
-      />
-      {/* Catch all - only redirect if route doesn't match any above */}
+      {/* Admin */}
+      <Route path="/admin/login" element={isAuthenticated ? <Navigate to="/admin/dashboard" replace /> : <Login />} />
+      <Route path="/admin" element={<ProtectedRoute><Navigate to="/admin/dashboard" replace /></ProtectedRoute>} />
+      <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/admin/products" element={<ProtectedRoute><ProductList /></ProtectedRoute>} />
+      <Route path="/admin/products/categories" element={<ProtectedRoute><ProductCategories /></ProtectedRoute>} />
+      <Route path="/admin/products/add" element={<ProtectedRoute><ProductForm /></ProtectedRoute>} />
+      <Route path="/admin/products/edit/:id" element={<ProtectedRoute><ProductForm /></ProtectedRoute>} />
+      <Route path="/admin/products/variations/:id" element={<ProductVariations />} />
+      <Route path="/admin/orders" element={<ProtectedRoute><OrderList /></ProtectedRoute>} />
+      <Route path="/admin/orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
+      <Route path="/admin/customers" element={<ProtectedRoute><CustomerList /></ProtectedRoute>} />
+      <Route path="/admin/customers/:id" element={<ProtectedRoute><CustomerDetail /></ProtectedRoute>} />
+      <Route path="/admin/customers/:id/edit" element={<ProtectedRoute><CustomerEditForm /></ProtectedRoute>} />
+      <Route path="/admin/sellers" element={<ProtectedRoute><SellerManagement /></ProtectedRoute>} />
+      <Route path="/admin/sellers/:id" element={<ProtectedRoute><SellerDetail /></ProtectedRoute>} />
+      <Route path="/admin/sellers/:id/edit" element={<ProtectedRoute><SellerEditForm /></ProtectedRoute>} />
+      <Route path="/admin/sellers/reports" element={<ProtectedRoute><SellerReports /></ProtectedRoute>} />
+      <Route path="/admin/posts" element={<ProtectedRoute><PostList /></ProtectedRoute>} />
+      <Route path="/admin/posts/categories" element={<ProtectedRoute><PostCategories /></ProtectedRoute>} />
+      <Route path="/admin/posts/add" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
+      <Route path="/admin/posts/edit/:id" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
+      <Route path="/admin/reviews" element={<ProtectedRoute><ReviewManagement /></ProtectedRoute>} />
+      <Route path="/admin/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/admin/notifications" element={<ProtectedRoute><NotificationList /></ProtectedRoute>} />
+      <Route path="/admin/notifications/add" element={<ProtectedRoute><NotificationForm /></ProtectedRoute>} />
+      <Route path="/admin/notifications/:id" element={<ProtectedRoute><NotificationDetail /></ProtectedRoute>} />
+
+      {/* fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
