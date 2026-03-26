@@ -103,10 +103,16 @@ const ProductList = () => {
   const handleToggleVisibility = async (id) => {
     try {
       await productsAPI.toggleVisibility(id);
-      setSuccessModal({ isOpen: true, message: "Cập nhật trạng thái hiển thị thành công" });
+      setSuccessModal({
+        isOpen: true,
+        message: "Cập nhật trạng thái hiển thị thành công",
+      });
       fetchProducts();
     } catch (error) {
-      setErrorModal({ isOpen: true, message: "Cập nhật trạng thái hiển thị thất bại" });
+      setErrorModal({
+        isOpen: true,
+        message: "Cập nhật trạng thái hiển thị thất bại",
+      });
     }
   };
 
@@ -179,7 +185,7 @@ const ProductList = () => {
                     Giảm (/1kg)
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Đã Bán (Kg)
+                    Đã Bán
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Doanh Thu
@@ -248,18 +254,18 @@ const ProductList = () => {
                         <td className="px-4 py-4 whitespace-nowrap">
                           <span
                             className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                              product.approvalStatus === 'approved'
+                              product.approvalStatus === "approved"
                                 ? "bg-green-100 text-green-800"
-                                : product.approvalStatus === 'rejected'
-                                ? "bg-red-100 text-red-800"
-                                : "bg-yellow-100 text-yellow-800"
+                                : product.approvalStatus === "rejected"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-yellow-100 text-yellow-800"
                             }`}
                           >
-                            {product.approvalStatus === 'approved' 
-                              ? "Đã duyệt" 
-                              : product.approvalStatus === 'rejected'
-                              ? "Từ chối"
-                              : "Chờ duyệt"}
+                            {product.approvalStatus === "approved"
+                              ? "Đã duyệt"
+                              : product.approvalStatus === "rejected"
+                                ? "Từ chối"
+                                : "Chờ duyệt"}
                           </span>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
@@ -270,8 +276,14 @@ const ProductList = () => {
                                 : "bg-blue-100 text-blue-800"
                             }`}
                           >
-                            {product.isHidden ? <FiEyeOff className="w-3 h-3" /> : <FiEye className="w-3 h-3" />}
-                            <span>{product.isHidden ? "Đã ẩn" : "Đang hiện"}</span>
+                            {product.isHidden ? (
+                              <FiEyeOff className="w-3 h-3" />
+                            ) : (
+                              <FiEye className="w-3 h-3" />
+                            )}
+                            <span>
+                              {product.isHidden ? "Đã ẩn" : "Đang hiện"}
+                            </span>
                           </span>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
@@ -331,7 +343,7 @@ const ProductList = () => {
                                   <FiEdit className="w-4 h-4" />
                                   <span>Chỉnh sửa</span>
                                 </button>
-                                {product.approvalStatus !== 'approved' && (
+                                {product.approvalStatus !== "approved" && (
                                   <button
                                     onClick={() => {
                                       handleApprove(product._id);
@@ -343,7 +355,7 @@ const ProductList = () => {
                                     <span>Duyệt</span>
                                   </button>
                                 )}
-                                {product.approvalStatus !== 'rejected' && (
+                                {product.approvalStatus !== "rejected" && (
                                   <button
                                     onClick={() => {
                                       handleReject(product._id);
@@ -355,17 +367,43 @@ const ProductList = () => {
                                     <span>Từ chối</span>
                                   </button>
                                 )}
+
+                                {/* NÚT TẠO BIẾN THỂ ĐƯỢC THÊM VÀO ĐÂY */}
+                                <button
+                                  onClick={() => {
+                                    navigate(
+                                      `/admin/products/variations/${product._id}`,
+                                    );
+                                    setSelectedProduct(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 flex items-center space-x-2"
+                                >
+                                  <FiPlus className="w-4 h-4" />
+                                  <span>Tạo biến thể</span>
+                                </button>
+                                {/* KẾT THÚC NÚT TẠO BIẾN THỂ */}
+
                                 <button
                                   onClick={() => {
                                     handleToggleVisibility(product._id);
                                     setSelectedProduct(null);
                                   }}
                                   className={`w-full text-left px-4 py-2 text-sm flex items-center space-x-2 ${
-                                    product.isHidden ? "text-blue-600 hover:bg-blue-50" : "text-gray-600 hover:bg-gray-50"
+                                    product.isHidden
+                                      ? "text-blue-600 hover:bg-blue-50"
+                                      : "text-gray-600 hover:bg-gray-50"
                                   }`}
                                 >
-                                  {product.isHidden ? <FiEye className="w-4 h-4" /> : <FiEyeOff className="w-4 h-4" />}
-                                  <span>{product.isHidden ? "Hiện lên trang chủ" : "Ẩn khỏi trang chủ"}</span>
+                                  {product.isHidden ? (
+                                    <FiEye className="w-4 h-4" />
+                                  ) : (
+                                    <FiEyeOff className="w-4 h-4" />
+                                  )}
+                                  <span>
+                                    {product.isHidden
+                                      ? "Hiện lên trang chủ"
+                                      : "Ẩn khỏi trang chủ"}
+                                  </span>
                                 </button>
                                 <button
                                   onClick={() => setViewProduct(product)}
