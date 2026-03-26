@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FiEdit, FiTrash2, FiChevronDown } from 'react-icons/fi';
-import CustomerLayout from '../../components/Customer/CustomerLayout';
-import { useCustomerAuth } from '../../context/CustomerAuthContext';
-import { useCart } from '../../context/CartContext';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FiEdit, FiTrash2, FiChevronDown } from "react-icons/fi";
+import CustomerLayout from "../../components/Customer/CustomerLayout";
+import { useCustomerAuth } from "../../context/CustomerAuthContext";
+import { useCart } from "../../context/CartContext";
 
 const DeliveryAddressPage = () => {
   const { customer } = useCustomerAuth();
@@ -13,43 +13,47 @@ const DeliveryAddressPage = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    street: '',
-    ward: '',
-    district: '',
-    city: '',
-    country: 'Việt Nam',
+    name: "",
+    phone: "",
+    street: "",
+    ward: "",
+    district: "",
+    city: "",
+    country: "Việt Nam",
   });
 
   useEffect(() => {
     if (!customer) {
-      navigate('/');
+      navigate("/");
       return;
     }
 
     if (cartItems.length === 0) {
-      navigate('/gio-hang');
+      navigate("/gio-hang");
       return;
     }
 
     // Load addresses from customer profile
     if (customer) {
       const customerAddress = {
-        _id: 'default',
-        name: customer.fullName || customer.name || '',
-        phone: customer.phoneNumber || customer.phone || '',
-        street: customer.address?.street || '',
-        ward: customer.address?.ward || '',
-        district: customer.address?.district || '',
-        city: customer.address?.city || customer.region || '',
-        country: customer.address?.country || 'Việt Nam',
+        _id: "default",
+        name: customer.fullName || customer.name || "",
+        phone: customer.phoneNumber || customer.phone || "",
+        street: customer.address?.street || "",
+        ward: customer.address?.ward || "",
+        district: customer.address?.district || "",
+        city: customer.address?.city || customer.region || "",
+        country: customer.address?.country || "Việt Nam",
         isDefault: true,
       };
 
-      if (customerAddress.name || customerAddress.phone || customerAddress.street) {
+      if (
+        customerAddress.name ||
+        customerAddress.phone ||
+        customerAddress.street
+      ) {
         setAddresses([customerAddress]);
-        setSelectedAddressId('default');
+        setSelectedAddressId("default");
       }
     }
   }, [customer, cartItems, navigate]);
@@ -67,7 +71,9 @@ const DeliveryAddressPage = () => {
 
   const handleAddAddress = () => {
     if (!formData.name || !formData.phone || !formData.street) {
-      alert('Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Số điện thoại, Địa chỉ)');
+      alert(
+        "Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Số điện thoại, Địa chỉ)",
+      );
       return;
     }
 
@@ -80,13 +86,13 @@ const DeliveryAddressPage = () => {
     setAddresses([...addresses, newAddress]);
     setSelectedAddressId(newAddress._id);
     setFormData({
-      name: '',
-      phone: '',
-      street: '',
-      ward: '',
-      district: '',
-      city: '',
-      country: 'Việt Nam',
+      name: "",
+      phone: "",
+      street: "",
+      ward: "",
+      district: "",
+      city: "",
+      country: "Việt Nam",
     });
     setShowAddForm(false);
   };
@@ -98,10 +104,10 @@ const DeliveryAddressPage = () => {
         name: address.name,
         phone: address.phone,
         street: address.street,
-        ward: address.ward || '',
-        district: address.district || '',
-        city: address.city || '',
-        country: address.country || 'Việt Nam',
+        ward: address.ward || "",
+        district: address.district || "",
+        city: address.city || "",
+        country: address.country || "Việt Nam",
       });
       setShowAddForm(true);
       // Remove the old address to be replaced
@@ -113,7 +119,7 @@ const DeliveryAddressPage = () => {
   };
 
   const handleDeleteAddress = (addressId) => {
-    if (window.confirm('Bạn có chắc muốn xóa địa chỉ này?')) {
+    if (window.confirm("Bạn có chắc muốn xóa địa chỉ này?")) {
       setAddresses(addresses.filter((a) => a._id !== addressId));
       if (selectedAddressId === addressId) {
         setSelectedAddressId(null);
@@ -123,29 +129,40 @@ const DeliveryAddressPage = () => {
 
   const handleContinue = () => {
     if (!selectedAddressId) {
-      alert('Vui lòng chọn một địa chỉ giao hàng');
+      alert("Vui lòng chọn một địa chỉ giao hàng");
       return;
     }
 
     const selectedAddress = addresses.find((a) => a._id === selectedAddressId);
     // Store selected address in localStorage for next step
-    localStorage.setItem('checkout_address', JSON.stringify(selectedAddress));
-    navigate('/duyet-lai-don-hang');
+    localStorage.setItem("checkout_address", JSON.stringify(selectedAddress));
+    navigate("/duyet-lai-don-hang");
   };
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN').format(price) + '₫';
+    return new Intl.NumberFormat("vi-VN").format(price) + "₫";
   };
 
+  // --- START FIX: Sửa lại logic tính toán ở đây ---
+
+  // 1. Tính Tạm tính (Tổng tiền gốc chưa giảm giá)
   const subtotal = cartItems.reduce((total, item) => {
     const price = item.product.listedPrice || item.product.price || 0;
-    const discountPercent = item.product.discountPercent || 0;
-    const itemPrice = discountPercent > 0 ? price * (1 - discountPercent / 100) : price;
-    return total + itemPrice * item.quantity;
+    return total + price * item.quantity;
   }, 0);
 
-  const discount = 50000;
+  // 2. Tính Giảm giá (Tổng số tiền được giảm từ các sản phẩm)
+  const discount = cartItems.reduce((sum, item) => {
+    const price = item.product.listedPrice || item.product.price || 0;
+    const percent = item.product.discountPercent || 0;
+    const discountPerItem = (price * percent) / 100;
+    return sum + discountPerItem * item.quantity;
+  }, 0);
+
+  // 3. Tính Tổng (Tổng tiền phải thanh toán)
   const total = subtotal - discount;
+
+  // --- END FIX ---
 
   return (
     <CustomerLayout>
@@ -183,7 +200,9 @@ const DeliveryAddressPage = () => {
             {/* Instructions */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-gray-700">
-                Địa chỉ bạn muốn sử dụng có hiển thị bên dưới không? Nếu vậy, hãy nhấp vào nút "Gửi đến địa chỉ này" tương ứng. Hoặc bạn có thể nhập một địa chỉ giao hàng mới.
+                Địa chỉ bạn muốn sử dụng có hiển thị bên dưới không? Nếu vậy,
+                hãy nhấp vào nút "Gửi đến địa chỉ này" tương ứng. Hoặc bạn có
+                thể nhập một địa chỉ giao hàng mới.
               </p>
             </div>
 
@@ -196,29 +215,40 @@ const DeliveryAddressPage = () => {
                     key={address._id}
                     className={`border-2 rounded-lg p-4 ${
                       selectedAddressId === address._id
-                        ? 'border-[#2d5016] bg-green-50'
-                        : 'border-gray-200'
+                        ? "border-[#2d5016] bg-green-50"
+                        : "border-gray-200"
                     }`}
                   >
                     <div className="flex items-start">
                       <div className="flex items-center mr-4 mt-1">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                          selectedAddressId === address._id
-                            ? 'border-[#2d5016] bg-[#2d5016]'
-                            : 'border-gray-300'
-                        }`}>
+                        <div
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            selectedAddressId === address._id
+                              ? "border-[#2d5016] bg-[#2d5016]"
+                              : "border-gray-300"
+                          }`}
+                        >
                           {selectedAddressId === address._id && (
                             <div className="w-2 h-2 bg-white rounded-full"></div>
                           )}
                         </div>
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-gray-800 mb-2">{address.name}</p>
-                        <p className="text-gray-600 mb-1">Số điện thoại: {address.phone}</p>
+                        <p className="font-semibold text-gray-800 mb-2">
+                          {address.name}
+                        </p>
+                        <p className="text-gray-600 mb-1">
+                          Số điện thoại: {address.phone}
+                        </p>
                         <p className="text-gray-600">
-                          {[address.street, address.ward, address.district, address.city]
+                          {[
+                            address.street,
+                            address.ward,
+                            address.district,
+                            address.city,
+                          ]
                             .filter(Boolean)
-                            .join(', ')}
+                            .join(", ")}
                           {address.country && `, ${address.country}`}
                         </p>
                         <div className="flex space-x-2 mt-4">
@@ -260,13 +290,14 @@ const DeliveryAddressPage = () => {
               >
                 <h2 className="text-xl font-bold">Thêm địa chỉ giao hàng</h2>
                 <FiChevronDown
-                  className={`w-5 h-5 transition-transform ${showAddForm ? 'rotate-180' : ''}`}
+                  className={`w-5 h-5 transition-transform ${showAddForm ? "rotate-180" : ""}`}
                 />
               </div>
               {showAddForm && (
                 <div className="bg-white border rounded-lg p-6 space-y-4">
                   <p className="text-gray-600 text-sm mb-4">
-                    Thêm vào một địa chỉ giao hàng mới, điền tất cả vào phiếu thông tin để cập nhật địa chỉ giao hàng
+                    Thêm vào một địa chỉ giao hàng mới, điền tất cả vào phiếu
+                    thông tin để cập nhật địa chỉ giao hàng
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -309,7 +340,9 @@ const DeliveryAddressPage = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phường/Xã</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Phường/Xã
+                      </label>
                       <input
                         type="text"
                         name="ward"
@@ -319,7 +352,9 @@ const DeliveryAddressPage = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Quận/Huyện</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Quận/Huyện
+                      </label>
                       <input
                         type="text"
                         name="district"
@@ -329,7 +364,9 @@ const DeliveryAddressPage = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Tỉnh/Thành phố</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Tỉnh/Thành phố
+                      </label>
                       <input
                         type="text"
                         name="city"
@@ -339,7 +376,9 @@ const DeliveryAddressPage = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Quốc gia</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Quốc gia
+                      </label>
                       <input
                         type="text"
                         name="country"
@@ -362,15 +401,20 @@ const DeliveryAddressPage = () => {
             {/* Additional Notes */}
             <div className="bg-white border rounded-lg p-6">
               <h2 className="text-xl font-bold mb-4">Thông tin bổ sung</h2>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Lời nhắn</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Lời nhắn
+              </label>
               <textarea
                 placeholder="Ghi chú về thông tin xuất hoá đơn, thông tin bổ sung..."
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
                 rows={4}
-                onChange={(e) => localStorage.setItem('checkout_notes', e.target.value)}
+                onChange={(e) =>
+                  localStorage.setItem("checkout_notes", e.target.value)
+                }
               />
               <p className="text-xs text-gray-500 mt-2">
-                Bằng cách cung cấp số điện thoại của mình, bạn đồng ý nhận các ưu đãi và lời nhắc bằng tin nhắn văn bản
+                Bằng cách cung cấp số điện thoại của mình, bạn đồng ý nhận các
+                ưu đãi và lời nhắc bằng tin nhắn văn bản
               </p>
             </div>
           </div>
@@ -409,4 +453,3 @@ const DeliveryAddressPage = () => {
 };
 
 export default DeliveryAddressPage;
-
