@@ -4,6 +4,29 @@ const PostViewLog = require('../model/postViewLog');
 const path = require('path');
 const fs = require('fs');
 
+const toPublicFilePath = (publicUrl) => {
+    if (!publicUrl || typeof publicUrl !== 'string') return null;
+    const normalized = publicUrl.replace(/^\/+/, '');
+    return path.join(__dirname, '..', 'public', normalized);
+};
+
+const sanitizePostCoverImage = (post) => {
+    if (!post) return post;
+
+    const postObj = typeof post.toObject === 'function' ? post.toObject() : { ...post };
+
+    if (!postObj.coverImage) {
+        return postObj;
+    }
+
+    const imagePath = toPublicFilePath(postObj.coverImage);
+    if (!imagePath || !fs.existsSync(imagePath)) {
+        postObj.coverImage = '';
+    }
+
+    return postObj;
+};
+
 /**
  * Lấy danh sách bài viết với phân trang và tìm kiếm
  */
@@ -43,7 +66,7 @@ const getPosts = async (query) => {
     const total = await Post.countDocuments(filter);
 
     return {
-        data: posts,
+        data: posts.map(sanitizePostCoverImage),
         pagination: {
             currentPage: page,
             totalPages: Math.ceil(total / limit),
@@ -63,7 +86,7 @@ const getPostDetail = async (postId) => {
         throw new Error('Không tìm thấy bài viết');
     }
 
-    return post;
+    return sanitizePostCoverImage(post);
 };
 
 /**
@@ -148,7 +171,7 @@ const updatePost = async (postId, postData, file) => {
     if (file) {
         // Xóa ảnh cũ nếu có
         if (post.coverImage) {
-            const oldImagePath = path.join(__dirname, '..', 'public', post.coverImage);
+            const oldImagePath = toPublicFilePath(post.coverImage);
             if (fs.existsSync(oldImagePath)) {
                 fs.unlinkSync(oldImagePath);
             }
@@ -159,7 +182,7 @@ const updatePost = async (postId, postData, file) => {
     // Xóa ảnh bìa nếu được yêu cầu
     if (deleteCoverImage === 'true' || deleteCoverImage === true) {
         if (post.coverImage) {
-            const imagePath = path.join(__dirname, '..', 'public', post.coverImage);
+            const imagePath = toPublicFilePath(post.coverImage);
             if (fs.existsSync(imagePath)) {
                 fs.unlinkSync(imagePath);
             }
@@ -286,7 +309,7 @@ const getFeaturedPosts = async (limit = 4) => {
         .populate('category', 'name')
         .sort({ viewCount: -1 })
         .limit(limit);
-    return posts;
+    return posts.map(sanitizePostCoverImage);
 };
 
 module.exports = {
