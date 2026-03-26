@@ -53,6 +53,14 @@ export const customerNotificationsAPI = {
   markAllAsRead: () => customerApi.post('/notifications/mark-all-read'),
   getUnreadCount: () => customerApi.get('/notifications/unread-count'),
 };
+// ================= Customer Promotions API =================
+export const customerPromotionsAPI = {
+  // Lấy danh sách tất cả khuyến mãi
+  getAll: () => customerApi.get('/promotions'),
+
+  // Lấy chi tiết 1 khuyến mãi
+  getById: (id) => customerApi.get(`/promotions/${id}`),
+};
 
 export default customerApi;
 

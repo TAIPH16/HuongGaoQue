@@ -92,6 +92,9 @@ const sellerOrdersRouter = require("./routes/sellerOrders.routes");
 const sellerStockRouter = require("./routes/sellerStock.routes");
 const unifiedAuthRouter = require("./routes/unifiedAuth.routes");
 const reviewRouter = require("./routes/review.routes");
+const chatRoute = require("./routes/chat.js");
+const promotionsRoutes = require("./routes/promotions.js");
+const prp = require("./routes/productPromotion.js");
 
 // Register routes
 app.use("/", indexRouter);
@@ -122,6 +125,16 @@ app.use("/api/seller/auth", sellerAuthRouter);
 app.use("/api/seller/products", sellerProductsRouter);
 app.use("/api/seller/orders", sellerOrdersRouter);
 app.use("/api/seller/stock", sellerStockRouter);
+app.use("/api/chat", chatRoute);
+app.use("/api/promotions", promotionsRoutes);
+app.use(
+  "/api/product", prp);
+app.use("/customer/orders",ordersRouter);
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
+
+app.get("/", (req, res) => {
+  res.send("Rice shop API running");
+});
 
 // UNIFIED LOGIN - Chung cho tất cả
 app.use("/api/unified/auth", unifiedAuthRouter);
@@ -162,6 +175,7 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render("error");
 });
+
 
 const PORT = process.env.PORT || 3000;
 
