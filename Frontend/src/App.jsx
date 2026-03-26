@@ -4,25 +4,52 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+
+// Context
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CustomerAuthProvider } from "./context/CustomerAuthContext";
 import { SellerAuthProvider } from "./context/SellerAuthContext";
 import { CartProvider } from "./context/CartContext";
+
+// Components
 import ProtectedRoute from "./components/ProtectedRoute";
 import SellerProtectedRoute from "./components/SellerProtectedRoute";
+
+// Auth Pages
 import Login from "./pages/Login";
+import UniversalLogin from "./pages/Auth/UniversalLogin";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+import ResetPassword from "./pages/Auth/ResetPassword";
+
+// Admin Pages
+import Dashboard from "./pages/Dashboard/Dashboard";
 import ProductCategories from "./pages/Products/ProductCategories";
 import ProductList from "./pages/Products/ProductList";
 import ProductForm from "./pages/Products/ProductForm";
+import ProductVariations from "./pages/Products/ProductVariations";
 import OrderList from "./pages/Orders/OrderList";
 import OrderDetail from "./pages/Orders/OrderDetail";
 import CustomerList from "./pages/Customers/CustomerList";
+import CustomerDetail from "./pages/Customers/CustomerDetail";
+import CustomerEditForm from "./pages/Customers/CustomerEditForm";
+import SellerManagement from "./pages/Sellers/SellerManagement";
+import SellerDetail from "./pages/Sellers/SellerDetail";
+import SellerEditForm from "./pages/Sellers/SellerEditForm";
+import SellerReports from "./pages/Sellers/SellerReports";
+
+// Posts & Reviews
 import PostList from "./pages/Posts/PostList";
 import PostCategories from "./pages/Posts/PostCategories";
 import PostForm from "./pages/Posts/PostForm";
 import ReviewManagement from "./pages/Reviews/ReviewManagement";
 import Profile from "./pages/Profile/Profile";
-import Dashboard from "./pages/Dashboard/Dashboard";
+
+// Notifications
+import NotificationList from "./pages/Notifications/NotificationList";
+import NotificationDetail from "./pages/Notifications/NotificationDetail";
+import NotificationForm from "./pages/Notifications/NotificationForm";
+
+// Customer Pages
 import HomePage from "./pages/Customer/HomePage";
 import ProductsPage from "./pages/Customer/ProductsPage";
 import ProductDetailPage from "./pages/Customer/ProductDetailPage";
@@ -42,20 +69,14 @@ import OrderSuccessPage from "./pages/Customer/OrderSuccessPage";
 import VNPayProcessingPage from "./pages/Customer/VNPayProcessingPage";
 import VNPaySuccessPage from "./pages/Customer/VNPaySuccessPage";
 import VNPayFailPage from "./pages/Customer/VNPayFailPage";
-import NotificationList from "./pages/Notifications/NotificationList";
-import NotificationDetail from "./pages/Notifications/NotificationDetail";
-import NotificationForm from "./pages/Notifications/NotificationForm";
 import CustomerNotificationsPage from "./pages/Customer/CustomerNotificationsPage";
 import CustomerNotificationDetailPage from "./pages/Customer/CustomerNotificationDetailPage";
-import SellerNotificationsPage from "./pages/Seller/SellerNotificationsPage";
-import SellerNotificationDetailPage from "./pages/Seller/SellerNotificationDetailPage";
-import CustomerDetail from "./pages/Customers/CustomerDetail";
-import CustomerEditForm from "./pages/Customers/CustomerEditForm";
-import SellerManagement from "./pages/Sellers/SellerManagement";
-import SellerDetail from "./pages/Sellers/SellerDetail";
-import SellerEditForm from "./pages/Sellers/SellerEditForm";
-import SellerReports from "./pages/Sellers/SellerReports";
+import AdminContactPage from "./pages/Customer/AdminContactPage";
+import AdminPromotion from "./pages/Customer/AdminPromotionPage";
+
+// Seller Pages
 import SellerLogin from "./pages/Seller/SellerLogin";
+import SellerRegister from "./pages/Seller/SellerRegister";
 import SellerDashboard from "./pages/Seller/SellerDashboard";
 import SellerProfile from "./pages/Seller/SellerProfile";
 import SellerProducts from "./pages/Seller/SellerProducts";
@@ -63,19 +84,15 @@ import SellerProductForm from "./pages/Seller/SellerProductForm";
 import SellerOrders from "./pages/Seller/SellerOrders";
 import SellerStockManagement from "./pages/Seller/SellerStockManagement";
 import SellerFarm from "./pages/Seller/SellerFarm";
-import UniversalLogin from "./pages/Auth/UniversalLogin";
-import ForgotPassword from "./pages/Auth/ForgotPassword";
-import SellerRegister from "./pages/Seller/SellerRegister";
-import ResetPassword from "./pages/Auth/ResetPassword";
-import ProductVariations from "./pages/Products/ProductVariations";
+import SellerNotificationsPage from "./pages/Seller/SellerNotificationsPage";
+import SellerNotificationDetailPage from "./pages/Seller/SellerNotificationDetailPage";
 
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
 
   return (
     <Routes>
-      {/* Customer Routes */}
-
+      {/* Customer */}
       <Route path="/" element={<HomePage />} />
       <Route path="/san-pham" element={<ProductsPage />} />
       <Route path="/san-pham/:id" element={<ProductDetailPage />} />
@@ -89,331 +106,66 @@ function AppRoutes() {
       <Route path="/duyet-lai-don-hang" element={<OrderReviewPage />} />
       <Route path="/phuong-thuc-thanh-toan" element={<PaymentMethodPage />} />
       <Route path="/don-hang-thanh-cong" element={<OrderSuccessPage />} />
-      <Route
-        path="/thanh-toan-vnpay/processing"
-        element={<VNPayProcessingPage />}
-      />
+      <Route path="/thanh-toan-vnpay/processing" element={<VNPayProcessingPage />} />
       <Route path="/thanh-toan-vnpay/success" element={<VNPaySuccessPage />} />
       <Route path="/thanh-toan-vnpay/fail" element={<VNPayFailPage />} />
       <Route path="/ho-so" element={<ProfilePage />} />
       <Route path="/don-hang" element={<OrderInfoPage />} />
       <Route path="/da-thich" element={<FavoritesPage />} />
       <Route path="/notifications" element={<CustomerNotificationsPage />} />
-      <Route
-        path="/notifications/:id"
-        element={<CustomerNotificationDetailPage />}
-      />
+      <Route path="/notifications/:id" element={<CustomerNotificationDetailPage />} />
+      <Route path="/admin/contact" element={<AdminContactPage />} />
+      <Route path="/admin/promotions" element={<AdminPromotion />} />
 
-      {/* UNIVERSAL LOGIN - Chung cho tất cả */}
+      {/* Auth */}
       <Route path="/login" element={<UniversalLogin />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* 🔑 FORGOT PASSWORD */}
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-
-      {/* Seller Routes */}
+      {/* Seller */}
       <Route path="/seller/login" element={<SellerLogin />} />
       <Route path="/seller/register" element={<SellerRegister />} />
-      <Route
-        path="/seller/dashboard"
-        element={
-          <SellerProtectedRoute>
-            <SellerDashboard />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/profile"
-        element={
-          <SellerProtectedRoute>
-            <SellerProfile />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/products"
-        element={
-          <SellerProtectedRoute>
-            <SellerProducts />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/products/add"
-        element={
-          <SellerProtectedRoute>
-            <SellerProductForm />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/products/edit/:id"
-        element={
-          <SellerProtectedRoute>
-            <SellerProductForm />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/orders"
-        element={
-          <SellerProtectedRoute>
-            <SellerOrders />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/stock"
-        element={
-          <SellerProtectedRoute>
-            <SellerStockManagement />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/notifications"
-        element={
-          <SellerProtectedRoute>
-            <SellerNotificationsPage />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/notifications/:id"
-        element={
-          <SellerProtectedRoute>
-            <SellerNotificationDetailPage />
-          </SellerProtectedRoute>
-        }
-      />
-      <Route
-        path="/seller/farm"
-        element={
-          <SellerProtectedRoute>
-            <SellerFarm />
-          </SellerProtectedRoute>
-        }
-      />
-      {/* Admin Routes */}
-      <Route
-        path="/admin/login"
-        element={
-          isAuthenticated ? (
-            <Navigate to="/admin/dashboard" replace />
-          ) : (
-            <Login />
-          )
-        }
-      />
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute>
-            <Navigate to="/admin/dashboard" replace />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/products/variations/:id"
-        element={<ProductVariations />}
-      />
-      <Route
-        path="/admin/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/products"
-        element={
-          <ProtectedRoute>
-            <ProductList />
-          </ProtectedRoute>
-        }
-      />
 
-      <Route
-        path="/admin/products/categories"
-        element={
-          <ProtectedRoute>
-            <ProductCategories />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/products/add"
-        element={
-          <ProtectedRoute>
-            <ProductForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/products/edit/:id"
-        element={
-          <ProtectedRoute>
-            <ProductForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/orders"
-        element={
-          <ProtectedRoute>
-            <OrderList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/orders/:id"
-        element={
-          <ProtectedRoute>
-            <OrderDetail />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/customers"
-        element={
-          <ProtectedRoute>
-            <CustomerList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/customers/:id/edit"
-        element={
-          <ProtectedRoute>
-            <CustomerEditForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/customers/:id"
-        element={
-          <ProtectedRoute>
-            <CustomerDetail />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/sellers"
-        element={
-          <ProtectedRoute>
-            <SellerManagement />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/sellers/reports"
-        element={
-          <ProtectedRoute>
-            <SellerReports />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/sellers/:id/edit"
-        element={
-          <ProtectedRoute>
-            <SellerEditForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/sellers/:id"
-        element={
-          <ProtectedRoute>
-            <SellerDetail />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/posts"
-        element={
-          <ProtectedRoute>
-            <PostList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/posts/categories"
-        element={
-          <ProtectedRoute>
-            <PostCategories />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/posts/add"
-        element={
-          <ProtectedRoute>
-            <PostForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/posts/edit/:id"
-        element={
-          <ProtectedRoute>
-            <PostForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/reviews"
-        element={
-          <ProtectedRoute>
-            <ReviewManagement />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/notifications"
-        element={
-          <ProtectedRoute>
-            <NotificationList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/notifications/add"
-        element={
-          <ProtectedRoute>
-            <NotificationForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/notifications/:id/edit"
-        element={
-          <ProtectedRoute>
-            <NotificationForm />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/seller/dashboard" element={<SellerProtectedRoute><SellerDashboard /></SellerProtectedRoute>} />
+      <Route path="/seller/profile" element={<SellerProtectedRoute><SellerProfile /></SellerProtectedRoute>} />
+      <Route path="/seller/products" element={<SellerProtectedRoute><SellerProducts /></SellerProtectedRoute>} />
+      <Route path="/seller/products/add" element={<SellerProtectedRoute><SellerProductForm /></SellerProtectedRoute>} />
+      <Route path="/seller/products/edit/:id" element={<SellerProtectedRoute><SellerProductForm /></SellerProtectedRoute>} />
+      <Route path="/seller/orders" element={<SellerProtectedRoute><SellerOrders /></SellerProtectedRoute>} />
+      <Route path="/seller/stock" element={<SellerProtectedRoute><SellerStockManagement /></SellerProtectedRoute>} />
+      <Route path="/seller/notifications" element={<SellerProtectedRoute><SellerNotificationsPage /></SellerProtectedRoute>} />
+      <Route path="/seller/notifications/:id" element={<SellerProtectedRoute><SellerNotificationDetailPage /></SellerProtectedRoute>} />
+      <Route path="/seller/farm" element={<SellerProtectedRoute><SellerFarm /></SellerProtectedRoute>} />
 
-      <Route
-        path="/admin/notifications/:id"
-        element={
-          <ProtectedRoute>
-            <NotificationDetail />
-          </ProtectedRoute>
-        }
-      />
-      {/* Catch all - only redirect if route doesn't match any above */}
+      {/* Admin */}
+      <Route path="/admin/login" element={isAuthenticated ? <Navigate to="/admin/dashboard" replace /> : <Login />} />
+      <Route path="/admin" element={<ProtectedRoute><Navigate to="/admin/dashboard" replace /></ProtectedRoute>} />
+      <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/admin/products" element={<ProtectedRoute><ProductList /></ProtectedRoute>} />
+      <Route path="/admin/products/categories" element={<ProtectedRoute><ProductCategories /></ProtectedRoute>} />
+      <Route path="/admin/products/add" element={<ProtectedRoute><ProductForm /></ProtectedRoute>} />
+      <Route path="/admin/products/edit/:id" element={<ProtectedRoute><ProductForm /></ProtectedRoute>} />
+      <Route path="/admin/products/variations/:id" element={<ProductVariations />} />
+      <Route path="/admin/orders" element={<ProtectedRoute><OrderList /></ProtectedRoute>} />
+      <Route path="/admin/orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
+      <Route path="/admin/customers" element={<ProtectedRoute><CustomerList /></ProtectedRoute>} />
+      <Route path="/admin/customers/:id" element={<ProtectedRoute><CustomerDetail /></ProtectedRoute>} />
+      <Route path="/admin/customers/:id/edit" element={<ProtectedRoute><CustomerEditForm /></ProtectedRoute>} />
+      <Route path="/admin/sellers" element={<ProtectedRoute><SellerManagement /></ProtectedRoute>} />
+      <Route path="/admin/sellers/:id" element={<ProtectedRoute><SellerDetail /></ProtectedRoute>} />
+      <Route path="/admin/sellers/:id/edit" element={<ProtectedRoute><SellerEditForm /></ProtectedRoute>} />
+      <Route path="/admin/sellers/reports" element={<ProtectedRoute><SellerReports /></ProtectedRoute>} />
+      <Route path="/admin/posts" element={<ProtectedRoute><PostList /></ProtectedRoute>} />
+      <Route path="/admin/posts/categories" element={<ProtectedRoute><PostCategories /></ProtectedRoute>} />
+      <Route path="/admin/posts/add" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
+      <Route path="/admin/posts/edit/:id" element={<ProtectedRoute><PostForm /></ProtectedRoute>} />
+      <Route path="/admin/reviews" element={<ProtectedRoute><ReviewManagement /></ProtectedRoute>} />
+      <Route path="/admin/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/admin/notifications" element={<ProtectedRoute><NotificationList /></ProtectedRoute>} />
+      <Route path="/admin/notifications/add" element={<ProtectedRoute><NotificationForm /></ProtectedRoute>} />
+      <Route path="/admin/notifications/:id" element={<ProtectedRoute><NotificationDetail /></ProtectedRoute>} />
+
+      {/* fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

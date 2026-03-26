@@ -23,7 +23,7 @@ customerApi.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  },
+  }
 );
 
 // Customer Orders API
@@ -31,7 +31,6 @@ export const customerOrdersAPI = {
   create: (data) => customerApi.post("/customer/orders", data),
   getAll: (params) => customerApi.get("/customer/orders", { params }),
   getById: (id) => customerApi.get(`/customer/orders/${id}`),
-  // Đã thêm hàm update để gọi API cập nhật trạng thái / hủy đơn
   update: (id, data) => customerApi.put(`/customer/orders/${id}`, data),
 };
 
@@ -49,7 +48,8 @@ export const customerWishlistAPI = {
 export const vnpayAPI = {
   createPaymentUrl: (data) =>
     customerApi.post("/vnpay/create-payment-url", data),
-  checkStatus: (orderId) => customerApi.get(`/vnpay/check-status/${orderId}`),
+  checkStatus: (orderId) =>
+    customerApi.get(`/vnpay/check-status/${orderId}`),
 };
 
 // Customer Notifications API
@@ -59,6 +59,15 @@ export const customerNotificationsAPI = {
   markAsRead: (id) => customerApi.post(`/notifications/${id}/mark-read`),
   markAllAsRead: () => customerApi.post("/notifications/mark-all-read"),
   getUnreadCount: () => customerApi.get("/notifications/unread-count"),
+};
+
+// ================= Customer Promotions API =================
+export const customerPromotionsAPI = {
+  // Lấy danh sách tất cả khuyến mãi
+  getAll: () => customerApi.get("/promotions"),
+
+  // Lấy chi tiết 1 khuyến mãi
+  getById: (id) => customerApi.get(`/promotions/${id}`),
 };
 
 export default customerApi;

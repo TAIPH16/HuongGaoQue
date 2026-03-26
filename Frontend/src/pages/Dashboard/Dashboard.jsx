@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import MainLayout from '../../components/Layout/MainLayout';
-import { FiPackage, FiShoppingCart, FiUsers, FiFileText } from 'react-icons/fi';
+import { FiPackage, FiShoppingCart, FiUsers, FiFileText, FiMail } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { productsAPI, ordersAPI, postsAPI } from '../../utils/api';
 import {
@@ -16,6 +16,7 @@ import {
   Bar,
 } from 'recharts';
 
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [revenueStats, setRevenueStats] = useState(null);
@@ -27,7 +28,6 @@ const Dashboard = () => {
   });
   const [shoppingBehaviorData, setShoppingBehaviorData] = useState([]);
   const [articleBehaviorData, setArticleBehaviorData] = useState([]);
-  const [topViewedProducts, setTopViewedProducts] = useState([]);
   const [loadingCharts, setLoadingCharts] = useState(false);
 
   useEffect(() => {
@@ -101,15 +101,6 @@ const Dashboard = () => {
           views: item.views || 0,
         }))
       );
-
-      // Fetch top 5 sản phẩm xem nhiều nhất
-      try {
-        const topRes = await import('../../utils/api').then(m => m.productsAPI.getTopViewed({ limit: 5 }));
-        const topData = topRes.data?.data || [];
-        setTopViewedProducts(topData.map(p => ({ name: p.name?.length > 15 ? p.name.substring(0, 15) + '...' : p.name, viewCount: p.viewCount || 0 })));
-      } catch (_) {
-        setTopViewedProducts([]);
-      }
     } catch (err) {
       console.error('Error fetching charts:', err);
       setShoppingBehaviorData([]);
@@ -320,30 +311,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* FC2 - Top 5 sản phẩm được xem nhiều nhất */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">👁 Top 5 sản phẩm được xem nhiều nhất</h3>
-          {loadingCharts ? (
-            <div className="h-[250px] flex items-center justify-center">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600" />
-            </div>
-          ) : topViewedProducts.length === 0 ? (
-            <div className="h-[250px] flex items-center justify-center text-gray-500">
-              Chưa có dữ liệu lượt xem sản phẩm
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={topViewedProducts} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 12 }} />
-                <Tooltip formatter={(value) => [value, 'Lượt xem']} />
-                <Bar dataKey="viewCount" name="Lượt xem" fill="#6366f1" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-
         {/* Quick Actions */}
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Thao tác nhanh</h2>
@@ -376,9 +343,38 @@ const Dashboard = () => {
               <FiUsers className="w-6 h-6 text-gray-400 mb-2" />
               <p className="font-medium text-gray-800">Thông tin cá nhân</p>
             </button>
+            <button
+              onClick={() => navigate('/admin/promotions')}
+              className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 transition text-left"
+            >
+              <FiShoppingCart className="w-6 h-6 text-gray-400 mb-2" />
+              <p className="font-medium text-gray-800">Quản lý khuyến mãi</p>
+            </button>
           </div>
         </div>
       </div>
+
+      <button
+        onClick={() => navigate('/admin/contact')}
+        className="
+          fixed
+          bottom-6
+          right-6
+          w-14
+          h-14
+          rounded-full
+          bg-red-500
+          hover:bg-red-600
+          text-white
+          shadow-lg
+          flex
+          items-center
+          justify-center
+          z-50
+        "
+      >
+        <FiMail size={24} />
+      </button>
     </MainLayout>
   );
 };
