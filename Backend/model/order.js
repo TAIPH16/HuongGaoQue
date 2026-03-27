@@ -16,6 +16,11 @@ const orderItemSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    seller_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     quantity: {
       type: Number,
       required: true,

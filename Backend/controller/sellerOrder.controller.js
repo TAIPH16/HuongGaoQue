@@ -10,11 +10,17 @@ exports.getSellerOrders = async (req, res) => {
         const skip = (page - 1) * limit;
         const status = req.query.status;
 
-        // Find all orders that contain at least one item from this seller
+        // Tìm orders có sản phẩm của seller này
+        // Dùng 2 điều kiện với $or:
+        //  1. items.seller_id (cho orders mới sau khi fix)
+        //  2. items.product nằm trong danh sách product (kể cả isDeleted) (cho orders cũ)
+        const allSellerProductIds = await Product.find({ seller: req.userId }).distinct('_id');
+
         let query = {
-            'items.product': {
-                $in: await Product.find({ seller: req.userId }).distinct('_id')
-            }
+            $or: [
+                { 'items.seller_id': req.userId },
+                { 'items.product': { $in: allSellerProductIds } }
+            ]
         };
 
         if (status) {
@@ -26,7 +32,7 @@ exports.getSellerOrders = async (req, res) => {
             .populate('items.product')
             .skip(skip)
             .limit(limit)
-            .sort({ createdAt: -1 });
+            .sort({ created_at: -1 });
 
         const total = await Order.countDocuments(query);
 
@@ -60,10 +66,18 @@ exports.getSellerOrderById = async (req, res) => {
         }
 
         // Check if seller has items in this order
-        const sellerProducts = await Product.find({ seller: req.userId }).distinct('_id');
-        const hasSellerItems = order.items.some(item =>
-            sellerProducts.some(prodId => prodId.equals(item.product._id))
-        );
+        // Kiểm tra bằng seller_id trong item (orders mới) hoặc bằng product.seller (orders cũ)
+        const allSellerProductIds = await Product.find({ seller: req.userId }).distinct('_id');
+        const hasSellerItems = order.items.some(item => {
+            // Ưu tiên kiểm tra seller_id trực tiếp
+            if (item.seller_id && String(item.seller_id) === String(req.userId)) return true;
+            // Fallback: kiểm tra qua product (kể cả product đã bị soft-deleted)
+            if (item.product) {
+                const productId = item.product._id || item.product;
+                return allSellerProductIds.some(pid => pid.equals(productId));
+            }
+            return false;
+        });
 
         if (!hasSellerItems) {
             return res.status(403).json({
@@ -173,7 +187,13 @@ exports.updateSellerOrderStatus = async (req, res) => {
         }
 
         // Ensure ALL items belong to this seller
-        const notOwned = order.items.find(it => String(it.product?.seller || '') !== String(req.userId));
+        // Kiểm tra bằng seller_id (orders mới) hoặc product.seller (orders cũ)
+        const notOwned = order.items.find(it => {
+            // Nếu có seller_id trong item, kiểm tra trực tiếp
+            if (it.seller_id) return String(it.seller_id) !== String(req.userId);
+            // Fallback: kiểm tra qua product (có thể null nếu product đã bị xóa hẳn)
+            return String(it.product?.seller || '') !== String(req.userId);
+        });
         if (notOwned) {
             return res.status(403).json({
                 success: false,

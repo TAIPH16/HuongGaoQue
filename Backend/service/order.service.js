@@ -166,6 +166,7 @@ const createOrder = async (orderData) => {
         orderItems.push({
             product: product._id,
             product_name: product.name,
+            seller_id: product.seller || null, // Lưu seller để query orders khi product bị xóa
             quantity: item.quantity,
             unitPrice: unitPrice,
             price: unitPrice,

@@ -9,7 +9,7 @@ exports.getSellerProducts = async (req, res) => {
         const skip = (page - 1) * limit;
         const search = req.query.search || '';
 
-        let query = { seller: req.userId }; // Only seller's products
+        let query = { seller: req.userId, isDeleted: { $ne: true } }; // Only seller's non-deleted products
 
         if (search) {
             query.name = { $regex: search, $options: 'i' };
@@ -253,12 +253,13 @@ exports.updateSellerProduct = async (req, res) => {
     }
 };
 
-// Delete product (only if owned by seller)
+// Delete product (soft delete - chỉ đánh dấu isDeleted=true để bảo toàn dữ liệu orders)
 exports.deleteSellerProduct = async (req, res) => {
     try {
-        const product = await Product.findOneAndDelete({
+        const product = await Product.findOne({
             _id: req.params.id,
-            seller: req.userId
+            seller: req.userId,
+            isDeleted: { $ne: true }
         });
 
         if (!product) {
@@ -267,6 +268,12 @@ exports.deleteSellerProduct = async (req, res) => {
                 message: 'Không tìm thấy sản phẩm'
             });
         }
+
+        // Soft delete: chỉ đánh dấu isDeleted, không xóa thật
+        // Điều này giữ cho các đơn hàng chứa sản phẩm này vẫn hiển thị đủ
+        product.isDeleted = true;
+        product.isHidden = true; // Ẩn khỏi trang chủ
+        await product.save();
 
         res.status(200).json({
             success: true,

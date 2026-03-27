@@ -93,6 +93,10 @@ const productSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
     seller: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

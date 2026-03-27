@@ -17,7 +17,7 @@ const getProducts = async (query) => {
     const sortOrderRaw = (query.sortOrder || '').toString().trim().toLowerCase();
 
     // Tạo query
-    let filter = {};
+    let filter = { isDeleted: { $ne: true } }; // Luôn loại bỏ sản phẩm đã xóa mềm
     if (query.isPublic) {
         filter.is_approved = true;
         filter.isHidden = { $ne: true };
@@ -387,7 +387,7 @@ const incrementProductView = async (productId) => {
  * Lấy top N sản phẩm bán chạy nhất (theo soldQuantity)
  */
 const getTopSellingProducts = async (limit = 4) => {
-    const products = await Product.find({ is_approved: true, isHidden: { $ne: true } })
+    const products = await Product.find({ is_approved: true, isHidden: { $ne: true }, isDeleted: { $ne: true } })
         .populate('category', 'name')
         .select('name soldQuantity listedPrice discountPercent images viewCount category status')
         .sort({ soldQuantity: -1 })
@@ -399,7 +399,7 @@ const getTopSellingProducts = async (limit = 4) => {
  * Lấy top N sản phẩm được xem nhiều nhất
  */
 const getTopViewedProducts = async (limit = 5) => {
-    const products = await Product.find({ is_approved: true, isHidden: { $ne: true } })
+    const products = await Product.find({ is_approved: true, isHidden: { $ne: true }, isDeleted: { $ne: true } })
         .select('name viewCount images')
         .sort({ viewCount: -1 })
         .limit(limit);
